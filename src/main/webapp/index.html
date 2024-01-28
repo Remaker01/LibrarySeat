@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="static/main.css" />
+    <meta name=”viewport” content=”width=device-width">
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js" defer></script>
+    <script src="static/commons.js"></script>
+    <script>
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                if(d.info!=null)
+                    document.location.href=_ROOT_+"welcome.html";
+            });
+            $("input[name='vcode']").on("keyup paste blur",function (){
+                $(this).val($(this).val().replace(REGEXP_NOT_NUM,''));
+            });
+        });
+        function submit_() {
+            var uname=$("input[name='uname']").val(),pswd_input=$("input[name='pswd']").val(),vcode=$("input[name='vcode']").val();
+            var pswd=hashPassword(pswd_input);
+            var params={
+                "username":uname,
+                "pswd":pswd,
+                "vcode":vcode,
+                "token":Math.round(new Date().getTime()/1000)
+            };
+            // console.log(params);
+            $.ajax({url:_ROOT_+"user/login.do",
+                type:"post",
+                data:params,
+            }).done(function (dat) {
+                $("#status").text(dat.msg);
+                if(dat.msg.indexOf("错误")<0) {
+                    setTimeout(function () {document.location.href=_ROOT_+"welcome.html";},750);
+                } else {
+                    $("#vcode-img").trigger("click");
+                }
+            }).fail(function (xhr) {
+                $("status").text("出错了！请尝试刷新页面或验证码。错误码"+xhr.status);
+            });
+            return FALSE;
+        }
+    </script>
+</head>
+<body style="background: url(./img/bg.jpg)">
+<div class="login-box">
+    <h2>Login</h2>
+    <form onsubmit="return submit_()">
+        <div class="login-field">
+            <input type="text" name="uname" required />
+            <label>用户名</label>
+        </div>
+        <div class="login-field">
+            <input type="password" name="pswd" required />
+            <label>密码</label>
+        </div>
+        <div class="login-field">
+            <input type="text" name="vcode" required autocomplete="off"/>
+            <label>验证码</label><br>
+            <img src="checkcode" alt="验证码" id="vcode-img" onclick="this.src=_ROOT_+'checkcode?'+Math.random();"/>
+        </div>
+        <input type="submit" id="submit" value="登录"/>
+    </form>
+    <span style="text-align: left;font-size: small"><a href="login2.html">使用手机号登录</a></span>
+    <p style="text-align: right;color: white;font-size: small">如忘记密码或用户名，请联系管理员重置</p>
+    <p id="status"></p>
+</div>
+</body>
+</html>

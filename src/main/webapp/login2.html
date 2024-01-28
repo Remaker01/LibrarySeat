@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="static/main.css" />
+    <meta name=”viewport” content=”width=device-width">
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="static/commons.js"></script>
+    <script>
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                if(d.info!=null)
+                    document.location.href=_ROOT_+"welcome.html";
+            });
+            $("input[name='vcode']").on("keyup paste blur",function (){
+                $(this).val($(this).val().replace(REGEXP_NOT_NUM,''));
+            });
+            $("#vcode-phone-btn").on("click",function (){
+                phone_code=randInt(1e5,1e6);
+                $("#vcode-phone-text").attr("placeholder","测试功能，请输入"+phone_code).val("");
+            });//onclick
+        });//ready
+        var phone_code=-1;
+        function submit_() {
+            var uname=$("input[name='uname']").val(),pswd_input=$("input[name='pswd']").val(),vcode=$("input[name='vcode']").val();
+            if(!checkPhone(pswd_input)) {
+                $("#status").text("手机号格式不正确！");
+                return FALSE;
+            }
+            var params={
+                "truename":uname,
+                "phone":pswd_input.encodeb(),
+                "vcode":vcode,
+                "token":Math.round(new Date().getTime()/1000)
+            };
+            if($("#vcode-phone-text").val()!=phone_code) { //不用!==
+                $("#status").text("手机验证码错误！");
+                return FALSE;
+            }
+            // console.log(params);
+            $.ajax({url:_ROOT_+"user/login.do",
+                type:"post",
+                data:params,
+            }).done(function (dat) {
+                $("#status").text(dat.msg);
+                if(dat.msg.indexOf("错误")<0) {
+                    setTimeout(function () {document.location.href=_ROOT_+"welcome.html";},750);
+                } else {
+                    $("#vcode-img").trigger("click");
+                }
+            }).fail(function (xhr) {
+                $("status").text("出错了！请尝试刷新页面或验证码。错误码"+xhr.status);
+            });
+            return FALSE;
+        }
+    </script>
+</head>
+<body style="background: url(./img/bg.jpg)">
+<div class="login-box">
+    <h2>Login</h2>
+    <form onsubmit="return submit_()">
+        <div class="login-field">
+            <input type="text" name="uname" required />
+            <label>真实姓名</label>
+        </div>
+        <div class="login-field">
+            <input type="text" name="pswd" required maxlength="11"/>
+            <label>手机号</label>
+        </div>
+        <div class="login-field">
+            <input type="text" name="vcode" required autocomplete="off"/>
+            <label>图形验证码</label><br>
+            <img src="checkcode" alt="验证码" id="vcode-img" onclick="this.src=_ROOT_+'checkcode?'+Math.random();"/>
+        </div>
+        <div class="login-field">
+            <span style="color: #00ffff;font-size: small;">手机验证码：</span>
+            <input type="text" name="vcode" id="vcode-phone-text" required autocomplete="off" maxlength="6"/>
+        </div>
+        <input type="button" id="vcode-phone-btn" value="获取验证码" style="display: inline" required/>&emsp;
+        <input type="submit" id="submit" value="登录"/>
+    </form>
+    <span style="text-align: left"><a href="index.html">使用用户名登录</a></span>
+    <p id="status"></p>
+</div>
+</body>
+</html>

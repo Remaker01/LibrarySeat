@@ -1,0 +1,74 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-size: cover;
+    background: url(../img/bg.jpg) no-repeat fixed center;
+    -webkit-background-size: cover;
+    -o-background-size: cover;
+    -moz-background-size: cover;
+    -ms-background-size: cover;
+
+}
+.login-box{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 400px;
+    padding:40px;
+    background: rgba(0,0,0,0.8);
+    box-sizing: border-box;
+    box-shadow: 0 15px  25px rgba(0,0,0,0.5);
+    border-radius: 10px;
+}
+.login-box h2{
+    margin: 0 0 30px;
+    padding: 0;
+    text-align: center;
+    color: #fff;
+}
+.login-box .login-field{
+    position: relative;
+}
+.login-box .login-field  input{
+    width: 100%;
+    padding: 8px 0;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 30px;
+    border: none;
+    border-bottom: 1px solid #fff;
+    outline: none;
+    background: transparent;
+}
+.login-box .login-field  label{
+    position: absolute;
+    top: 0;
+    left: 0;
+    letter-spacing: 1px;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #aaaaaa;
+    transition: .5s;
+}
+.login-box .login-field input:focus ~ label,
+.login-box .login-field input:valid ~ label{
+    top: -25px;
+    left: 0;
+    color: #00ffff;
+    font-size: 12px;
+}
+.login-box button,.login-box input[type='button'],.login-box input[type='submit'],.login-box input[type='reset']{
+    background: #4000ff;
+    border: none;
+    outline: none;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.login-box a{
+    text-decoration: none;
+    color: #64bcff;
+}

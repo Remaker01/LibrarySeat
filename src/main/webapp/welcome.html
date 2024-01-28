@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--登陆后返回-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name=”viewport” content=”width=device-width">
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="static/commons.js"></script>
+    <title>欢迎使用图书馆座位预定系统！</title>
+    <script>
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                var user=d.info;
+                if(user == null) {
+                    $("#welcome").text("您尚未登录，请点击下方链接返回主页！");
+                    $("body>p>a").attr("href",_ROOT_);
+                } else {
+                    $("#welcome").text("欢迎"+user.truename+"登录xx大学图书馆座位预定系统！");
+                    //TODO:针对3种角色写不同的主页
+                    var addr=null;
+                    switch (user.role) {
+                        case 0:addr=_ROOT_+"library/admin.html";break;
+                        case 1:addr=_ROOT_+"library/room-admin.html";break;
+                    }
+                    $("body>p>a").attr("href",addr);
+                    setTimeout(function () {document.location.href=addr;},900);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<strong id="welcome"></strong>
+<p>如未自动跳转，请点击<a>此处</a></p>
+</body>
+</html>
