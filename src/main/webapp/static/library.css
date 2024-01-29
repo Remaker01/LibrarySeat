@@ -1,0 +1,77 @@
+*{margin: 0;padding: 0;}
+#a1 {
+    width: 80%;
+    height: 70px;
+    padding-left: 23px;
+    padding-top: 20px;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    box-shadow: 0 0 1500px 0 #DDDDDD;
+    float: left;
+    z-index: 1;
+}
+#top{
+    /* background: linear-gradient(to right,#6495ED,mistyrose);
+           -webkit-background-clip: text;
+           color: transparent; */
+    color: #6495DD;
+}
+#a2{width: 18%;height: 70px;float: left;margin-bottom: 10px;padding-top: 20px;
+    margin-top: 5px;box-shadow: 0 0 1500px 0 #DDDDDD;z-index: 1;}
+#aa1{width: 35%;height: 45px;float: left;margin-right: 10px;
+    border-radius: 5px 5px 5px 5px;box-shadow: 0 0 20px 0 #DCDCDC;}
+#aa2 a,#aa1 a{font-size: larger;width: 100%;height: 42px;color: #6495DD;line-height: 42px;
+    text-decoration: none;}
+#aa1 a:hover{color: #BD0A01;}
+#aa2 a:hover{color: #BD0A01;}
+#tab1{float: left;width: 210px;height: 580px;text-align: left;margin-top: 0;border: 1px solid #6495DD;background:#505050;margin-left: 5px;box-shadow: 0 0 30px 0 #505050;}
+#tab2{float: left;width: 100%;height: 170px;text-align: center;border-bottom: 1px solid #000000;color: #DDDDDD;}
+#t2{height: 150px;width: 100%;}
+#t2 tr th{height: 30px;font-size: x-large;}
+img{border:0;}
+#img1{margin-top: 5px;border-radius: 49%;}
+ul,li{list-style-type:none;}
+a{color:#505050;text-decoration:none;}
+a:hover {color:#bd0a01;text-decoration:underline;}
+.treebox{ width: 100%; margin: 0 auto; background-color: #505050;}
+.menu{ overflow: hidden; border-color: #ddd; border-style: solid ; border-width: 0 1px 1px ; }
+/*第一层*/
+.menu li.level1>a{
+    display:block;
+    height: 47px;
+    line-height: 47px;
+    color: white;
+    padding-left: 50px;
+    border-bottom: 1px solid #000;
+    font-size: 15px;
+    position: relative;
+    transition:all .5s ease 0s;
+}
+.menu li.level1 a:hover{ text-decoration: none;background-color: #1099cc;/* border: 2px solid #000000; */}
+.menu li.level1 a.current{background-color: #505050;}
+
+/*============修饰图标*/
+.ico{ width: 20px; height: 20px; display:block;   position: absolute; left: 20px; top: 13px; background-repeat: no-repeat; }
+
+/*============小箭头*/
+.level1 i{ width: 20px; height: 10px; background-image:url(../img/arrow.png); background-repeat: no-repeat; display: block; position: absolute; right: 20px; top: 20px; }
+.level1 i.down{ background-position: 0 -10px; }
+
+.ico1{ background-position: 0 0; }
+.ico2{ background-position: 0 -20px; }
+.ico3{ background-position: 0 -40px; }
+
+/*第二层*/
+.menu li ul{ overflow: hidden; }
+.menu li ul.level2{ display: none;background-color: #505050; }
+.menu li ul.level2 li a{
+    display: block;
+    height: 45px;
+    line-height: 45px;
+    color: white;
+    text-indent: 60px;
+    /*border-bottom: 1px solid #ddd; */
+    font-size: 17px;
+    transition:all .5s ease 0s;
+}
+#main_{width: 80%;height: 100%;float: left;margin-left: 5px; box-shadow: 0 0 35px 0 #DDDDDD;z-index: 0;}

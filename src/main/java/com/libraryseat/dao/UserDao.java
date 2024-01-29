@@ -66,10 +66,10 @@ public class UserDao extends BaseDao {
         }
     }
 
-    public User getUserByTruenameAndPhone(String trueName, String phone) {
-        String sql = "select * from users where truename=? and phone=?";
+    public User getUserByPhone(String phone) {
+        String sql = "select * from users where phone=?";
         try{
-            return template.queryForObject(sql,UserMapper.INSTANCE,trueName,phone);
+            return template.queryForObject(sql,UserMapper.INSTANCE,phone);
         } catch (DataAccessException e) {
             return null;
         }

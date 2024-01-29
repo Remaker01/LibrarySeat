@@ -61,8 +61,8 @@ public class UserController {
         if(VerifyUtil.verifyNonEmptyStrings(username,pswd))
             u = userService.login(username,pswd);
         else {
-            String trueName = params.get("truename"),phone=params.get("phone");
-            u = userService.loginByTrueNamePhone(trueName,phone);
+            String phone=params.get("phone");
+            u = userService.loginByPhone(phone);
         }
         if(u == null) {
             JsonUtil.writeResponse(new Response("/user/login.do","POST","登录信息错误！"),out);
@@ -153,7 +153,7 @@ public class UserController {
             }
             //2.不同，进行超管重置密码操作
             User u = userService.getUserById(uid);
-            String info = userService.resetPswd(u.getTruename(), u.getPhone(), newPswd);
+            String info = userService.resetPswd(u.getPhone(), newPswd);
             JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST",info),resp.getOutputStream());
         }
     }

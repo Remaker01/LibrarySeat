@@ -1,6 +1,7 @@
 package com.libraryseat.controller;
 
 import com.libraryseat.Response;
+import com.libraryseat.pojo.Room;
 import com.libraryseat.pojo.User;
 import com.libraryseat.services.RoomService;
 import com.libraryseat.services.UserService;
@@ -10,15 +11,18 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 @RequestMapping("/room")
 public class RoomController {
+    private static final int MAX_ROOM = 20;
     @Autowired
     private RoomService roomService;
     @Autowired
@@ -33,8 +37,13 @@ public class RoomController {
             resp.sendError(403,"校验失败");
             return;
         }
+        resp.setContentType("application/json");
+        if(roomService.getRoomCount() >= MAX_ROOM) {
+            JsonUtil.writeResponse(new Response("/room/add.do","POST",String.format("图书室数目达到上限%d",MAX_ROOM))
+                    ,resp.getOutputStream());
+        }
         User adminAccount = userService.getUserById(admin);
-        if (adminAccount.getRole() != 1) {
+        if (adminAccount == null||adminAccount.getRole() != 1) {
             resp.sendError(400,"参数错误");
             return;
         }
@@ -50,6 +59,7 @@ public class RoomController {
             response.sendError(403,"校验失败");
             return;
         }
+        response.setContentType("application/json");
         String info = roomService.deleteRoom(id);
         JsonUtil.writeResponse(new Response("/room/delete.do","POST",info),response.getOutputStream());
     }
@@ -66,7 +76,31 @@ public class RoomController {
             resp.sendError(400,"参数错误");
             return;
         }
+        resp.setContentType("application/json");
         String info = roomService.updateRoom(id,name,admin);
         JsonUtil.writeResponse(new Response("/room/update.do","POST",info),resp.getOutputStream());
+    }
+    @RequestMapping(value = "/listrooms.do",method = {RequestMethod.GET,RequestMethod.POST})
+    @ResponseBody
+    public void listRooms(@RequestParam(required=false) Integer admin,HttpServletResponse resp,HttpSession session) throws IOException {
+        User now = (User) session.getAttribute("user");
+        if(now == null) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json");
+        if(admin == null) {
+            List<Room> rooms = roomService.getRooms();
+            JsonUtil.writeList(rooms,resp.getOutputStream());
+        }
+        else {
+            //试图获取某个管理员管理的图书室信息，需要校验管理员身份
+            if(now.getRole() != 0&&now.getUid() != admin) {
+                resp.sendError(403,"校验失败");
+                return;
+            }
+            List<Room> rooms = roomService.getRoomsByAdministrator(admin);
+            JsonUtil.writeList(rooms,resp.getOutputStream());
+        }
     }
 }

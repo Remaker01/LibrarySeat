@@ -64,5 +64,5 @@ create table if not exists reservation
             on update cascade
 );
 
-create index users_truename_phone_index
-    on users (truename, phone);
+create index users_phone_index
+    on users (phone);

@@ -72,3 +72,7 @@ body{
     text-decoration: none;
     color: #64bcff;
 }
+p#status{
+    color: red;
+    font-size: small;
+}

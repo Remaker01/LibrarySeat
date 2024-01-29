@@ -110,12 +110,10 @@ public class UserService {
         }
         return null;
     }
-    /**使用真实姓名+手机号+验证码登录，也可用于忘记密码时寻找密码*/
-    public User loginByTrueNamePhone(String name, String phone) {
-        if(name == null)
-            return null;
+    /**使用手机号+验证码登录，也可用于忘记密码时寻找密码*/
+    public User loginByPhone(String phone) {
         //1.获取用户名
-        User u = userDao.getUserByTruenameAndPhone(name,EncryptUtil.base64Decode(phone));
+        User u = userDao.getUserByPhone(EncryptUtil.base64Decode(phone));
         u.setPhone(EncryptUtil.base64Encode(u.getPhone()));
         return u;
     }
@@ -149,10 +147,10 @@ public class UserService {
         userToBeModified.setPassword(newPswd);
         return updateUser(userToBeModified);
     }
-    /**通过真实姓名+手机号+验证码重置密码。用于忘记密码的情况*/
-    public String resetPswd(String trueName,String phone, String newPswd) {
+    /**通过手机号+验证码重置密码。用于忘记密码的情况*/
+    public String resetPswd(String phone, String newPswd) {
         // 1.获取用户信息
-        User u = loginByTrueNamePhone(trueName,phone);
+        User u = loginByPhone(phone);
         if(u == null)
             return "用户不存在！";
         //2.加密用户密码

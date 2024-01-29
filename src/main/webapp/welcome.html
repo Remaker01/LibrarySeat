@@ -15,15 +15,15 @@
                     $("#welcome").text("您尚未登录，请点击下方链接返回主页！");
                     $("body>p>a").attr("href",_ROOT_);
                 } else {
-                    $("#welcome").text("欢迎"+user.truename+"登录xx大学图书馆座位预定系统！");
-                    //TODO:针对3种角色写不同的主页
                     var addr=null;
                     switch (user.role) {
                         case 0:addr=_ROOT_+"library/admin.html";break;
                         case 1:addr=_ROOT_+"library/room-admin.html";break;
+                        case 2:addr=_ROOT_+"library/student.html";break;
                     }
                     $("body>p>a").attr("href",addr);
-                    setTimeout(function () {document.location.href=addr;},900);
+                    $("#welcome").text("欢迎"+user.truename+(user.role===2?"同学":"老师")+ "登录xx大学图书馆座位预定系统！");
+                    document.location.href=addr;
                 }
             });
         });

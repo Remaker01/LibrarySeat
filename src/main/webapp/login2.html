@@ -23,13 +23,12 @@
         });//ready
         var phone_code=-1;
         function submit_() {
-            var uname=$("input[name='uname']").val(),pswd_input=$("input[name='pswd']").val(),vcode=$("input[name='vcode']").val();
+            var pswd_input=$("input[name='phone']").val(),vcode=$("input[name='vcode']").val();
             if(!checkPhone(pswd_input)) {
                 $("#status").text("手机号格式不正确！");
                 return FALSE;
             }
             var params={
-                "truename":uname,
                 "phone":pswd_input.encodeb(),
                 "vcode":vcode,
                 "token":Math.round(new Date().getTime()/1000)
@@ -61,11 +60,7 @@
     <h2>Login</h2>
     <form onsubmit="return submit_()">
         <div class="login-field">
-            <input type="text" name="uname" required />
-            <label>真实姓名</label>
-        </div>
-        <div class="login-field">
-            <input type="text" name="pswd" required maxlength="11"/>
+            <input type="text" name="phone" required maxlength="11"/>
             <label>手机号</label>
         </div>
         <div class="login-field">
@@ -74,7 +69,7 @@
             <img src="checkcode" alt="验证码" id="vcode-img" onclick="this.src=_ROOT_+'checkcode?'+Math.random();"/>
         </div>
         <div class="login-field">
-            <span style="color: #00ffff;font-size: small;">手机验证码：</span>
+            <span style="color: #00ffff;font-size: small;">短信验证码：</span>
             <input type="text" name="vcode" id="vcode-phone-text" required autocomplete="off" maxlength="6"/>
         </div>
         <input type="button" id="vcode-phone-btn" value="获取验证码" style="display: inline" required/>&emsp;

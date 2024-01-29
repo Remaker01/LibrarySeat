@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
+    <title>图书馆选座系统</title>
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <script src="https://cdn.staticfile.org/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                if(d.info==null||d.info.role!==2)
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='../'>点击返回</a>";
+            })
+        });
+        var confirm_close = function() {
+            if(confirm('确认要退出吗？')) {
+                window.open(_ROOT_+'user/exit.do','_self');
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../static/library.css">
+</head>
+<body>
+<div id="a1">
+    <img src="../img/logo.png" style="vertical-align: bottom;width: 60px;height: 60px" alt="校徽">
+    <b><span style="font-size: 9px;"> xx大学图书馆选座管理系统服务平台</span></b>
+</div>
+<div id="a2">
+    <span style="text-align: center">
+        <div id="aa1">
+            <a href="#" onclick="confirm_close()"><span id="top"><b>退出</b></span></a>
+        </div>
+    </span>
+</div>
+<div id="tab1">
+    <div id="tab2">
+        <table style="border: 0;" cellspacing="0" cellpadding="0" id="t2">
+            <tr>
+                <td>
+                    <img src="../img/RC.jpg" width="100px" height="100px"
+                         id="img1" onclick="$('#yem')[0].src='about:blank'">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="treebox">
+        <ul class="menu">
+            <li class="level1">
+                <a href="#none"><em class="ico ico2"></em>预定座位<i></i></a>
+                <ul class="level2">
+                    <li><a href="#none" target="yem">当前预定</a></li>
+                    <li><a href="#none" target="yem">新增预定</a></li>
+                    <li><a href="#none" target="yem">预定历史查询</a></li>
+                </ul>
+            </li>
+            <li class="level1">
+                <a href="#none"><em class="ico ico3"></em>使用帮助<i></i></a>
+                <ul class="level2">
+                    <li><a href="#none" target="yem">预定教程</a></li>
+                    <li><a href="#none" target="yem">常见问题</a></li>
+                </ul>
+            </li>
+            <li class="level1">
+                <a href="#none"><em class="ico ico1"></em>用户管理<i></i></a>
+                <ul class="level2">
+                    <li><a href="#none" target="yem">个人信息管理</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id="main_">
+    <iframe src="about:blank" width="100%" height="580px" id="yem" name="yem" border="0" frameborder="0">
+    </iframe>
+</div>
+<script>
+    //等待dom元素加载完毕.
+    $(function(){
+        $(".treebox .level1>a").click(
+            function(){
+                $(this).addClass('current')   //给当前元素添加"current"样式
+                    .find('i').addClass('down')   //小箭头向下样式
+                    .parent().next().slideDown(500,'easeOutQuad')  //下一个元素显示
+                    .parent().siblings().children('a').removeClass('current')//父元素的兄弟元素的子元素去除"current"样式
+                    .find('i').removeClass('down').parent().next().slideUp(500,'easeOutQuad');//隐藏
+                return false; //阻止默认时间
+            });
+    });
+</script>
+</body>
+</html>
