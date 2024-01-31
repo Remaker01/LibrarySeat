@@ -172,6 +172,7 @@ public class UserController {
             resp.sendError(400,"参数错误！");
             return;
         }
+        resp.setContentType("application/json");
         User u = userService.getUserById(uid_);
         u.setUsername(uname);u.setTruename(trueName);u.setPhone(phone);
         String info = userService.updateUser(u);
@@ -194,7 +195,21 @@ public class UserController {
         }
         if (pageno == null)
             pageno = 1;
+        resp.setContentType("application/json");
         List<User> users = userService.getUsers(pageno);
         JsonUtil.writeList(users,resp.getOutputStream());
+    }
+    @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @ResponseBody
+    public void getUserById(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
+        User u = (User) session.getAttribute("user");
+        //暂定不允许学生获取用户信息
+        if (u == null||u.getRole()==2) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json");
+        User result = userService.getUserById(uid);
+        JsonUtil.writePojo(result,resp.getOutputStream());
     }
 }

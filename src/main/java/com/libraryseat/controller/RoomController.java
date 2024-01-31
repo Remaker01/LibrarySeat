@@ -22,7 +22,6 @@ import java.util.List;
 @Controller
 @RequestMapping("/room")
 public class RoomController {
-    private static final int MAX_ROOM = 20;
     @Autowired
     private RoomService roomService;
     @Autowired
@@ -38,10 +37,6 @@ public class RoomController {
             return;
         }
         resp.setContentType("application/json");
-        if(roomService.getRoomCount() >= MAX_ROOM) {
-            JsonUtil.writeResponse(new Response("/room/add.do","POST",String.format("图书室数目达到上限%d",MAX_ROOM))
-                    ,resp.getOutputStream());
-        }
         User adminAccount = userService.getUserById(admin);
         if (adminAccount == null||adminAccount.getRole() != 1) {
             resp.sendError(400,"参数错误");

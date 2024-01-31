@@ -1,0 +1,39 @@
+###
+GET http://localhost/LibrarySeat/checkcode
+
+###
+POST http://localhost/LibrarySeat/user/login.do
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&pswd=2589236782d0b361e87920a3e48ee6fb&vcode=82&token=1706533863
+
+###
+GET http://localhost/LibrarySeat/user/logged_user.do
+
+###
+GET http://localhost/LibrarySeat/user/listusers.do
+
+###
+# rooms
+GET http://localhost/LibrarySeat/room/listrooms.do
+
+###
+POST http://localhost/LibrarySeat/room/add.do
+Content-Type: application/x-www-form-urlencoded
+X-Requested-With: XMLHttpRequest
+
+name=文学借阅区&admin=10020
+
+###
+POST http://localhost/LibrarySeat/room/delete.do
+Content-Type: application/x-www-form-urlencoded
+X-Requested-With: XMLHttpRequest
+
+id=666
+
+###
+POST http://localhost/LibrarySeat/room/delete.do
+Content-Type: application/x-www-form-urlencoded
+X-Requested-With: XMLHttpRequest
+
+id=10006

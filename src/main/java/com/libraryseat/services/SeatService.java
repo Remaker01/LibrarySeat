@@ -62,6 +62,10 @@ public class SeatService {
         return seatDao.getSeatsInRoom(roomid,(page-1)*PAGE_SIZE,PAGE_SIZE,orderBy,order);
     }
 
+    public List<Seat> getSeatsInRoom(int roomid, int page) {
+        return seatDao.getSeatsInRoom(roomid,(page-1)*PAGE_SIZE,PAGE_SIZE,null,null);
+    }
+
     public List<Seat> getFreeSeatsInRoom(int roomid, int page, String orderBy, boolean descend) {
         BaseDao.Order order = (descend) ? BaseDao.Order.DESCEND : BaseDao.Order.ASCEND;
         return seatDao.getFreeSeatsInRoom(roomid,(page-1)*PAGE_SIZE,PAGE_SIZE,orderBy,order);
