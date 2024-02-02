@@ -30,7 +30,7 @@ public class UserService {
                 pswd = EncryptUtil.encrypt(info[1],info[0],StandardCharsets.ISO_8859_1),
                 trueName = info[2],
                 gender = info[3],
-                phone = EncryptUtil.base64Decode(info[4]);
+                phone = info[4];
         userDao.add(new User(uname,pswd,trueName,gender,phone,role));
         return "添加成功！";
     }
@@ -41,7 +41,6 @@ public class UserService {
     public String updateUser(User u) {
         String uname = u.getUsername();
         int uid = u.getUid(); //TODO:这个uid是否总是正确？
-        u.setPhone(EncryptUtil.base64Decode(u.getPhone()));
         int res = userDao.update(u) ;
         if(res != 0) {
             synchronized (this) {
@@ -105,7 +104,6 @@ public class UserService {
             userNameCache.put(username,u);
         }
         if (u != null&&u.getPassword().equals(password)) {
-            u.setPhone(EncryptUtil.base64Encode(u.getPhone()));
             return u;
         }
         return null;
@@ -113,9 +111,7 @@ public class UserService {
     /**使用手机号+验证码登录，也可用于忘记密码时寻找密码*/
     public User loginByPhone(String phone) {
         //1.获取用户名
-        User u = userDao.getUserByPhone(EncryptUtil.base64Decode(phone));
-        u.setPhone(EncryptUtil.base64Encode(u.getPhone()));
-        return u;
+        return userDao.getUserByPhone(phone);
     }
 
     public User getUserById(int uid) {
@@ -124,26 +120,25 @@ public class UserService {
             u = userDao.getUserByUid(uid);
             idCache.put(uid,u);
         }
-        u.setPhone(EncryptUtil.base64Encode(u.getPhone()));
         return u;
     }
 
     public List<User> getUsers(int page) {
-        List<User> result = userDao.getUsers((page-1)*PAGE_SIZE,PAGE_SIZE);
-        for(User u:result) {
-            u.setPhone(EncryptUtil.base64Encode(u.getPhone()));
-        }
-        return result;
+        return userDao.getUsers((page-1)*PAGE_SIZE,PAGE_SIZE);
+    }
+
+    public List<User> getUsersByRole(int page,short role) {
+        return userDao.getUsers((page-1)*PAGE_SIZE,PAGE_SIZE,role);
     }
 
     /**通过用户名和密码修改密码*/
     public String modifyPswd(String username, String oldPswd, String newPswd) {
         //1.根据用户名密码查找，如果没有符合的，说明用户不存在或原密码错误
-        newPswd = EncryptUtil.encrypt(newPswd,username,StandardCharsets.ISO_8859_1);
         User userToBeModified = login(username,oldPswd); //id一定not null
         if (userToBeModified == null)
             return String.format("用户%s不存在，或原密码错误！",username);
         //2.存在原用户
+        newPswd = EncryptUtil.encrypt(newPswd,username,StandardCharsets.ISO_8859_1);
         userToBeModified.setPassword(newPswd);
         return updateUser(userToBeModified);
     }

@@ -44,7 +44,7 @@ create table if not exists seat
     primary key (seatid, roomid),
     constraint RID
         foreign key (roomid) references room (roomid)
-            on update cascade
+            on update cascade on delete cascade
 );
 
 create table if not exists reservation
@@ -58,7 +58,7 @@ create table if not exists reservation
     primary key (roomid, seatid, uid, reservation_time),
     constraint reservation_seat_seatid_roomid_fk
         foreign key (seatid, roomid) references seat (seatid, roomid)
-            on update cascade,
+            on update cascade on delete cascade,
     constraint reservation_users_uid_fk
         foreign key (uid) references users (uid)
             on update cascade

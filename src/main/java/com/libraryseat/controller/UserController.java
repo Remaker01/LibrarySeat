@@ -3,6 +3,7 @@ package com.libraryseat.controller;
 import com.libraryseat.Response;
 import com.libraryseat.pojo.User;
 import com.libraryseat.services.UserService;
+import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,26 +136,37 @@ public class UserController {
     }
     @RequestMapping(value = "/modifypswd.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void modifyPswd(Integer uid,@RequestParam(required = false) String old,@RequestParam("new") String newPswd, HttpServletResponse resp, HttpSession session)
-            throws IOException {
+    public void modifyPswd(@RequestParam Map<String,String> params,HttpServletResponse resp,HttpSession session) throws IOException {
         User now = (User) session.getAttribute("user");
         resp.setContentType("application/json");
         if(now == null) {
             resp.sendError(403,"校验失败！");
             return;
         }
-        if(now.getUid() == uid) {
-            String info = userService.modifyPswd(now.getUsername(),old,newPswd);
-            JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST",info),resp.getOutputStream());
-        } else {
-            if(now.getRole() != 0) {
-                resp.sendError(403,"校验失败！");
-                return;
+        String old = params.get("old"),newPswd=params.get("new"),uid_=params.get("uid"),vcode=params.get("vcode");
+        String realVcode = (String) session.getAttribute("CHECKCODE_SERVER");
+        if(!realVcode.equals(vcode)) {
+            JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST","验证码错误"),resp.getOutputStream());
+            return;
+        }
+        session.removeAttribute("CHECKCODE_SERVER");
+        try{
+            int uid=Integer.parseInt(uid_);
+            if(now.getUid() == uid) {
+                String info = userService.modifyPswd(now.getUsername(),old,newPswd);
+                JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST",info),resp.getOutputStream());
+            } else {
+                if(now.getRole() != 0) {
+                    resp.sendError(403,"校验失败！");
+                    return;
+                }
+                //2.不同，进行超管重置密码操作
+                User u = userService.getUserById(uid);
+                String info = userService.resetPswd(u.getPhone(), newPswd);
+                JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST",info),resp.getOutputStream());
             }
-            //2.不同，进行超管重置密码操作
-            User u = userService.getUserById(uid);
-            String info = userService.resetPswd(u.getPhone(), newPswd);
-            JsonUtil.writeResponse(new Response("/user/modifypswd.do","POST",info),resp.getOutputStream());
+        } catch (NumberFormatException e){
+            resp.sendError(400,"参数错误");
         }
     }
     @RequestMapping(value = "/update.do",method = {RequestMethod.POST})
@@ -163,6 +175,7 @@ public class UserController {
         User now = (User) session.getAttribute("user");
         if(now == null||now.getRole() != 0) {
             resp.sendError(403,"校验失败！");
+            return;
         }
         String uid = params.get("uid"),uname = params.get("uname"),trueName = params.get("truename"),phone = params.get("phone");
         int uid_;
@@ -186,8 +199,10 @@ public class UserController {
 
     @RequestMapping(value = "/listusers.do",method = {RequestMethod.GET,RequestMethod.POST})
     @ResponseBody
-    public void listUsers(@RequestParam(value = "pageno",required = false) Integer pageno,HttpServletResponse resp, HttpSession session)
-            throws IOException {
+    public void listUsers(@RequestParam(value = "pageno",required = false) Integer pageno,
+                          @RequestParam(required = false) Short role,
+                          HttpServletResponse resp,
+                          HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         if(u == null||u.getRole() != 0) {
             resp.sendError(403,"校验失败！");
@@ -196,7 +211,7 @@ public class UserController {
         if (pageno == null)
             pageno = 1;
         resp.setContentType("application/json");
-        List<User> users = userService.getUsers(pageno);
+        List<User> users = (role == null) ? userService.getUsers(pageno) : userService.getUsersByRole(pageno,role);
         JsonUtil.writeList(users,resp.getOutputStream());
     }
     @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST,RequestMethod.GET})

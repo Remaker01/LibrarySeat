@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <title>个人信息管理</title>
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js" defer></script>
+    <script src="../static/commons.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script>
+        var user;
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                user=d.info;
+                if(user==null) {
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else {
+                    $("#uname").text(user.username);
+                    $("#name").text(user.truename);
+                    $("#phone").text(user.phone);
+                    var $role=$("#role");
+                    switch (user.role) {
+                        case 0:
+                            $role.text("超级管理员");
+                            $("#modify-data").css("display","inline-block");
+                            break;
+                        case 1:$role.text("图书室管理员");break;
+                        case 2:$role.text("学生");break;
+                    }
+                }
+            });
+            $("#modipass").on("click",function () {
+                $("#modify-pswd").modal("show");
+            });
+            $("input.exit[type='button']").on("click",function (){
+                $("#old-input,#new-input,#repeat-input,#vcode-input").val("");
+                $("p.status").text("");
+            });
+        });
+        function submit_() {
+            var status=$("p.status");
+            var old=$("#old-input").val(),newPswd=$("#new-input").val();
+            if(newPswd!==$("#repeat-input").val()) {
+                status.text("两次密码不一致！");
+                return FALSE;
+            }
+            if(!REGEXP_PASS.test(newPswd)) {
+                status.text(PASS_REQUIREMENT);
+                return FALSE;
+            }
+            var para={"uid":user.uid, "old":hashPassword(old), "new":hashPassword(newPswd), "vcode":$("#vcode-input").val()};
+            $.ajax({
+                url:_ROOT_+"user/modifypswd.do", type:"post", data:para
+            }).done(function (d) {
+                status.text(d.msg);
+            }).fail(function (xhr) {
+                status.text("出现意外错误，请尝试刷新页面或验证码，错误码："+xhr.status);
+            }).always(function (){
+                $("img.vcode-img").trigger("click");
+            });
+            // $("#modify").modal("hide");
+            return FALSE;
+        }
+    </script>
+</head>
+<body>
+<div style="padding: 1em 0 0 1em;">
+    <p><strong>用户名：</strong><span id="uname"></span></p>
+    <p><strong>密码：</strong><input type="button" class="btn" id="modipass" value="点击修改"></p>
+    <p><strong>姓名：</strong><span id="name"></span></p>
+    <p><strong>手机号：</strong><span id="phone"></span></p>
+    <p><strong>身份：</strong><span id="role"></span></p>
+<!--TODO:管理员可直接修改个人信息(跳到个人信息修改页面)-->
+<input id="modify-data" class="btn" type="button" value="修改个人信息" style="display: none"/>
+</div>
+<div class="modal fade" id="modify-pswd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="myModalLabel">修改密码</h4>
+            </div>
+            <form class="modal-body" onsubmit="return submit_()">
+                <p><label>原密码：<input type="password" id="old-input" class="form-control" required/></label></p>
+                <p><label>新密码：<input type="password" id="new-input" class="form-control" maxlength="20"
+                                     required/></label></p>
+                <p><label>重复密码：<input type="password" id="repeat-input" class="form-control" max="20" required/></label>
+                </p>
+                <p><label>验证码：<input type="text" id="vcode-input" class="form-control" autocomplete="off" required/></label></p>
+                    <img class="vcode-img" src="../checkcode" alt="验证码" onclick="this.src='../checkcode?'+Math.random()"/>
+                <p class="status"></p>
+                <p class="modal-footer">
+                    <input type="button" class="btn exit" data-dismiss="modal" value="关闭">
+                    <input type="submit" id="dosubmit" class="btn btn-primary" value="提交更改">
+                </p>
+            </form>
+        </div><!-- /.modal-content -->
+    </div>
+</div>
+</body>
+</html>

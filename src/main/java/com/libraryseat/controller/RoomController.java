@@ -28,6 +28,33 @@ public class RoomController {
     @Lazy
     private UserService userService;
 
+    @RequestMapping(value = "/show.do",method = {RequestMethod.GET})
+    public String toRoomsPage(@RequestParam(required = false)String my,
+                              @RequestParam(required = false)Integer uid,
+                              HttpSession session,HttpServletResponse resp) throws IOException {
+        User u = (User) session.getAttribute("user");
+        if (u == null) {
+            resp.sendError(403,"校验失败");
+            return null;
+        }
+        resp.setHeader("Cache-Control","no-cache");
+        switch (u.getRole()) {
+            case 0:
+                return "/library/rooms-role0.html" + ((uid == null) ? "" : String.format("?uid=%d", uid));
+            case 1:
+                //如果my=1
+                if (my == null)
+                    my = "1";
+                if (!my.equals("1") && !my.equals("0")) {
+                    resp.sendError(400, "参数错误");
+                    return null;
+                }
+                return "/library/rooms-role1.html?my=" + my;
+            case 2:
+                return "/library/rooms-role2.html";
+        }
+        return null; //不会发生
+    }
     @RequestMapping(value = "/add.do",method = {RequestMethod.POST})
     @ResponseBody
     public void addRoom(String name, Integer admin, HttpServletResponse resp,HttpSession session) throws IOException {

@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //Userdao，加密工作放在service层
 //Uid存在的意义，主要是为了作为数值类型的主/外键存在，如果直接用varchar类型的username做主/外键可能对性能之类的有影响
@@ -78,6 +79,13 @@ public class UserDao extends BaseDao {
     public List<User> getUsers(int start,int rows) {
         String sql = "select * from users where 1=1";
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,new HashMap<>(0));
+    }
+
+    public List<User> getUsers(int start, int rows, short role) {
+        String sql = "select * from users where 1=1";
+        Map<String,String> condition = new HashMap<>(1);
+        condition.put("role",Short.toString(role));
+        return super.findByPage(sql,UserMapper.INSTANCE,start,rows,condition);
     }
 
     public List<User> getUsers(int start,int rows,String orderBy,Order order) {

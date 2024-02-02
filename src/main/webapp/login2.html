@@ -10,8 +10,7 @@
     <script>
         $(document).ready(function () {
             checkLogin(function (d) {
-                if(d.info!=null)
-                    document.location.href=_ROOT_+"welcome.html";
+                if(d.info!=null)    document.location.href=_ROOT_+"welcome.html";
             });
             $("input[name='vcode']").on("keyup paste blur",function (){
                 $(this).val($(this).val().replace(REGEXP_NOT_NUM,''));
@@ -29,7 +28,7 @@
                 return FALSE;
             }
             var params={
-                "phone":pswd_input.encodeb(),
+                "phone":pswd_input,
                 "vcode":vcode,
                 "token":Math.round(new Date().getTime()/1000)
             };
