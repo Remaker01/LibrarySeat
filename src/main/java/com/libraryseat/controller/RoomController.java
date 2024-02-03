@@ -66,7 +66,7 @@ public class RoomController {
         resp.setContentType("application/json");
         User adminAccount = userService.getUserById(admin);
         if (adminAccount == null||adminAccount.getRole() != 1) {
-            resp.sendError(400,"参数错误");
+            JsonUtil.writeResponse(new Response("/room/add.do","POST","指定的用户不存在或不是图书室管理员"), resp.getOutputStream());
             return;
         }
         String info = roomService.addRoom(name,admin);
@@ -93,12 +93,12 @@ public class RoomController {
             resp.sendError(403,"校验失败");
             return;
         }
+        resp.setContentType("application/json");
         User adminAccount = userService.getUserById(admin);
-        if (adminAccount.getRole() != 1) {
-            resp.sendError(400,"参数错误");
+        if (adminAccount==null||adminAccount.getRole() != 1) {
+            JsonUtil.writeResponse(new Response("/room/add.do","POST","指定的用户不存在或不是图书室管理员"), resp.getOutputStream());
             return;
         }
-        resp.setContentType("application/json");
         String info = roomService.updateRoom(id,name,admin);
         JsonUtil.writeResponse(new Response("/room/update.do","POST",info),resp.getOutputStream());
     }

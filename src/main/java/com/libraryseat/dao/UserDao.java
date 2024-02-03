@@ -68,7 +68,7 @@ public class UserDao extends BaseDao {
     }
 
     public User getUserByPhone(String phone) {
-        String sql = "select * from users where phone=?";
+        String sql = "select * from users where phone=? and valid=1";
         try{
             return template.queryForObject(sql,UserMapper.INSTANCE,phone);
         } catch (DataAccessException e) {
@@ -77,19 +77,19 @@ public class UserDao extends BaseDao {
     }
 
     public List<User> getUsers(int start,int rows) {
-        String sql = "select * from users where 1=1";
+        String sql = "select * from users where valid=1";
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,new HashMap<>(0));
     }
 
     public List<User> getUsers(int start, int rows, short role) {
-        String sql = "select * from users where 1=1";
+        String sql = "select * from users where valid=1";
         Map<String,String> condition = new HashMap<>(1);
         condition.put("role",Short.toString(role));
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,condition);
     }
 
     public List<User> getUsers(int start,int rows,String orderBy,Order order) {
-        String sql = "select * from users where 1=1";
+        String sql = "select * from users where valid=1";
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,new HashMap<>(0),orderBy,order);
     }
     @Override

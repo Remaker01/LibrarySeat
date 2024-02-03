@@ -39,7 +39,7 @@ public class RoomService {
             return "添加成功！";
         } catch (DataAccessException e) {
             LogUtil.log(LOGGER,e);
-            return "添加失败，请确认管理员存在！";
+            return "添加失败，请确认1.管理员存在！2.阅览室名称不与其他已存在阅览室相同。";
         }
     }
 

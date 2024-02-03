@@ -22,6 +22,7 @@
                 if(user==null) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
+                    $("#id").text(user.uid);
                     $("#uname").text(user.username);
                     $("#name").text(user.truename);
                     $("#phone").text(user.phone);
@@ -37,11 +38,9 @@
                 }
             });
             $("#modipass").on("click",function () {
-                $("#modify-pswd").modal("show");
-            });
-            $("input.exit[type='button']").on("click",function (){
                 $("#old-input,#new-input,#repeat-input,#vcode-input").val("");
                 $("p.status").text("");
+                $("#modify-pswd").modal("show");
             });
         });
         function submit_() {
@@ -72,6 +71,7 @@
 </head>
 <body>
 <div style="padding: 1em 0 0 1em;">
+    <p><strong>学号/工号：</strong><span id="id"></span></p>
     <p><strong>用户名：</strong><span id="uname"></span></p>
     <p><strong>密码：</strong><input type="button" class="btn" id="modipass" value="点击修改"></p>
     <p><strong>姓名：</strong><span id="name"></span></p>
@@ -98,7 +98,7 @@
                 <p class="status"></p>
                 <p class="modal-footer">
                     <input type="button" class="btn exit" data-dismiss="modal" value="关闭">
-                    <input type="submit" id="dosubmit" class="btn btn-primary" value="提交更改">
+                    <input type="submit" class="btn btn-primary" value="提交更改">
                 </p>
             </form>
         </div><!-- /.modal-content -->

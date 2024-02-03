@@ -19,6 +19,7 @@
                 if (user == null||user.role!==0) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
+                    connect();
                     initTable();
                 }
             });
@@ -42,11 +43,18 @@
                         "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'></td>");
                     tbody.appendChild(tr);
                 }
+                $("input[value='修改信息']").on("click",function (){
+                    var roomid=$(this).parent().siblings()[0].innerText;
+                    $("#room-id-text").text(roomid);
+                    $("#name-input,#admin-input").val("");
+                    $("#show-admin-text").text("");
+                    $("#modify-info").modal("show");
+                });
                 // $("table").addClass("table table-striped");
             });
             return FALSE;
         }
-        function doRemove(obj) {
+        function doRemove(obj) { //TODO:删除后发送通知，删除前输入密码确认
             if (confirm("确认删除吗，此阅览室所有座位和预定信息均会被删除，此过程不可逆！！")){
                 var td=$(obj).parent().siblings();
                 var id=td[0].innerText;
@@ -64,19 +72,49 @@
             var x;
             $.ajax({
                 url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":uid}, async:false
-            }).done(
-                function(d) {x=d;}
-            );
+            }).done(function(d) {
+                if(d.info!=null&&d.info.role!==1)//非管理员
+                    d.info=null;
+                x=d;
+            }).fail(function (){x=null;});
             return x;
         }
         function showAdmin(obj){
             var $obj=$(obj);
             var u=getAdmin($obj.attr("value")).info;
-            console.log(u);
+            // console.log(u);
             $("#admin-name").text(u.truename);
             $("#admin-uname").text(u.username);
             $("#admin-phone").text(u.phone);
             $("#admin-info").modal("show");
+        }
+        var connect=function () {
+            $("#admin-input").on("keyup paste blur",function() {
+                var elem=$(this);
+                elem.val(elem.val().replace(REGEXP_NOT_NUM,''));
+                if(elem.val().length>1) {
+                    var d=getAdmin(elem.val());
+                    if (d==null)
+                        $("#show-admin-text").text("出错了！请尝试刷新页面");
+                    else if(d.info==null)
+                        $("#show-admin-text").text("用户不存在,或不是管理员！");
+                    else
+                        $("#show-admin-text").text("用户名："+d.info.username+" 姓名："+d.info.truename);
+                }
+            });
+            return FALSE;
+        }
+        function submit_modify(){
+            var name=$("#name-input").val(),admin=$("#admin-input").val(),id=$("#room-id-text").text();
+            var param={"id":id, "name":name, "admin":admin}; //TODO:管理员修改后发送通知
+            $.ajax({
+                url:_ROOT_+"room/update.do", type:"post", data:param
+            }).done(function (d){
+                $("p.status").text(d.msg);
+            }).fail(function (xhr){
+                $("p.status").text("出错了！请使用其他名称，或刷新页面重试，错误码"+xhr.status);
+            });
+            return FALSE;
         }
     </script>
 </head>
@@ -98,7 +136,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="modal-title">管理员信息</h4>
+                <h4 class="modal-title">管理员信息</h4>
             </div>
             <form class="modal-body">
                 <p>用户名：<span id="admin-uname"></span> </p>
@@ -106,6 +144,25 @@
                 <p>手机号：<span id="admin-phone"></span></p>
                 <p class="modal-footer">
                     <input type="button" class="btn" data-dismiss="modal" value="关闭">
+                </p>
+            </form>
+        </div><!-- /.modal-content -->
+    </div>
+</div>
+<div class="modal fade" id="modify-info" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modal-title">修改阅览室</h4>
+            </div>
+            <form class="modal-body" onsubmit="return submit_modify()">
+                <p>图书室编号：<span id="room-id-text"></span> </p>
+                <p><label>名称：<input id="name-input" class="form-control" type="text" maxlength="20" required autocomplete="off"/></label></p>
+                <p><label>管理员工号：<input id="admin-input" class="form-control" type="text" required autocomplete="off"/></label></p>
+                <p id="show-admin-text" style="font-size: small"></p>
+                <p class="modal-footer">
+                    <input type="button" class="btn" data-dismiss="modal" value="关闭">
+                    <input type="submit" class="btn btn-primary" value="提交">
                 </p>
             </form>
         </div><!-- /.modal-content -->

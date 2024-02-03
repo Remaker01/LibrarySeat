@@ -22,7 +22,7 @@ import com.libraryseat.utils.JsonUtil;
 public class ReservationController {
     @Autowired
     private ReservationService reservationService;
-    private DateFormat formatter = null;
+    private static DateFormat formatter = null;
 
     public String currentReservation(HttpSession session) {
         //TODO:返回'当前预定'的视图
@@ -55,7 +55,7 @@ public class ReservationController {
             return;
         }
         if (formatter == null)
-            formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         try {
             String info = reservationService.signIn(seatId,roomid,u.getUid(),formatter.parse(time));
             JsonUtil.writeResponse(new Response("/reservation/signin.do","POST",info),resp.getOutputStream());
@@ -73,7 +73,7 @@ public class ReservationController {
             return;
         }
         if (formatter == null)
-            formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         try {
             String info = reservationService.signOut(seatId,roomid,u.getUid(),formatter.parse(time));
             JsonUtil.writeResponse(new Response("/reservation/signin.do","POST",info),resp.getOutputStream());
