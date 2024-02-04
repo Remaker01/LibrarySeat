@@ -1,8 +1,9 @@
 package com.libraryseat.dao;
 
 import com.libraryseat.utils.JDBCUtil;
-import com.libraryseat.utils.LogUtil;
 import com.libraryseat.utils.VerifyUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -10,16 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public abstract class BaseDao {
     protected final JdbcTemplate template = new JdbcTemplate(JDBCUtil.getDataSource());
-    private static final Logger LOGGER = Logger.getLogger(BaseDao.class.getName());
-    static {
-        LogUtil.initLogger(LOGGER);
-        LOGGER.setLevel(Level.FINE);
-    }
+    private static final Logger LOGGER = LogManager.getLogger(BaseDao.class.getName());
     public enum Order {
         ASCEND("ASC"),DESCEND("DESC");
         final String value;
@@ -69,7 +64,8 @@ public abstract class BaseDao {
                 params.add(value);//？条件的值
             }
         }
-        LogUtil.log(LOGGER,Level.FINE,sb.toString());
+//        LogUtil.log(LOGGER,Level.FINE,sb.toString());
+        LOGGER.info(sb.toString());
         //添加分页查询
         sb.append(" limit ?,? ");
         if (VerifyUtil.verifyNonEmptyStrings(orderColumn)&&order != null) {

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -70,7 +69,7 @@ public class MessageController {
         if (pageno == null)
             pageno = 1;
         List<Message> messages = messageService.getMessageSummaries(pageno,limit);
-        JsonUtil.writeList(messages,resp.getOutputStream());
+        JsonUtil.writeCollection(messages,resp.getOutputStream());
     }
 
     public void getMessage(Integer uid, String time, HttpServletResponse resp,HttpSession session) throws IOException {

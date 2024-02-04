@@ -42,7 +42,7 @@
                 <tr>
                     <td>
                         <img src="../img/RC.jpg" width="100px" height="100px"
-                             id="img1" onclick="$('#yem')[0].src='about:blank'">
+                             id="img1" onclick="$('#yem')[0].src='about:blank'" alt="图书馆logo">
                     </td>
                 </tr>
             </table>
@@ -52,7 +52,8 @@
                 <li class="level1">
                     <a href="#none"><em class="ico ico2"></em>阅览室管理<i></i></a>
                     <ul class="level2">
-                        <li><a href="../room/show.do" target="yem">阅览室信息查看</a></li>
+                        <li><a href="../room/show.do?my=0" target="yem">全部阅览室</a></li>
+                        <li><a href="../room/show.do?my=1" target="yem">我管理的阅览室</a></li>
                     </ul>
                 </li>
                 <li class="level1">
@@ -66,8 +67,8 @@
                 <li class="level1">
                     <a href="#none"><em class="ico ico1"></em>用户管理<i></i></a>
                     <ul class="level2">
-                        <li><a href="#none" target="yem">用户信息查看</a></li>
-                        <li><a href="profile.html" target="yem">修改个人信息</a></li>
+                        <li><a href="users.html" target="yem">用户信息查看</a></li>
+                        <li><a href="profile.html" target="yem">个人信息管理</a></li>
                     </ul>
                 </li>
             </ul>

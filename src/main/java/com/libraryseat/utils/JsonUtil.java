@@ -9,8 +9,8 @@ import com.libraryseat.pojo.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,11 +36,11 @@ public class JsonUtil {
         }
     }
 
-    public static void writeList(List<?> list, OutputStream stream) throws IOException {
-        MAPPER.writeValue(stream,list);
+    public static void writeCollection(Collection<?> collection, OutputStream stream) throws IOException {
+        MAPPER.writeValue(stream,collection);
     }
 
-    public static void writeReservations(List<Reservation> reservations, OutputStream stream) throws IOException {
+    public static void writeReservations(Collection<Reservation> reservations, OutputStream stream) throws IOException {
         JsonGenerator generator = newGenerator(stream);
         generator.writeStartArray();
         if(reservations != null) {

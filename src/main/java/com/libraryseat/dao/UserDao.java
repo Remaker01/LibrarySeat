@@ -32,7 +32,7 @@ public class UserDao extends BaseDao {
     }
 
     public User getUserByUid(int uid) {
-        String sql = "select * from users where uid=? and valid=1";
+        String sql = "select * from users where uid=?";
         try{
             return template.queryForObject(sql,UserMapper.INSTANCE,uid);
         } catch (DataAccessException e) {
@@ -41,7 +41,7 @@ public class UserDao extends BaseDao {
     }
 
     public String getUsernameByUid(int uid) {
-        String sql = "select username from users where uid=? and valid=1";
+        String sql = "select username from users where uid=?";
         try {
             return template.queryForObject(sql,String.class,uid);
         } catch (DataAccessException e) {
@@ -50,7 +50,7 @@ public class UserDao extends BaseDao {
     }
 
     public User getUserByUsername(String uname) {
-        String sql = "select * from users where username=? and valid=1";
+        String sql = "select * from users where username=? and uid>0";
         try {
             return template.queryForObject(sql, UserMapper.INSTANCE, uname);
         } catch (DataAccessException e) {
@@ -59,7 +59,7 @@ public class UserDao extends BaseDao {
     }
 
     public User getUserByUsernameAndPswd(String uname,String pswd) {
-        String sql = "select * from users where username=? and `password`=? and valid=1";
+        String sql = "select * from users where username=? and `password`=? and uid>0";
         try {
             return template.queryForObject(sql, UserMapper.INSTANCE, uname, pswd);
         } catch (DataAccessException e) {
@@ -68,7 +68,7 @@ public class UserDao extends BaseDao {
     }
 
     public User getUserByPhone(String phone) {
-        String sql = "select * from users where phone=? and valid=1";
+        String sql = "select * from users where phone=? and uid>0";
         try{
             return template.queryForObject(sql,UserMapper.INSTANCE,phone);
         } catch (DataAccessException e) {
@@ -77,19 +77,19 @@ public class UserDao extends BaseDao {
     }
 
     public List<User> getUsers(int start,int rows) {
-        String sql = "select * from users where valid=1";
+        String sql = "select * from users where uid>0";
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,new HashMap<>(0));
     }
 
     public List<User> getUsers(int start, int rows, short role) {
-        String sql = "select * from users where valid=1";
+        String sql = "select * from users where uid>0";
         Map<String,String> condition = new HashMap<>(1);
         condition.put("role",Short.toString(role));
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,condition);
     }
 
     public List<User> getUsers(int start,int rows,String orderBy,Order order) {
-        String sql = "select * from users where valid=1";
+        String sql = "select * from users where uid>0";
         return super.findByPage(sql,UserMapper.INSTANCE,start,rows,new HashMap<>(0),orderBy,order);
     }
     @Override
@@ -113,10 +113,10 @@ public class UserDao extends BaseDao {
             throw new IllegalArgumentException();
         User user = (User) o;
         if(user.getUid() != 0) {
-            String sql = "update users set valid=0,username=username+'#' where uid=?";
+            String sql = "update users set uid=-uid where uid=?"; //删除用户后将uid变为负数，关联表查的时候过滤一下
             template.update(sql, user.getUid());
         } else {
-            String sql = "update users set valid=0,username=username+'#' where username=?";
+            String sql = "update users set uid=-uid where username=?";
             template.update(sql,user.getUsername());
         }
     }
@@ -126,7 +126,7 @@ public class UserDao extends BaseDao {
         if(!(o instanceof User))
             throw new IllegalArgumentException();
         User user = (User) o;
-        String sql = "update users set username=?, truename=?,`password`=?,phone=? where uid=? and valid=1";
+        String sql = "update users set username=?, truename=?,`password`=?,phone=? where uid=?";
         return template.update(sql,user.getUsername(), user.getTruename(), user.getPassword(), user.getPhone(), user.getUid());
     }
 }

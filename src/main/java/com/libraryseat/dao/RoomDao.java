@@ -21,7 +21,7 @@ public class RoomDao extends BaseDao{
     @Override
     public void delete(Object o) { //TODO:要不要改成逻辑删除？
         assert (o instanceof Room);
-        String sql = "delete from room where roomid=?";
+        String sql = "delete from room where roomid=? and `admin`>0";
         template.update(sql,((Room) o).getRoomid());
     }
 
@@ -29,7 +29,7 @@ public class RoomDao extends BaseDao{
     public int update(Object o) {
         assert (o instanceof Room);
         Room room = (Room) o;
-        String sql = "update room set roomname=?,`admin`=? where roomid=?";
+        String sql = "update room set roomname=?,`admin`=? where roomid=? and `admin`>0";
         return template.update(sql,room.getRoomname(),room.getAdmin(),room.getRoomid());
     }
 
@@ -39,7 +39,7 @@ public class RoomDao extends BaseDao{
     }
 
     public int getRoomCount() {
-        String sql = "select count(*) from room";
+        String sql = "select count(*) from room where `admin`>0";
         Integer count = template.queryForObject(sql,Integer.class);
         if (count == null)
             return -1;
@@ -47,12 +47,12 @@ public class RoomDao extends BaseDao{
     }
 
     public List<Room> getAllRooms() {
-        String sql = "select * from room";
+        String sql = "select * from room where `admin`>0";
         return template.query(sql, MAPPER);
     }
 
     public Room getRoomById(int id) {
-        String sql = "select * from room where roomid=?";
+        String sql = "select * from room where roomid=? and `admin`>0";
         try {
             return template.queryForObject(sql, MAPPER,id);
         } catch (DataAccessException e) {

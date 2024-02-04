@@ -6,6 +6,7 @@ import com.libraryseat.pojo.User;
 import com.libraryseat.services.RoomService;
 import com.libraryseat.services.UserService;
 import com.libraryseat.utils.JsonUtil;
+import com.libraryseat.utils.VerifyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
@@ -43,7 +44,7 @@ public class RoomController {
                 return "/library/rooms-role0.html" + ((uid == null) ? "" : String.format("?uid=%d", uid));
             case 1:
                 //如果my=1
-                if (my == null)
+                if (!VerifyUtil.verifyNonEmptyStrings(my))
                     my = "1";
                 if (!my.equals("1") && !my.equals("0")) {
                     resp.sendError(400, "参数错误");
@@ -113,7 +114,7 @@ public class RoomController {
         resp.setContentType("application/json");
         if(admin == null) {
             List<Room> rooms = roomService.getRooms();
-            JsonUtil.writeList(rooms,resp.getOutputStream());
+            JsonUtil.writeCollection(rooms,resp.getOutputStream());
         }
         else {
             //试图获取某个管理员管理的图书室信息，需要校验管理员身份
@@ -122,7 +123,7 @@ public class RoomController {
                 return;
             }
             List<Room> rooms = roomService.getRoomsByAdministrator(admin);
-            JsonUtil.writeList(rooms,resp.getOutputStream());
+            JsonUtil.writeCollection(rooms,resp.getOutputStream());
         }
     }
 }

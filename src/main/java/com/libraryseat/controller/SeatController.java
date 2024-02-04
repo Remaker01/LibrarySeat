@@ -79,6 +79,6 @@ public class SeatController {
             page = 1;
         resp.setContentType("application/json");
         List<Seat> seats = seatService.getSeatsInRoom(roomid,page);
-        JsonUtil.writeList(seats,resp.getOutputStream());
+        JsonUtil.writeCollection(seats,resp.getOutputStream());
     }
 }

@@ -3,7 +3,6 @@ package com.libraryseat.controller;
 import com.libraryseat.Response;
 import com.libraryseat.pojo.User;
 import com.libraryseat.services.UserService;
-import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,7 +203,7 @@ public class UserController {
                           HttpServletResponse resp,
                           HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
-        if(u == null||u.getRole() != 0) {
+        if(u == null||u.getRole() == 2) {
             resp.sendError(403,"校验失败！");
             return;
         }
@@ -212,7 +211,7 @@ public class UserController {
             pageno = 1;
         resp.setContentType("application/json");
         List<User> users = (role == null) ? userService.getUsers(pageno) : userService.getUsersByRole(pageno,role);
-        JsonUtil.writeList(users,resp.getOutputStream());
+        JsonUtil.writeCollection(users,resp.getOutputStream());
     }
     @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST,RequestMethod.GET})
     @ResponseBody

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--页面参数：pageno,role(均可选)-->
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <title>用户信息管理</title>
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script>
+        var user,pageno;
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                user=d.info;
+                pageno=getCurrentParam("pageno");
+                if(user==null||user.role===2){
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                }else {
+                    initTable();
+                    connect();
+                }
+            });
+        });
+        function connect(){
+            if (pageno === '')
+                pageno = '1';
+            var npage=parseInt(pageno),role=getCurrentParam("role");
+            //下一页
+            $("#next-btn").on("click",function (){
+                document.location.href="users.html?pageno="+(npage+1)+"&role="+role;
+            });
+            //页数
+            $("#page-input").on("keyup paste blur",function (){
+                var val=$(this).val();
+                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+            });
+            //上一页
+            if (pageno === '1')
+                $("#prev-btn").attr("disabled",true);
+            else {
+                $("#prev-btn").on("click",function (){
+                    document.location.href="users.html?pageno="+(npage-1)+"&role="+role;
+                });
+            }
+            //第几页
+            $("#current-page-text").text("当前第"+pageno+"页");
+            //select
+            $("label>select>option[value='"+role+"']").attr("selected",true);
+            $("label>select").on("change",function (){
+                var role2=$(this).val();
+                if (role2!=="-1")
+                    document.location.href="users.html?pageno="+pageno+"&role="+role2;
+                else
+                    document.location.href="users.html?pageno="+pageno;
+            });
+        }
+        function initTable(){
+            if (user.role===0){
+                var th=document.createElement("th");th.innerText="操作";
+                $("table>thead>tr")[0].appendChild(th);
+            }
+            var role=getCurrentParam("role"),tbody=$("table>tbody")[0];
+            var param={};
+            if (pageno.length!==0)    param.pageno=pageno;
+            if (role.length!==0)      param.role=role;
+            $.ajax({
+                url:_ROOT_+"user/listusers.do", type:"post", data:param
+            }).done(function (d){
+                for(var i=0; i<d.length; i++){
+                    var elem=d[i];
+                    var tr=document.createElement("tr");
+                    tr.innerHTML+="<td>"+elem.uid+"</td>";
+                    tr.innerHTML+="<td>"+elem.username+"</td>";
+                    tr.innerHTML+="<td>"+elem.truename+"</td>";
+                    tr.innerHTML+="<td>"+elem.gender+"</td>";
+                    tr.innerHTML+="<td>"+elem.phone+"</td>";
+                    switch (elem.role) {
+                        case 0:tr.innerHTML+="<td>超级管理员</td>";break;
+                        case 1:tr.innerHTML+="<td>阅览室管理员</td>";break;
+                        case 2:tr.innerHTML+="<td>学生</td>";
+                    }
+                    if (user.role===0){
+                        tr.innerHTML+="<td>" +
+                            "<input type='button' class='btn btn-primary' value='修改'> <input type='button' class='btn btn-danger' value='删除'>" +
+                            "</td>"
+                    }
+                    tbody.appendChild(tr);
+                }
+            });
+            return FALSE;
+        }
+        function toPage() {
+            var newPage=$("#page-input").val();
+            document.location.href="users.html?pageno="+newPage+"&role="+getCurrentParam("role");
+            return FALSE;
+        }
+    </script>
+</head>
+<body>
+<label>按身份筛选：<select class="form-control" style="display: inline;width: 180px;">
+    <option value="-1">全部</option>
+    <option value="0">超级管理员</option>
+    <option value="1">阅览室管理员</option>
+    <option value="2">学生</option>
+</select>
+</label>
+<span style="font-size: small" id="current-page-text"></span>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>学号/工号</th>
+        <th>用户名</th>
+        <th>姓名</th>
+        <th>性别</th>
+        <th>手机号</th>
+        <th>身份</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<div class="to-page">
+    <input type="button" class="btn" id="prev-btn" value="上一页"/>
+    <form onsubmit="return toPage()">
+        跳到第<input type="text" id="page-input" class="form-control" maxlength="4" autocomplete="off" required/>页
+        <input type="submit" class="btn" value="GO"/>
+    </form>
+    <input type="button" class="btn" id="next-btn" value="下一页"/>
+</div>
+</body>
+</html>

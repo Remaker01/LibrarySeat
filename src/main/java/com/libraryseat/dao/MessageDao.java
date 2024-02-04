@@ -37,12 +37,12 @@ public class MessageDao extends BaseDao {
     }
 
     public List<Message> getMessages(int start,int rows) {
-        String sql = "select * from message where 1=1";
+        String sql = "select * from message where uid>0";
         return super.findByPage(sql, MAPPER,start,rows,new HashMap<>(0));
     }
 
     public List<Message> getMessages(int start,int rows,String orderBy,Order order) {
-        String sql = "select * from message where 1=1";
+        String sql = "select * from message where uid>0";
         return super.findByPage(sql, MAPPER,start,rows,new HashMap<>(0),orderBy,order);
     }
 

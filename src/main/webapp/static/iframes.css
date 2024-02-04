@@ -1,3 +1,10 @@
 body{margin-left: 4px;margin-top: 4px;}
 p.status{color: red;font-size: small;}
 input.form-control{display: inline;max-width: 240px;}
+table.table{position: relative;left: 1%;width: 98%;}
+div.to-page{
+    position: relative;
+    float: right;
+}
+div.to-page input[type='text']{width: 50px;}
+div.to-page *{display: inline;}

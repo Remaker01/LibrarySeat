@@ -1,12 +1,96 @@
 <!DOCTYPE html>
-<!--页面上给个选项，让管理员选择是查看自己管理的阅览室信息（默认）还是所有信息。自己的阅览室信息就在表格后新增一列“操作”，内容“查看空闲座位”
-阅览室管理员不能修改阅览室信息，即使是自己管理的-->
+<!--阅览室管理员不能修改阅览室信息，即使是自己管理的-->
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
     <title>阅览室管理</title>
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script>
+        var my=getCurrentParam("my"),user;
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                user=d.info;
+                if(user==null||user.role!==1) {
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else{
+                    initTable();
+                }
+            });
+        });
+        function initTable() {
+            //1.获取room信息
+            if (my==='1') {
+                $("table>thead th")[2].innerText="操作";
+            }
+            var uid=getCurrentParam("uid"),tbody=$("table>tbody")[0];
+            var uri=(my==='1')?("room/listrooms.do?admin="+user.uid):("room/listrooms.do");
+            $.ajax({
+                url:_ROOT_+uri, type:"post", data: {"admin":uid}
+            }).done(function (d) {
+                for(var i=0; i<d.length; i++) {
+                    var elem=d[i];
+                    var tr=document.createElement("tr");
+                    tr.innerHTML+="<td>"+elem.roomid+"</td>";
+                    tr.innerHTML+=("<td>"+elem.roomname+"</td>");
+                    if (my!=='1')
+                        tr.innerHTML+=("<td><a href='#' onclick='showAdmin(this)' value='"+elem.admin+"'>点击查看</a></td>");
+                    else {
+                        tr.innerHTML += ("<td><input type='button' class='btn btn-primary' value='查看座位'> ");
+                    }
+                    tbody.appendChild(tr);
+                }
+            });
+            return FALSE;
+        }
+        function showAdmin(obj){
+            var $obj=$(obj);
+            $.ajax({
+                url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":$obj.attr("value")}
+            }).done(function (d){
+                var u=d.info;
+                // console.log(u);
+                $("#admin-name").text(u.truename);
+                $("#admin-uname").text(u.username);
+                $("#admin-phone").text(u.phone);
+                $("#admin-info").modal("show");
+            });
+        }
+    </script>
 </head>
 <body>
-
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>阅览室号</th>
+        <th>阅览室名</th>
+        <th>管理员</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div class="modal fade" id="admin-info" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">管理员信息</h4>
+            </div>
+            <form class="modal-body">
+                <p>用户名：<span id="admin-uname"></span> </p>
+                <p>姓名：<span id="admin-name"></span></p>
+                <p>手机号：<span id="admin-phone"></span></p>
+                <p class="modal-footer">
+                    <input type="button" class="btn" data-dismiss="modal" value="关闭">
+                </p>
+            </form>
+        </div><!-- /.modal-content -->
+    </div>
+</div>
 </body>
 </html>
