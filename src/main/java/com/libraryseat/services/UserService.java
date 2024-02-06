@@ -1,5 +1,7 @@
 package com.libraryseat.services;
 
+import com.libraryseat.dao.ReservationDao;
+import com.libraryseat.dao.RoomDao;
 import com.libraryseat.dao.UserDao;
 import com.libraryseat.pojo.User;
 import com.libraryseat.utils.EncryptUtil;
@@ -7,6 +9,7 @@ import com.libraryseat.utils.LogUtil;
 import com.libraryseat.utils.cache.Cache;
 import com.libraryseat.utils.cache.LRUCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +26,12 @@ public class UserService {
     public static final int PAGE_SIZE = 20;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    @Lazy
+    private ReservationDao reservationDao;
+    @Autowired
+    @Lazy
+    private RoomDao roomDao;
 
     /**给出用户信息，增加用户*/
     public String addUser(String[] info,short role) {
@@ -31,8 +40,12 @@ public class UserService {
                 trueName = info[2],
                 gender = info[3],
                 phone = info[4];
-        userDao.add(new User(uname,pswd,trueName,gender,phone,role));
-        return "添加成功！";
+        try {
+            userDao.add(new User(uname, pswd, trueName, gender, phone, role));
+            return "添加成功！";
+        } catch (DataAccessException e){
+            return "添加失败,用户名或手机号可能已存在！";
+        }
     }
     /**
      * 修改用户信息
@@ -59,6 +72,13 @@ public class UserService {
             u = userDao.getUserByUid(uid);
         if (u == null)
             return "用户不存在！";
+        if(u.getRole()==2) {
+            if (reservationDao.getActiveReservationCountByUser(uid) > 0)
+                return "删除失败，该用户尚有未签退/放弃的座位预定信息！";
+        } else if (u.getRole()==1) {
+            if(roomDao.getRoomsByAdministrator(uid).size()>0)
+                return "删除失败，该用户仍有正在管理的阅览室！";
+        }
         //2.从缓存中删除
         try {
             userDao.delete(u);
@@ -69,7 +89,7 @@ public class UserService {
             return "删除成功！";
         } catch (DataAccessException e) {
             LogUtil.log(LOGGER,e);
-            return "删除失败，请确认该用户不是任何阅览室的管理员！";
+            return "删除失败，请稍后重试！";
         }
     }
 
@@ -80,6 +100,13 @@ public class UserService {
             u = userDao.getUserByUsername(username); //不用put进去了
         if(u == null)
             return "用户不存在！";
+        if(u.getRole()==2) {
+            if (reservationDao.getActiveReservationCountByUser(u.getUid()) > 0)
+                return "删除失败，该用户尚有未签退/放弃的座位预定信息！";
+        } else if (u.getRole()==1) {
+            if(roomDao.getRoomsByAdministrator(u.getUid()).size()>0)
+                return "删除失败，该用户仍有正在管理的阅览室！";
+        }
         //2.从2个缓存中删除。
         try {
             userDao.delete(u);
@@ -92,7 +119,7 @@ public class UserService {
             return "删除成功！";
         } catch (DataAccessException e) {
             LogUtil.log(LOGGER,e);
-            return "删除失败，请确认该用户不是任何阅览室的管理员！";
+            return "删除失败，请稍后重试！";
         }
     }
     /**执行登录动作，返回登录的用户。若登录失败（密码错误等），返回null*/

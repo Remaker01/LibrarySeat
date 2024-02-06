@@ -1,6 +1,7 @@
 var _ROOT_ = "/LibrarySeat/",FALSE = (Math.random()>1);
 var REGEXP_NOT_NUM = /[^\d]/g,REGEXP_NUM = /[\d]/g,REGEXP_PASS=/^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{7,20}$/;
-var PASS_REQUIREMENT = "密码长度不得小于7位或大于20位，且须由数字、大小写字母、特殊字符中至少2种字符组成";
+var REGEXP_USERNAME=/^[a-zA-Z]\w/g;
+var PASS_REQUIREMENT = "密码长度不得小于7位或大于20位，且须由数字、大小写字母、特殊字符中至少2种字符组成",USERNAME_REQUIREMENT="用户名必须由数字、字母、下划线组成且只能以字母开头";
 function checkPhone(str){
     if (typeof str !== "string")
         return false;

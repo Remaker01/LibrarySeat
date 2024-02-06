@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<!--页面参数：pageno,role(均可选)-->
+<!DOCTYPE html><!--页面参数：pageno,role(均可选)-->
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -58,6 +57,7 @@
                 else
                     document.location.href="users.html?pageno="+pageno;
             });
+            return FALSE;
         }
         function initTable(){
             if (user.role===0){
@@ -85,9 +85,13 @@
                         case 2:tr.innerHTML+="<td>学生</td>";
                     }
                     if (user.role===0){
-                        tr.innerHTML+="<td>" +
-                            "<input type='button' class='btn btn-primary' value='修改'> <input type='button' class='btn btn-danger' value='删除'>" +
-                            "</td>"
+                        if(elem.role!==0)
+                            tr.innerHTML+="<td>" +
+                                "<input type='button' class='btn btn-primary' value='修改'> " +
+                                "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'>" +
+                                "</td>";
+                        else
+                            tr.innerHTML+="<td> -- </td>";
                     }
                     tbody.appendChild(tr);
                 }
@@ -98,6 +102,19 @@
             var newPage=$("#page-input").val();
             document.location.href="users.html?pageno="+newPage+"&role="+getCurrentParam("role");
             return FALSE;
+        }
+        function doRemove(obj) {
+            var td=$(obj).parent().siblings()[0];
+            if (confirm("确认删除此用户吗？此操作不可逆！！")){
+                // console.log(td.innerText);
+                $.ajax({
+                    url: _ROOT_+"user/delete.do", type: "post", data: {"uid":td.innerText}
+                }).done(function (d) {
+                    $("p.status").text(d.msg);
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                });
+            }
         }
     </script>
 </head>
@@ -123,6 +140,7 @@
     </thead>
     <tbody></tbody>
 </table>
+<p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">

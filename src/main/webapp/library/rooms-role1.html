@@ -28,10 +28,10 @@
             if (my==='1') {
                 $("table>thead th")[2].innerText="操作";
             }
-            var uid=getCurrentParam("uid"),tbody=$("table>tbody")[0];
-            var uri=(my==='1')?("room/listrooms.do?admin="+user.uid):("room/listrooms.do");
+            var tbody=$("table>tbody")[0];
+            // var uri=(my==='1')?("room/listrooms.do?admin="+user.uid):("room/listrooms.do");
             $.ajax({
-                url:_ROOT_+uri, type:"post", data: {"admin":uid}
+                url:_ROOT_+"room/listrooms.do", type:"post", data: (my === '1')?{"admin":user.uid}:null
             }).done(function (d) {
                 for(var i=0; i<d.length; i++) {
                     var elem=d[i];

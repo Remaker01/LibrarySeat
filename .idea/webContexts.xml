@@ -10,6 +10,8 @@
         <entry key="file://$PROJECT_DIR$/src/main/webapp/library/room-admin.html" value="file://$PROJECT_DIR$/src/main/webapp/library" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/library/rooms-role0.html" value="file://$PROJECT_DIR$/src/main/webapp/library" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/library/rooms-role1.html" value="file://$PROJECT_DIR$/src/main/webapp/library" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/library/user_add.html" value="file://$PROJECT_DIR$/src/main/webapp/library" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/library/users.html" value="file://$PROJECT_DIR$/src/main/webapp/library" />
       </map>
     </option>
   </component>

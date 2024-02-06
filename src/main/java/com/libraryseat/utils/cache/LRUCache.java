@@ -2,7 +2,6 @@ package com.libraryseat.utils.cache;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-//LRU Cache类。其实是为了加进毕设（学校毕设要求加算法）的项目里造的轮子。
 /**
  * 实现了LRU淘汰算法的缓存。支持写回式策略。
  */
