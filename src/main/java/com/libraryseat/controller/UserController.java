@@ -177,18 +177,16 @@ public class UserController {
             return;
         }
         String uid = params.get("uid"),uname = params.get("uname"),trueName = params.get("truename"),phone = params.get("phone");
-        int uid_;
         try{
-            uid_ = Integer.parseInt(uid);
+            int uid_ = Integer.parseInt(uid);
+            resp.setContentType("application/json");
+            User u = userService.getUserById(uid_); //不能直接new不然密码不正确
+            u.setUsername(uname);u.setTruename(trueName);u.setPhone(phone);
+            String info = userService.updateUser(u);
+            JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
         } catch (RuntimeException e) {
             resp.sendError(400,"参数错误！");
-            return;
         }
-        resp.setContentType("application/json");
-        User u = userService.getUserById(uid_);
-        u.setUsername(uname);u.setTruename(trueName);u.setPhone(phone);
-        String info = userService.updateUser(u);
-        JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
     }
     @RequestMapping(value = "/exit.do",method = {RequestMethod.GET})
     public String exit(HttpSession session) {

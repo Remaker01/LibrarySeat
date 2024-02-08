@@ -5,9 +5,10 @@ import com.libraryseat.dao.RoomDao;
 import com.libraryseat.dao.UserDao;
 import com.libraryseat.pojo.User;
 import com.libraryseat.utils.EncryptUtil;
-import com.libraryseat.utils.LogUtil;
 import com.libraryseat.utils.cache.Cache;
 import com.libraryseat.utils.cache.LRUCache;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
@@ -15,14 +16,13 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 public class UserService {
     private static final Cache<String,User> userNameCache = new LRUCache<>(60);
     private static final Cache<Integer,User> idCache = new LRUCache<>(60);
-    private static final Logger LOGGER = Logger.getLogger(UserService.class.getName());
-    static{LogUtil.initLogger(LOGGER);}
+    private static final Cache<String,User> phoneCache = new LRUCache<>(60);
+    private static final Logger LOGGER = LogManager.getLogger(UserService.class.getName());
     public static final int PAGE_SIZE = 20;
     @Autowired
     private UserDao userDao;
@@ -48,17 +48,21 @@ public class UserService {
         }
     }
     /**
-     * 修改用户信息
+     * 修改用户信息，假设密码已经过加密<br>
      * 可以修改的信息有：1.用户名（仅超管），2.密码（不要通过此处修改，用下面修改密码的方法），3.真实姓名，4.手机号
      */
     public String updateUser(User u) {
-        String uname = u.getUsername();
         int uid = u.getUid(); //TODO:这个uid是否总是正确？
+        if(u.getRole()==2) {
+            if (reservationDao.getActiveReservationCountByUser(u.getUid()) > 0)
+                return "更新失败，该用户尚有未签退/放弃的座位预定信息！";
+        }
         int res = userDao.update(u) ;
         if(res != 0) {
             synchronized (this) {
-                userNameCache.put(uname, u);
+                userNameCache.put(u.getUsername(), u);
                 idCache.put(uid, u);
+                phoneCache.put(u.getPhone(),u);
             }
             return "更新成功！";
         }
@@ -85,10 +89,11 @@ public class UserService {
             synchronized (this) {
                 userNameCache.invalidate(u.getUsername());
                 idCache.invalidate(uid);
+                phoneCache.invalidate(u.getPhone());
             }
             return "删除成功！";
         } catch (DataAccessException e) {
-            LogUtil.log(LOGGER,e);
+            LOGGER.error("",e);
             return "删除失败，请稍后重试！";
         }
     }
@@ -115,10 +120,11 @@ public class UserService {
                 userNameCache.invalidate(username);
                 //从缓存2中删除
                 idCache.invalidate(u.getUid());
+                phoneCache.invalidate(u.getPhone());
             }
             return "删除成功！";
         } catch (DataAccessException e) {
-            LogUtil.log(LOGGER,e);
+            LOGGER.error("",e);
             return "删除失败，请稍后重试！";
         }
     }
@@ -138,7 +144,12 @@ public class UserService {
     /**使用手机号+验证码登录，也可用于忘记密码时寻找密码*/
     public User loginByPhone(String phone) {
         //1.获取用户名
-        return userDao.getUserByPhone(phone);
+        User u = phoneCache.get(phone);
+        if (u == null){
+            u = userDao.getUserByPhone(phone);
+            phoneCache.put(phone,u);
+        }
+        return u;
     }
 
     public User getUserById(int uid) {

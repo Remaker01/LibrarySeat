@@ -65,7 +65,6 @@ public abstract class BaseDao {
             }
         }
 //        LogUtil.log(LOGGER,Level.FINE,sb.toString());
-        LOGGER.info(sb.toString());
         //添加分页查询
         sb.append(" limit ?,? ");
         if (VerifyUtil.verifyNonEmptyStrings(orderColumn)&&order != null) {
@@ -74,6 +73,7 @@ public abstract class BaseDao {
         //添加分页查询参数值
         params.add(start);
         params.add(rows);
+        LOGGER.debug(sb.toString());
         return template.query(sb.toString(), rowMapper,params.toArray());
     }
 }

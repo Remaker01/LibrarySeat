@@ -21,11 +21,10 @@ public class JDBCUtil {
             Context initContext = new InitialContext();
             Context context = (Context) initContext.lookup("java:comp/env");
             ds = (DataSource) context.lookup("/jdbc/library");
-            System.out.println(LOGGER.isWarnEnabled());
-            LOGGER.error("数据源加载成功！");
+            LOGGER.debug("数据源加载成功");
         } catch (NamingException | ClassCastException e) {
             ds = null;
-//            LogUtil.log(logger,e);
+            LOGGER.fatal("数据源加载失败！",e);
         }
     }
     /**
