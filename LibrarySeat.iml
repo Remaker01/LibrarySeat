@@ -64,5 +64,6 @@
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.17.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.17.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-web:2.17.2" level="project" />
+    <orderEntry type="library" name="normalize" level="application" />
   </component>
 </module>

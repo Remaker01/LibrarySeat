@@ -5,9 +5,9 @@
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
     <title>添加图书室</title>
-    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="../static/commons.js" defer></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         $(document).ready(function (){
@@ -49,7 +49,9 @@
                 url: _ROOT_+"room/add.do", type: "post", data: param
             }).done(function (d) {
                 $("p.status").text(d.msg);
-            })
+                if (d.msg.indexOf("成功")>0)
+                    sendMessage("新阅览室已上线！","管理员新增的阅览室 "+param.name+" 现已可用！");
+            });
             return FALSE;
         }
     </script>

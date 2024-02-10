@@ -36,6 +36,7 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
+        resp.setContentType("application/json");
         String info=messageService.addMessage(u.getUid(),title,content);
         JsonUtil.writeResponse(new Response("/message/send.do","POST",info),resp.getOutputStream());
     }
@@ -50,6 +51,7 @@ public class MessageController {
         }
         if (formatter == null)
             formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        resp.setContentType("application/json");
         try {
             String info = messageService.removeMessage(uid,formatter.parse(time));
             JsonUtil.writeResponse(new Response("/message/send.do", "POST", info), resp.getOutputStream());
@@ -66,12 +68,14 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
+        resp.setContentType("application/json");
         if (pageno == null)
             pageno = 1;
         List<Message> messages = messageService.getMessageSummaries(pageno,limit);
         JsonUtil.writeCollection(messages,resp.getOutputStream());
     }
-
+    @RequestMapping(value = "/get.do",method = {RequestMethod.POST})
+    @ResponseBody
     public void getMessage(Integer uid, String time, HttpServletResponse resp,HttpSession session) throws IOException {
         if (session.getAttribute("user") == null){
             resp.sendError(403,"校验失败");
@@ -79,6 +83,7 @@ public class MessageController {
         }
         if (formatter == null)
             formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        resp.setContentType("application/json");
         try {
             Message message = messageService.getMessage(uid,formatter.parse(time));
             JsonUtil.writePojo(message,resp.getOutputStream());
