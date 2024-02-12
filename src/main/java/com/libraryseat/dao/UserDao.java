@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //Userdao，加密工作放在service层
 //Uid存在的意义，主要是为了作为数值类型的主/外键存在，如果直接用varchar类型的username做主/外键可能对性能之类的有影响
@@ -105,6 +103,24 @@ public class UserDao extends BaseDao {
                 user.getGender(),
                 user.getPhone(),
                 user.getRole());
+    }
+    /**批量添加*/
+    public int add(Collection<User> users){
+        List<Object[]> args = new ArrayList<>(users.size());
+        String sql = "insert into users(username,`password`,truename,gender,phone,`role`) values(?,?,?,?,?,?)";
+        for (User user:users){
+            if (user == null)
+                continue;
+            args.add(new Object[]{
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getTruename(),
+                    user.getGender(),
+                    user.getPhone(),
+                    user.getRole()
+            });
+        }
+        return Arrays.stream(template.batchUpdate(sql,args)).reduce(0,Integer::sum);
     }
     /**删除user，只要有uid或username即可*/
     @Override

@@ -10,6 +10,9 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+    <listener>
+        <listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class>
+    </listener>
     <!-- Spring MVC servlet，控制转发器 -->
     <servlet>
         <servlet-name>springmvc</servlet-name>

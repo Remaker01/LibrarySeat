@@ -3,24 +3,22 @@ package com.libraryseat.services;
 import com.libraryseat.dao.RoomDao;
 import com.libraryseat.dao.SeatDao;
 import com.libraryseat.pojo.Room;
-import com.libraryseat.utils.LogUtil;
 import com.libraryseat.utils.cache.Cache;
 import com.libraryseat.utils.cache.LRUCache;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 @Service
 public class RoomService {
     private static final Cache<Integer,Room> ROOM_CACHE = new LRUCache<>();
-    private static final Logger LOGGER = Logger.getLogger(RoomService.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(RoomService.class.getName());
     public static final int MAX_ROOMS = 20;
-    static {LogUtil.initLogger(LOGGER);}
     @Autowired
     private RoomDao roomDao;
     @Autowired
@@ -38,7 +36,7 @@ public class RoomService {
             roomDao.add(room);
             return "添加成功！";
         } catch (DataAccessException e) {
-            LogUtil.log(LOGGER,e);
+            LOGGER.error("",e);
             return "添加失败，请确认1.管理员存在！2.阅览室名称不与其他已存在阅览室相同。";
         }
     }
@@ -55,7 +53,7 @@ public class RoomService {
             roomDao.delete(room);
             ROOM_CACHE.invalidate(id);
         } catch (DataAccessException e) {
-            LogUtil.log(LOGGER,e);
+            LOGGER.error("",e);
             return "删除失败，请稍后重试！";
         }
         return "删除成功！";

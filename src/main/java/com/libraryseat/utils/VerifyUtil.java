@@ -30,6 +30,17 @@ public class VerifyUtil {
         return true;
     }
 
+    public static boolean verifyPhone(String phone){
+        if (phone == null||phone.length() != 11)
+            return false;
+        try {
+            long number = Long.parseLong(phone);
+            return number > 1e10+2e9&&number < 1e11;
+        } catch (NumberFormatException e){
+            return false;
+        }
+    }
+
     public static boolean verifyNonEmptyStrings(String... strings) {
         for(String s:strings) {
             if(s == null||s.isEmpty())

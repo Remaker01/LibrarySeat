@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width"/>
 <!--    <meta http-equiv="Cache-Control" content="no-cache">-->
     <title>用户添加</title>
-    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
-    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
-    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js" defer></script>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js" defer></script>
     <script src="../static/commons.js" defer></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         $(document).ready(function () {
@@ -20,6 +22,7 @@
                 if(user==null||user.role!==0){
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
+                    $('#myTab>li:eq(0) a').tab('show');
                     $("#info-form .number").on("keyup paste blur",function () {
                         var val=$(this).val();
                         $(this).val(val.replace(REGEXP_NOT_NUM,''));
@@ -27,7 +30,7 @@
                 }
             });
         });
-        function submit_() {
+        function submit_single() {
             var values=$("#info-form input[type='text'],#info-form input[type='password'],#info-form select");
             var param={},status=$("p.status");
             for(var i=0; i<values.length; i++){
@@ -51,35 +54,63 @@
             $.ajax({
                 url:_ROOT_+"user/add.do", type:"post", data:param
             }).done(function (d){
-                $("p.status").text(d.msg);
+                $("#info-form p.status").text(d.msg);
             }).fail(function (xhr) {
-                $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                $("#info-form p.status").text("出错了，请稍后重试。错误码："+xhr.status);
             }).always(function (){$("#vcode-img").trigger("click");});
+            return FALSE;
+        }
+        function submit_file(){
+            var file=$("#file-form input[name='file']")[0];
+            var formData=new FormData();
+            formData.append("document",file.files[0]);
+            // console.log(formData);
+            $("#file-form p.status").text("正在上传，请稍后……");
+            $.ajax({
+                url: _ROOT_+"user/add_users.do",type: "post", data: formData, contentType:false, processData:false
+            }).done(function (d){
+                $("#file-form p.status").text(d.msg);
+            }).fail(function (xhr) {
+                $("#file-form p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+            })
             return FALSE;
         }
     </script>
 </head>
 <body>
-<form id="info-form" onsubmit="return submit_()">
-    <p><label>用户名：<input type="text" name="username" class="form-control" maxlength="20" autocomplete="off" required/></label></p>
-    <p><label>密码：&nbsp;&nbsp;&nbsp;<input type="password" name="pswd" class="form-control" maxlength="20" autocomplete="off" required/></label>
-    </p>
-    <p><label>姓名：&nbsp;&nbsp;&nbsp;<input type="text" name="truename" class="form-control" maxlength="20" required></label></p>
-    <p><label>性别：&nbsp;&nbsp;&nbsp;<select name="gender" class="form-control" required>
-        <option value="男">男</option>
-        <option value="女">女</option>
-    </select>
-    </label></p>
-    <p><label>手机号：<input type="text" name="phone" class="form-control number" maxlength="11" autocomplete="off" required/></label></p>
-    <p><label>身份：&nbsp;&nbsp;&nbsp;<select name="role" class="form-control" required>
-        <option value="1">阅览室管理员</option>
-        <option value="2">学生</option>
-    </select>
-    </label></p>
-    <p><label>验证码：<input type="text" name="vcode" class="form-control number" maxlength="5" autocomplete="off" required/></label></p>
-    <img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?'+Math.random()" alt="验证码"/><br>
-    <input type="submit" class="btn btn-primary" value="提交">
-</form>
-<p class="status"></p>
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active"><a href="#info-form" data-toggle="tab">添加单个</a></li>
+    <li><a href="#file-form" data-toggle="tab">批量添加</a></li>
+</ul>
+<div id="myTabContent" class="tab-content">
+    <form id="info-form" class="tab-pane fade in active" onsubmit="return submit_single()">
+        <p><label>用户名：<input type="text" name="username" class="form-control" maxlength="20" autocomplete="off" required/></label></p>
+        <p><label>密码：&nbsp;&nbsp;&nbsp;<input type="password" name="pswd" class="form-control" maxlength="20" autocomplete="off" required/></label>
+        </p>
+        <p><label>姓名：&nbsp;&nbsp;&nbsp;<input type="text" name="truename" class="form-control" maxlength="20" required></label></p>
+        <p><label>性别：&nbsp;&nbsp;&nbsp;<select name="gender" class="form-control" required>
+            <option value="男">男</option>
+            <option value="女">女</option>
+        </select>
+        </label></p>
+        <p><label>手机号：<input type="text" name="phone" class="form-control number" maxlength="11" autocomplete="off" required/></label></p>
+        <p><label>身份：&nbsp;&nbsp;&nbsp;<select name="role" class="form-control" required>
+            <option value="1">阅览室管理员</option>
+            <option value="2">学生</option>
+        </select>
+        </label></p>
+        <p><label>验证码：<input type="text" name="vcode" class="form-control number" maxlength="5" autocomplete="off" required/></label></p>
+        <img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?'+Math.random()" alt="验证码"/><br>
+        <input type="submit" class="btn btn-primary" value="提交">
+        <p class="status"></p>
+    </form>
+    <form id="file-form" class="tab-pane fade" onsubmit="return submit_file()">
+        <p><label>请选择文件（支持xls,xlsx,xlsm）：<input type="file" name="file" class="form-control" required></label></p>
+        <p style="font-size: small">支持通过excel表格文件批量添加信息。无效信息将被自动过滤。</p>
+        <p style="font-size: small">表格每一列请按照{用户名，密码，姓名，性别，手机号，身份}排布，<em>单个文件最大2MB，不要加表头</em>。</p>
+        <input type="submit" class="btn btn-primary" value="提交">
+        <p class="status"></p>
+    </form>
+</div>
 </body>
 </html>

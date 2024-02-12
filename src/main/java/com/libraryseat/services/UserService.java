@@ -5,17 +5,22 @@ import com.libraryseat.dao.RoomDao;
 import com.libraryseat.dao.UserDao;
 import com.libraryseat.pojo.User;
 import com.libraryseat.utils.EncryptUtil;
-import com.libraryseat.utils.cache.Cache;
-import com.libraryseat.utils.cache.LRUCache;
+import com.libraryseat.utils.ExcelUtil;
+import com.libraryseat.utils.cache.*;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -46,6 +51,32 @@ public class UserService {
         } catch (DataAccessException e){
             return "添加失败,用户名或手机号可能已存在！";
         }
+    }
+    /**从fileitem中获取用户信息并添加*/
+    public String addUsersInFileItem(FileItem fileItem) {
+        if (!fileItem.isFormField()){
+            String format = ExcelUtil.detectFormatViaMIME(fileItem.getContentType());
+            try(InputStream stream = fileItem.getInputStream()){
+                List<User> parseResult=ExcelUtil.getUsersInWorkbook(stream,format);
+                if (parseResult.isEmpty())
+                    return "文件中不包含任何有效信息！";
+                parseResult = parseResult.stream()
+                        .peek(user->{
+                            String pswd = user.getPassword();
+                            user.setPassword(EncryptUtil.encrypt(pswd,user.getUsername(),StandardCharsets.ISO_8859_1));
+                        }).collect(Collectors.toList());
+                int add=userDao.add(parseResult);
+                return String.format("上传成功，共添加%d条数据.", add);
+            } catch (DataIntegrityViolationException e){
+                return "至少有一个用户的用户名或手机号与已有信息重复！";
+            } catch (IOException|DataAccessException ex){
+                LOGGER.error("",ex);
+                return "处理文件过程中发生异常，请稍后重试！";
+            } catch (IllegalArgumentException exx){
+                return "上传失败，文件格式不合法，请重新选择！";
+            }
+        }
+        return "上传失败，文件不合法！";
     }
     /**
      * 修改用户信息，假设密码已经过加密<br>

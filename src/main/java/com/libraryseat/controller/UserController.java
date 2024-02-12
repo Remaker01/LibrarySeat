@@ -5,6 +5,10 @@ import com.libraryseat.pojo.User;
 import com.libraryseat.services.UserService;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,18 +16,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 /* 用户Controller(/user)
-1.userLogin(login.do):
-    POST:para={username,pswd,vcode(验证码),token(时间戳)} or {name,phone,vcode,token}
-2.userAdd(usr_add.do):
-    POST:para={username,pswd,truename,phone,gender,role,vcode,token}
-    将检查当前登录的user是否为超级管理员(role==0)，不符合将返回403
+1.userLogin(login.do): POST:para={username,pswd,vcode(验证码),token(时间戳)} or {name,phone,vcode,token}
+2.userAdd(usr_add.do): POST:para={username,pswd,truename,phone,gender,role,vcode,token}
  */
 //正常请求可能产生的全部信息均写在Response里。异常请求（如爬虫等）产生的信息（如时间戳错误等）返回http 4xx 5xx
 @Controller
@@ -31,6 +34,10 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private DiskFileItemFactory fileItemFactory;
+    @Autowired
+    private ServletFileUpload fileUpload;
 
     @RequestMapping(value = "/logged_user.do",method = {RequestMethod.GET})
     @ResponseBody
@@ -114,6 +121,29 @@ public class UserController {
         }
         String info = userService.addUser(new String[]{username,pswd,trueName,gender,phone},role);
         JsonUtil.writeResponse(new Response("/user/add.do","POST",info),out);
+    }
+
+    @RequestMapping(value = "/add_users.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void addUsers(HttpServletRequest req, HttpSession session, HttpServletResponse resp) throws IOException{
+        User logged = (User) session.getAttribute("user");
+        if(logged == null||logged.getRole() != 0) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        if (!ServletFileUpload.isMultipartContent(req)){
+            resp.sendError(400,"参数错误：文件不合法");
+            return;
+        }
+        fileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+        resp.setContentType("application/json");
+        try {
+            String info = userService.addUsersInFileItem(fileUpload.parseRequest(req).get(0));
+            JsonUtil.writeResponse(new Response("/user/add_users.do","POST",info),resp.getOutputStream());
+        } catch (FileUploadException e){
+            JsonUtil.writeResponse(new Response("/user/add_users.do","POST","文件过大或出现异常，请重新选择文件！"),
+                    resp.getOutputStream());
+        }
     }
 
     @RequestMapping(value = "/delete.do",method = {RequestMethod.POST})

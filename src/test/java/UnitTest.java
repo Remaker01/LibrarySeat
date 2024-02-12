@@ -1,8 +1,10 @@
 import com.libraryseat.pojo.*;
+import com.libraryseat.utils.ExcelUtil;
 import com.libraryseat.utils.JsonUtil;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.List;
 
 public class UnitTest {
     @Test
@@ -15,6 +17,20 @@ public class UnitTest {
             JsonUtil.writePojo(room,System.err);
         }catch (IOException e) {
             throw new AssertionError();
+        }
+    }
+    @Test
+    public void testExcel(){
+        File file = new File("test.xlsx");
+        try {
+            BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+            List<User> users = ExcelUtil.getUsersInWorkbook(inputStream, "xlsx");
+            users.stream().forEach(user -> {
+                System.out.print(user.getUsername());
+                System.out.println(':'+user.getTruename());
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

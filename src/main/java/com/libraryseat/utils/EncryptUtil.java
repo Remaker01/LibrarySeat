@@ -6,6 +6,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class EncryptUtil {
@@ -62,7 +64,20 @@ public class EncryptUtil {
         }
     }
 
-    private static String byteArrayToHexString(byte[] bytes) {
+    static byte[] md5(byte[] text){
+        if (text == null)
+            return null;
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");
+            digest.update(text);
+            return digest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            return null;
+        }
+    }
+
+    static String byteArrayToHexString(byte[] bytes) {
         if (bytes == null)
             return null;
         StringBuilder hex = new StringBuilder(bytes.length);

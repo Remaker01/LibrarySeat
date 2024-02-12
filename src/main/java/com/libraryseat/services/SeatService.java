@@ -22,8 +22,8 @@ public class SeatService {
             seat.setSeatid(seatid);
             seatDao.add(seat);
             return "添加成功！";
-        } catch (DataAccessException e) {
-            return "添加失败，请确认阅览室存在！";
+        } catch (DataAccessException e){
+            return "添加失败，请确认阅览室存在，且阅览室内没有编号相同的座位！";
         }
     }
 
