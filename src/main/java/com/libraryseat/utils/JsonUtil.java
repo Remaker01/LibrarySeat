@@ -12,17 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 //除list和Response外均统一格式
 public class JsonUtil {
-    private static final Logger LOGGER = Logger.getLogger(JsonUtil.class.getName());
     private static final JsonFactory FACTORY = new JsonFactory();
     private static final ObjectMapper MAPPER = new ObjectMapper(FACTORY);
-    static {
-        LogUtil.initLogger(LOGGER);
-        LOGGER.setLevel(Level.FINE);
-    }
 
     private JsonUtil() {}
 

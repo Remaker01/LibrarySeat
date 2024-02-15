@@ -2,7 +2,8 @@ package com.libraryseat.services;
 
 import com.libraryseat.dao.MessageDao;
 import com.libraryseat.pojo.Message;
-import com.libraryseat.utils.LogUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -10,8 +11,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Service
 public class MessageService {
@@ -19,8 +18,7 @@ public class MessageService {
     private MessageDao messageDao;
     public static final int MAX_LENGTH = 1000;
     public static final int PAGE_SIZE = 10;
-    private static final Logger LOGGER = Logger.getLogger(MessageService.class.getName());
-    static {LogUtil.initLogger(LOGGER);LOGGER.setLevel(Level.INFO);}
+    private static final Logger LOGGER = LogManager.getLogger(MessageService.class.getName());
 
     public String addMessage(int uid,String title,String content) {
         if(content == null||content.isEmpty())
@@ -36,8 +34,13 @@ public class MessageService {
         message.setTime(now);
         message.setTitle(title);
         message.setContent(content);
-        messageDao.add(message);
-        return "添加成功！";
+        try {
+            messageDao.add(message);
+            return "添加成功！";
+        } catch (DataAccessException e){
+            LOGGER.error("",e);
+            return "添加消息失败，请稍后重试！";
+        }
     }
 
     public String removeMessage(int uid, Date time) {
@@ -48,7 +51,7 @@ public class MessageService {
             messageDao.delete(m);
             return "删除成功！";
         } catch (DataAccessException e) {
-            LogUtil.log(LOGGER,e);
+            LOGGER.error("",e);
             return "删除失败，请确认用户存在！";
         }
     }

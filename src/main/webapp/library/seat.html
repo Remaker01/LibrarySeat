@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
+    <title>座位信息查看</title>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script>
+        $(document).ready(function (){
+            checkLogin(function (d) {
+                var user = d.info;
+                if (user == null || user.role !== 0) {
+                    $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='" + _ROOT_ + "'>点击返回主页</a>";
+                } else {
+                    initSelect();
+                }
+            });
+        })
+        function initSelect(){
+            $.ajax({
+                url:_ROOT_+"room/listrooms.do", type:"post"
+            }).done(function (d){
+                var select=$("#rooms-select")[0];
+                for(var i=0; i<d.length; i++){
+                    var elem=d[i], option=document.createElement("option");
+                    option.value=elem.roomid;
+                    option.innerText=elem.roomname;
+                    select.appendChild(option);
+                }
+            });
+            return FALSE;
+        }
+    </script>
+</head>
+<body>
+<form action="../seat/show.do" method="get">
+    <p><label>请选择要查看座位的阅览室<br><select id="rooms-select" class="form-control" name="roomid"></select></label>
+    </p>
+    <input type="submit" class="btn btn-primary" value="提交">
+</form>
+</body>
+</html>

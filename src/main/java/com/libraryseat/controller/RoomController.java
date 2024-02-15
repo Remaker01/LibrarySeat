@@ -126,4 +126,16 @@ public class RoomController {
             JsonUtil.writeCollection(rooms,resp.getOutputStream());
         }
     }
+    @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void getRoom(Integer roomid,HttpServletResponse resp,HttpSession session) throws IOException{
+        User now = (User) session.getAttribute("user");
+        if(now == null) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json");
+        Room room = roomService.getRoom(roomid);
+        JsonUtil.writePojo(room,resp.getOutputStream());
+    }
 }

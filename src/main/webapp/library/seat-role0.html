@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+    <meta name="viewport" content="width=device-width"/>
+    <title>座位信息 - 管理员页</title>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script>
+        var statuses=["空闲","已被预定","已被占用"],room,page;
+        $(document).ready(function () {
+            checkLogin(function (d) {
+                room=getRoomById(getCurrentParam("roomid"));
+                page=getCurrentParam("page");
+                var user=d.info;
+                if (user == null||user.role!==0) {
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else {
+                    initTable();
+                    connect();
+                }
+            })
+        });
+        function getRoomById(id){
+            var x;
+            $.ajax({
+                url:_ROOT_+"room/getbyid.do", type:"post", data:{"roomid":id}, async:false
+            }).done(function (d){
+                x=d.info;
+            }).fail(function (){
+                x=null;
+            });
+            return x;
+        }
+        function connect() {
+            if (page === '')
+                page = '1';
+            var npage=parseInt(page);
+            //下一页
+            $("#next-btn").on("click",function (){
+                document.location.href=_ROOT_+"seat/show.do?page="+(npage+1)+"&roomid="+room.roomid;
+            });
+            $("input[name='page']").on("keyup paste blur",function (){
+                var val=$(this).val();
+                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+            });
+            //上一页
+            if (page === '1')
+                $("#prev-btn").attr("disabled",true);
+            else {
+                $("#prev-btn").on("click",function (){
+                    document.location.href=_ROOT_+"seat/show.do?page="+(npage-1)+"&roomid="+room.roomid;
+                });
+            }
+            return FALSE;
+        }
+        function initTable() {
+            var tbody=$("table>tbody")[0];
+            var param={"roomid":room.roomid},page=getCurrentParam("page");
+            if (page.length>0)
+                param.page=page;
+            $.ajax({
+                url:_ROOT_+"seat/listseats.do", data:param, type:"post"
+            }).done(function (data) {
+                $("p.loading").text("正在加载，请稍后...");
+                for(var i=0; i<data.length; i++){
+                    var elem=data[i];
+                    var tr=document.createElement("tr");
+                    tr.innerHTML+="<td>"+elem.seatid+"</td>";
+                    tr.innerHTML+="<td>"+statuses[elem.status]+"</td>";
+                    if (elem.status===0)
+                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
+                    else
+                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
+                    tbody.appendChild(tr);
+                }
+                $("p.loading").text(room.roomname+" 座位信息如下");
+            });
+            return FALSE;
+        }
+        function doRemove(obj) { //TODO:删除前输入密码确认
+            if (confirm("确认删除吗，此过程不可逆！！")){
+                var td=$(obj).parent().siblings();
+                var seat_id=td[0].innerText;
+                $.ajax({
+                    url:_ROOT_+"/seat/delete.do", type: "post", data: {"seatid":seat_id,"roomid":room.roomid}
+                }).done(function (d){
+                    $("p.status").text(d.msg);
+                    if(d.msg.indexOf("成功")>0){
+                        td.parent().remove();
+                        sendMessage("阅览室删除通知","管理员删除阅览室"+room.roomname+"的"+seat_id+"号座位");
+                    }
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了，请稍后重试，错误码："+xhr.status);
+                });
+            }
+        }
+        function toPage() {
+            var newPage=$("input[name='page']").val();
+            document.location.href=_ROOT_+"seat/show.do?page="+newPage+"&roomid="+room.roomid;
+            return FALSE;
+        }
+    </script>
+</head>
+<body>
+<p class="loading"></p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>座位号</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<p class="status"></p>
+<div class="to-page">
+    <input type="button" class="btn" id="prev-btn" value="上一页"/>
+    <form onsubmit="return toPage()">
+        跳到第<input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/>页
+        <input type="submit" class="btn" value="GO"/>
+    </form>
+    <input type="button" class="btn" id="next-btn" value="下一页"/>
+</div>
+</body>
+</html>

@@ -33,6 +33,7 @@ class LogFormatter extends Formatter {
 /**
  * 日志记录器类
  */
+@Deprecated
 public class LogUtil {
     public static void initLogger(Logger logger) {
         try {
@@ -77,8 +78,6 @@ public class LogUtil {
     static void setFile(Logger logger,String file) throws IOException {
         FileHandler fHandler = new FileHandler(file,true);
         fHandler.setFormatter(new LogFormatter());
-        synchronized (LogUtil.class) {
-            logger.addHandler(fHandler);
-        }
+        logger.addHandler(fHandler);
     }
 }

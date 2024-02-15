@@ -44,6 +44,25 @@ public class SeatController {
         }
         return true;
     }
+    @RequestMapping(value = "/show.do",method = {RequestMethod.GET})
+    public String toSeatsPage(Integer roomid, @RequestParam(required = false) Integer page, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        User u = (User) session.getAttribute("user");
+        if (u == null) {
+            resp.sendError(403,"校验失败");
+            return null;
+        }
+        resp.setHeader("Cache-Control","no-cache");
+        StringBuilder target = new StringBuilder(String.format("/library/seat-role%d.html?",u.getRole()));
+        if (roomid != null) {
+            target.append("roomid=").append(roomid); //room!=null,page=null
+            if (page != null)
+                target.append("&page=?").append(page); //room,page!=null
+        }
+        else if (page != null) //room=null,page!=null
+            target.append("page=").append(page);
+        return target.toString();
+    }
     @RequestMapping(value = "/add.do",method = {RequestMethod.POST})
     @ResponseBody
     public void addSeat(Integer seatid, Integer roomid, HttpServletResponse resp, HttpSession session) throws IOException {
@@ -80,5 +99,18 @@ public class SeatController {
         resp.setContentType("application/json");
         List<Seat> seats = seatService.getSeatsInRoom(roomid,page);
         JsonUtil.writeCollection(seats,resp.getOutputStream());
+    }
+    @RequestMapping(value = "/getseat.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void getSeat(Integer seatid, Integer roomid,HttpServletResponse resp, HttpSession session)
+        throws IOException{
+        User u = (User)session.getAttribute("user");
+        if (u == null) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json");
+        Seat seat = seatService.getSeatById(seatid,roomid);
+        JsonUtil.writePojo(seat,resp.getOutputStream());
     }
 }

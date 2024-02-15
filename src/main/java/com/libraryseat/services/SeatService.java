@@ -29,9 +29,9 @@ public class SeatService {
 
     public String removeSeat(int roomid, int seatid) {
         try {
-            Seat seat = new Seat();
-            seat.setRoomid(roomid);
-            seat.setSeatid(seatid);
+            Seat seat = seatDao.getSeatById(seatid,roomid);
+            if (seat.getStatus()!=0)
+                return "删除失败，座位不是空闲的！";
             seatDao.delete(seat);
             return "删除成功！";
         } catch (DataAccessException e) {
@@ -69,5 +69,9 @@ public class SeatService {
     public List<Seat> getFreeSeatsInRoom(int roomid, int page, String orderBy, boolean descend) {
         BaseDao.Order order = (descend) ? BaseDao.Order.DESCEND : BaseDao.Order.ASCEND;
         return seatDao.getFreeSeatsInRoom(roomid,(page-1)*PAGE_SIZE,PAGE_SIZE,orderBy,order);
+    }
+
+    public Seat getSeatById(int seatid,int roomid){
+        return seatDao.getSeatById(seatid,roomid);
     }
 }
