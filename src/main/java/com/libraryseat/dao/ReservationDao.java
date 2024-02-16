@@ -36,6 +36,7 @@ public class ReservationDao extends BaseDao{
         template.update(sql,
                 r.getSeatid(),
                 r.getRoomid(),
+                r.getUid(),
                 r.getResTime(),
                 r.getSigninTime(),
                 r.getSignoutTime());
@@ -103,7 +104,7 @@ public class ReservationDao extends BaseDao{
     }
     //获取某用户未签退的预定信息总数，目前仅在预定座位时校验使用。
     public int getActiveReservationCountByUser(int uid) {
-        String sql = "select count(*) from reservation where uid=? and signout_time is not null";
+        String sql = "select count(*) from reservation where uid=? and signout_time is null";
         Integer ret = template.queryForObject(sql,Integer.class,uid);
         return ret == null ? -1 :ret;
     }

@@ -15,9 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -25,7 +23,6 @@ import java.util.List;
 public class MessageController {
     @Autowired
     private MessageService messageService;
-    private static DateFormat formatter = null;
 
     @RequestMapping(value = "/send.do",method = {RequestMethod.POST})
     @ResponseBody
@@ -43,21 +40,15 @@ public class MessageController {
 
     @RequestMapping(value = "/remove.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void removeMessage(Integer uid,String time,HttpServletResponse resp,HttpSession session) throws IOException {
+    public void removeMessage(Integer uid,Long time,HttpServletResponse resp,HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         if (u == null||u.getRole()!=0){
             resp.sendError(403,"校验失败");
             return;
         }
-        if (formatter == null)
-            formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         resp.setContentType("application/json");
-        try {
-            String info = messageService.removeMessage(uid,formatter.parse(time));
-            JsonUtil.writeResponse(new Response("/message/send.do", "POST", info), resp.getOutputStream());
-        } catch (ParseException e) {
-            resp.sendError(400,"参数错误：格式错误");
-        }
+        String info = messageService.removeMessage(uid,new Date(time));
+        JsonUtil.writeResponse(new Response("/message/send.do", "POST", info), resp.getOutputStream());
     }
     @RequestMapping(value = "/listmessages.do",method = {RequestMethod.POST})
     @ResponseBody
@@ -68,27 +59,21 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         if (pageno == null)
             pageno = 1;
+        resp.setContentType("application/json");
         List<Message> messages = messageService.getMessageSummaries(pageno,limit);
         JsonUtil.writeCollection(messages,resp.getOutputStream());
     }
     @RequestMapping(value = "/get.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void getMessage(Integer uid, String time, HttpServletResponse resp,HttpSession session) throws IOException {
+    public void getMessage(Integer uid, Long time, HttpServletResponse resp,HttpSession session) throws IOException {
         if (session.getAttribute("user") == null){
             resp.sendError(403,"校验失败");
             return;
         }
-        if (formatter == null)
-            formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         resp.setContentType("application/json");
-        try {
-            Message message = messageService.getMessage(uid,formatter.parse(time));
-            JsonUtil.writePojo(message,resp.getOutputStream());
-        } catch (ParseException e) {
-            resp.sendError(400,"参数错误：格式错误");
-        }
+        Message message = messageService.getMessage(uid,new Date(time));
+        JsonUtil.writePojo(message,resp.getOutputStream());
     }
 }

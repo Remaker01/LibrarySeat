@@ -79,16 +79,18 @@ public class UserService {
         return "上传失败，文件不合法！";
     }
     /**
-     * 修改用户信息，假设密码已经过加密<br>
+     * 修改用户信息<br>
      * 可以修改的信息有：1.用户名（仅超管），2.密码（不要通过此处修改，用下面修改密码的方法），3.真实姓名，4.手机号
      */
     public String updateUser(User u) {
-        int uid = u.getUid(); //TODO:这个uid是否总是正确？
+        int uid = u.getUid();
         if(u.getRole()==2) {
             if (reservationDao.getActiveReservationCountByUser(u.getUid()) > 0)
                 return "更新失败，该用户尚有未签退/放弃的座位预定信息！";
         }
-        int res = userDao.update(u) ;
+        String pswd = EncryptUtil.encrypt(u.getPassword(),u.getUsername(),StandardCharsets.ISO_8859_1);
+        u.setPassword(pswd);
+        int res = userDao.update(u);
         if(res != 0) {
             synchronized (this) {
                 userNameCache.put(u.getUsername(), u);
@@ -207,7 +209,6 @@ public class UserService {
         if (userToBeModified == null)
             return String.format("用户%s不存在，或原密码错误！",username);
         //2.存在原用户
-        newPswd = EncryptUtil.encrypt(newPswd,username,StandardCharsets.ISO_8859_1);
         userToBeModified.setPassword(newPswd);
         return updateUser(userToBeModified);
     }
@@ -218,7 +219,6 @@ public class UserService {
         if(u == null)
             return "用户不存在！";
         //2.加密用户密码
-        newPswd = EncryptUtil.encrypt(newPswd,u.getUsername(),StandardCharsets.ISO_8859_1);
         u.setPassword(newPswd);
         return updateUser(u);
     }

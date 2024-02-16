@@ -37,7 +37,7 @@ public class JsonUtil {
         JsonGenerator generator = newGenerator(stream);
         generator.writeStartArray();
         if(reservations != null) {
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (Reservation reservation:reservations) {
                 generator.writeNumberField("seatid",reservation.getSeatid());
                 generator.writeNumberField("roomid",reservation.getRoomid());
@@ -60,7 +60,7 @@ public class JsonUtil {
             generator.writeNumberField("seatid",reservation.getSeatid());
             generator.writeNumberField("roomid",reservation.getRoomid());
             generator.writeNumberField("uid",reservation.getUid());
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             generator.writeStringField("resTime", dateFormat.format(reservation.getResTime()));
             generator.writeStringField("signinTime", dateFormat.format(reservation.getSigninTime()));
             generator.writeStringField("signoutTime", dateFormat.format(reservation.getSignoutTime()));

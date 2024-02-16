@@ -6,6 +6,8 @@ import com.libraryseat.pojo.Reservation;
 import com.libraryseat.pojo.Seat;
 import com.libraryseat.utils.cache.Cache;
 import com.libraryseat.utils.cache.LRUCache;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
@@ -23,6 +25,7 @@ public class ReservationService {
     @Autowired
     @Lazy
     private SeatDao seatDao;
+    private static final Logger LOGGER = LogManager.getLogger(ReservationService.class.getName());
 
     public String addReservation(int seatid, int roomid, int uid) {
         Seat seat = seatDao.getSeatById(seatid,roomid);
@@ -40,6 +43,9 @@ public class ReservationService {
             reservationDao.add(reservation);
             return "预定成功！";
         } catch (DataAccessException e) {
+            seat.setStatus((short) 0);
+            seatDao.update(seat);
+            LOGGER.error("",e);
             return "预定失败，请检查1. 座位是否已被占用，2.用户是否存在";
         }
     }
