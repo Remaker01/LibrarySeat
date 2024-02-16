@@ -11,13 +11,14 @@
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
-        var statuses=["空闲","已被预定","已被占用"],room,page;
+        var statuses=["空闲","已被预定","已被占用"],room,page,u;
         $(document).ready(function () {
             checkLogin(function (d) {
+                u=d.info;
                 room=getRoomById(getCurrentParam("roomid"));
                 page=getCurrentParam("page");
                 var user=d.info;
-                if (user == null||user.role!==0) {
+                if (user == null||user.role!==1) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
                     initTable();
@@ -46,6 +47,7 @@
             $("#next-btn").on("click",function (){
                 document.location.href=_ROOT_+"seat/show.do?page="+(npage+1)+"&roomid="+room.roomid;
             });
+            //转到页
             $("input[name='page']").on("keyup paste blur",function (){
                 var val=$(this).val();
                 $(this).val(val.replace(REGEXP_NOT_NUM,''));
@@ -61,8 +63,7 @@
             return FALSE;
         }
         function initTable() {
-            var tbody=$("table>tbody")[0];
-            var param={"roomid":room.roomid},page=getCurrentParam("page");
+            var tbody=$("table>tbody")[0], param={"roomid":room.roomid};
             if (page.length>0)
                 param.page=page;
             $.ajax({
@@ -74,10 +75,14 @@
                     var tr=document.createElement("tr");
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+statuses[elem.status]+"</td>";
-                    if (elem.status===0)
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
+                    if (u.uid===room.admin) {
+                        if(elem.status===0)
+                            tr.innerHTML += "<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
+                        else
+                            tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
+                    }
                     else
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
+                        tr.innerHTML+="<td>--</td>";
                     tbody.appendChild(tr);
                 }
                 $("p.loading").text(room.roomname+" 座位信息如下");

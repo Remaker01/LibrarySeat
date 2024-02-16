@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 public class ExcelUtil {
     private static final Pattern PSWD_REGEX = Pattern.compile("^(?![\\d]+$)(?![a-zA-Z]+$)(?![^\\da-zA-Z]+$).{7,20}$");
+    private static final Pattern UNAME_REGEX = Pattern.compile("^[a-zA-Z]\\w{4,19}$");
     private static final HashMap<String,Short> roleMap = new HashMap<>(2);
     private static Workbook getWorkbook(InputStream stream,String format) throws IOException,IllegalArgumentException {
         if (format.equalsIgnoreCase("xls")){
@@ -87,7 +88,9 @@ public class ExcelUtil {
             if (row == null)
                 continue;
             User u = new User();
-            u.setUsername(getCellValue(row,0));
+            String uname = getCellValue(row,0);
+            if (uname!=null&&UNAME_REGEX.matcher(uname).matches())
+                u.setUsername(uname);
             String pswd = getPassword(getCellValue(row,1));
             u.setPassword(pswd);
             u.setTruename(getCellValue(row,2));

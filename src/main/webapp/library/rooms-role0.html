@@ -38,7 +38,7 @@
                     tr.innerHTML+="<td>"+elem.roomid+"</td>";
                     tr.innerHTML+=("<td>"+elem.roomname+"</td>");
                     tr.innerHTML+=("<td><a href='#' onclick='showAdmin(this)' value='"+elem.admin+"'>点击查看</a></td>");
-                    tr.innerHTML+=("<td><input type='button' class='btn btn-primary' value='查看座位'> " +
+                    tr.innerHTML+=("<td><input type='button' class='btn btn-primary' value='查看座位' onclick='showSeat(this)'> " +
                         "<input type='button' class='btn' value='修改信息'> " + //导向座位页面
                         "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'></td>");
                     tbody.appendChild(tr);
@@ -91,6 +91,10 @@
             $("#admin-uname").text(u.username);
             $("#admin-phone").text(u.phone);
             $("#admin-info").modal("show");
+        }
+        function showSeat(obj){
+            var td=$(obj).parent().siblings()[0];
+            document.location.href=_ROOT_+"seat/show.do?roomid="+td.innerText;
         }
         var connect=function () {
             $("#admin-input").on("keyup paste blur",function() {
