@@ -91,7 +91,8 @@
                                 "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'>" +
                                 "</td>";
                         else
-                            tr.innerHTML+="<td> -- </td>";
+                            tr.innerHTML+="<td>" +
+                                "<input type='button' class='btn btn-primary' value='修改'></td>"
                     }
                     tbody.appendChild(tr);
                 }
@@ -104,6 +105,13 @@
                         $("#name-input").val(tds[2].innerText);
                         $("#phone-input").val(tds[4].innerText);
                         $("#modify-user p.status").text("");
+                        if(tds[0].innerText===user.uid.toString()) {
+                            $("#myModalLabel").text("修改个人信息");
+                            $("#uname-input").attr("readonly",true);
+                        } else{
+                            $("#myModalLabel").text("修改用户信息");
+                            $("#uname-input").attr("readonly",false);
+                        }
                         $("#modify-user").modal("show");
                     });
                 }
@@ -123,6 +131,8 @@
                     url: _ROOT_+"user/delete.do", type: "post", data: {"uid":td.innerText}
                 }).done(function (d) {
                     $("p.status").text(d.msg);
+                    if (d.msg.indexOf("成功")>0)
+                        $(td).parent().remove();
                 }).fail(function (xhr) {
                     $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
                 });

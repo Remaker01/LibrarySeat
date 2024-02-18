@@ -28,11 +28,11 @@
         <url-pattern>/</url-pattern>
     </servlet-mapping>
     <filter>
-        <filter-name>Encoding-filter</filter-name>
-        <filter-class>com.libraryseat.EncodingFilter</filter-class>
+        <filter-name>My-filter</filter-name>
+        <filter-class>com.libraryseat.GenericFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>Encoding-filter</filter-name>
+        <filter-name>My-filter</filter-name>
         <url-pattern>*.jsp</url-pattern>
         <url-pattern>*.do</url-pattern>
     </filter-mapping>

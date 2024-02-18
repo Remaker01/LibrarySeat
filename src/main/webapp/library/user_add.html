@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--TODO:批量添加-->
+<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -105,7 +105,7 @@
         <p class="status"></p>
     </form>
     <form id="file-form" class="tab-pane fade" onsubmit="return submit_file()">
-        <p><label>请选择文件（支持xls,xlsx,xlsm）：<input type="file" name="file" class="form-control" required></label></p>
+        <p><label>请选择文件（支持xls,xlsx,xlsm）：<input type="file" name="file" accept=".xls, .xlsx, .xlsm" class="form-control" required></label></p>
         <p style="font-size: small">支持通过excel表格文件批量添加信息。无效信息将被自动过滤。</p>
         <p style="font-size: small">表格每一列请按照{用户名，密码，姓名，性别，手机号，身份}排布，<em>单个文件最大2MB，不要加表头</em>。</p>
         <input type="submit" class="btn btn-primary" value="提交">

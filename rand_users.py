@@ -3,18 +3,18 @@ from io import StringIO
 from typing import AnyStr
 DEFAULT_PSWD = b"Admin135"
 EMPTY_MD5 = hashlib.md5()
-def get_pswd(pswd:AnyStr,uname:AnyStr):
+def get_pswd(pswd:AnyStr,role:AnyStr):
     if isinstance(pswd,str):
         pswd = pswd.encode("latin-1")
-    if isinstance(uname,str):
-        uname = uname.encode("utf-8")
+    if isinstance(role,str):
+        role = role.encode("utf-8")
     MD5 = hashlib.md5()
     MD5.update(pswd)
     pswd_md5_1 = MD5.digest() #第一次哈希结果
     MD5 = EMPTY_MD5.copy() #清空
     MD5.update(pswd_md5_1)
     # print(MD5.hexdigest())
-    hmac256=hmac.HMAC(key=uname,digestmod=hashlib.sha256)
+    hmac256=hmac.HMAC(key=role,digestmod=hashlib.sha256)
     hmac256.update(MD5.hexdigest().encode("latin-1"))
     return hmac256.hexdigest()
 collection = string.ascii_lowercase+string.digits+'_'
@@ -48,14 +48,13 @@ def generate(len_:int):
         phone = getRandomPhone()
         role = random.choice((1,2,3))
         if role == 3:role = 2 #提高学生比例
-        pswd = get_pswd("Admin135" if role == 1 else "Student1",uname=uname)
+        pswd = get_pswd("Admin135" if role == 1 else "Student1",str(role))
         info.write("INSERT INTO `USERS`(`USERNAME`,`PASSWORD`,`TRUENAME`,`GENDER`,PHONE,ROLE) VALUES('{}','{}','{}','{}','{}',{})\n"
                    .format(uname,pswd,name,gender,phone,role))
     val = info.getvalue()
     info.close()
     return val
 if __name__ == "__main__":
-    # fp = open("users.sql","w",encoding="utf-8")
-    # fp.write(generate(20))
-    # fp.close()
-    print(get_pswd("Admin135","admin"))
+    fp = open("users.sql","w",encoding="utf-8")
+    fp.write(generate(30))
+    fp.close()

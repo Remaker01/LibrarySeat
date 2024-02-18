@@ -4,22 +4,28 @@
 需求及总体设计见docx文件。
 
 1.28 目前已完成dao,service层,一部分controller层和前端页面。
+
 2.8  基本完成后端功能，前端页面部分完善中。
 
 ### 项目信息
 **环境**
 
-|   名称   |             值              |
-|:------:|:--------------------------:|
-|  操作系统  |       MS Windows 10        |
-|  IDE   |     Intellij IDEA 2022     |
-|  数据库   |         MySQL 8.0          |
-| 项目管理工具 |           Maven            |
-|  运行环境  | OpenJDK 11+Apache Tomcat 9 |
+|   名称   |             值              |          备注          |
+|:------:|:--------------------------:|:--------------------:|
+|  操作系统  |       MS Windows 10        |                      |
+|  IDE   |    Intellij IDEA 2022.1    |   Ultimate Edition   |
+|  数据库   |         MySQL 8.0          |        InnoDB        |
+| 项目管理工具 |           Maven            |                      |
+|  运行环境  | OpenJDK 11+Apache Tomcat 9 | 未使用Java9及以上的语言特性和API |
 
 **配置方法**
 
 首先创建数据库名称为Library,运行根目录下ddl.sql文件创建表。表结构见docx文件。
+数据库密码存储方式：
+```
+pswd_md5=md5(md5(user.password)).toHexString()
+pswd_final=HmacSHA256(text=pswd_md5,key=user.role.toString())
+```
 
 在/resources下创建文件jdbc.properties,加入以下内容
 ```properties
@@ -42,7 +48,7 @@ password=你的数据库密码
 同样将username和password换成你的数据库用户名和密码。
 
 ### 目前问题
-1. 日志方面，目前记录日志很不方便，考虑修改为log4j等主流日志系统。
+1. ~~日志方面，目前记录日志很不方便，考虑修改为log4j等主流日志系统。~~
 2. 暂未实现预定座位一定时间后自动释放的功能。
 
 ### 参考

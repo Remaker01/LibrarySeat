@@ -6,6 +6,7 @@ import com.libraryseat.dao.UserDao;
 import com.libraryseat.pojo.User;
 import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.ExcelUtil;
+import com.libraryseat.utils.VerifyUtil;
 import com.libraryseat.utils.cache.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.logging.log4j.LogManager;
@@ -40,8 +41,9 @@ public class UserService {
 
     /**给出用户信息，增加用户*/
     public String addUser(String[] info,short role) {
+        assert role>=0&&role<=2;
         String uname = info[0],
-                pswd = EncryptUtil.encrypt(info[1],info[0],StandardCharsets.ISO_8859_1),
+                pswd = EncryptUtil.encrypt(info[1],Short.toString(role),StandardCharsets.ISO_8859_1),
                 trueName = info[2],
                 gender = info[3],
                 phone = info[4];
@@ -63,7 +65,7 @@ public class UserService {
                 parseResult = parseResult.stream()
                         .peek(user->{
                             String pswd = user.getPassword();
-                            user.setPassword(EncryptUtil.encrypt(pswd,user.getUsername(),StandardCharsets.ISO_8859_1));
+                            user.setPassword(EncryptUtil.encrypt(pswd,Short.toString(user.getRole()),StandardCharsets.ISO_8859_1));
                         }).collect(Collectors.toList());
                 int add=userDao.add(parseResult);
                 return String.format("上传成功，共添加%d条数据.", add);
@@ -83,13 +85,17 @@ public class UserService {
      * 可以修改的信息有：1.用户名（仅超管），2.密码（不要通过此处修改，用下面修改密码的方法），3.真实姓名，4.手机号
      */
     public String updateUser(User u) {
+        short role=u.getRole();
+        assert role>=0&&role<=2;
         int uid = u.getUid();
-        if(u.getRole()==2) {
+        if(role==2) {
             if (reservationDao.getActiveReservationCountByUser(u.getUid()) > 0)
                 return "更新失败，该用户尚有未签退/放弃的座位预定信息！";
         }
-        String pswd = EncryptUtil.encrypt(u.getPassword(),u.getUsername(),StandardCharsets.ISO_8859_1);
-        u.setPassword(pswd);
+        if(VerifyUtil.verifyPassword(u.getPassword())) { //是md5
+            String pswd = EncryptUtil.encrypt(u.getPassword(), Short.toString(role), StandardCharsets.ISO_8859_1);
+            u.setPassword(pswd);
+        }
         int res = userDao.update(u);
         if(res != 0) {
             synchronized (this) {
@@ -163,14 +169,14 @@ public class UserService {
     }
     /**执行登录动作，返回登录的用户。若登录失败（密码错误等），返回null*/
     public User login(String username,String password) {
-        password = EncryptUtil.encrypt(password,username, StandardCharsets.ISO_8859_1);
         User u = userNameCache.get(username);
         if(u == null) {
             u = userDao.getUserByUsername(username);
             userNameCache.put(username,u);
         }
-        if (u != null&&u.getPassword().equals(password)) {
-            return u;
+        if (u != null) {
+            password = EncryptUtil.encrypt(password, Short.toString(u.getRole()), StandardCharsets.ISO_8859_1);
+            return u.getPassword().equals(password) ? u : null;
         }
         return null;
     }
