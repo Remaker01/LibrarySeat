@@ -39,3 +39,14 @@ function sendMessage(title, content) {
         {url: _ROOT_+"message/send.do",type: "post", data: {"title":title,content:content}}
     );
 }
+function getRoomById(id){
+    var x;
+    $.ajax({
+        url:_ROOT_+"room/getbyid.do", type:"post", data:{"roomid":id}, async:false
+    }).done(function (d){
+        x=d.info;
+    }).fail(function (){
+        x=null;
+    });
+    return x;
+}

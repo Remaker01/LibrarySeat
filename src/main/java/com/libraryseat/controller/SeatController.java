@@ -70,7 +70,6 @@ public class SeatController {
         if (!checkUserRole(roomid,u,resp))
             return;
         String info = seatService.addSeat(roomid,seatid);
-        resp.setContentType("application/json");
         JsonUtil.writeResponse(new Response("/seat/add.do","POST",info),resp.getOutputStream());
     }
 
@@ -80,7 +79,6 @@ public class SeatController {
         User u = (User)session.getAttribute("user");
         if (!checkUserRole(roomid,u,resp))
             return;
-        resp.setContentType("application/json");
         String info = seatService.removeSeat(roomid,seatid);
         JsonUtil.writeResponse(new Response("/seat/add.do","POST",info),resp.getOutputStream());
     }

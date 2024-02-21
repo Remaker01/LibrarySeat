@@ -33,7 +33,6 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         String info=messageService.addMessage(u.getUid(),title,content);
         JsonUtil.writeResponse(new Response("/message/send.do","POST",info),resp.getOutputStream());
     }
@@ -46,7 +45,6 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         String info = messageService.removeMessage(uid,new Date(time));
         JsonUtil.writeResponse(new Response("/message/send.do", "POST", info), resp.getOutputStream());
     }
@@ -61,7 +59,6 @@ public class MessageController {
         }
         if (pageno == null)
             pageno = 1;
-        resp.setContentType("application/json");
         List<Message> messages = messageService.getMessageSummaries(pageno,limit);
         JsonUtil.writeCollection(messages,resp.getOutputStream());
     }
@@ -72,7 +69,6 @@ public class MessageController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         Message message = messageService.getMessage(uid,new Date(time));
         JsonUtil.writePojo(message,resp.getOutputStream());
     }

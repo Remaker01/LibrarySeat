@@ -1,11 +1,10 @@
 package com.libraryseat.services;
 
+import com.libraryseat.dao.BaseDao;
 import com.libraryseat.dao.ReservationDao;
 import com.libraryseat.dao.SeatDao;
 import com.libraryseat.pojo.Reservation;
 import com.libraryseat.pojo.Seat;
-import com.libraryseat.utils.cache.Cache;
-import com.libraryseat.utils.cache.LRUCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class ReservationService {
         Reservation reservation = new Reservation(seatid,roomid,uid,timestamp);
         try {
             reservationDao.add(reservation);
-            return "预定成功！";
+            return "预定成功，请在30分钟内签到，逾期视为自动放弃！";
         } catch (DataAccessException e) {
             seat.setStatus((short) 0);
             seatDao.update(seat);
@@ -52,11 +51,17 @@ public class ReservationService {
 
     public String removeReservation(int seatid, int roomid, int uid, Date resTime) {
         Timestamp old = new Timestamp(resTime.getTime());
-        Reservation reservation = new Reservation(seatid,roomid,uid,old);
+        Reservation reservation = reservationDao.getReservation(seatid,roomid,uid,old);
+        if (reservation == null){
+            return "删除失败，预定信息不存在！";
+        }
+        if (reservation.getSignoutTime() == null)
+            return "只能删除已签退/放弃的预定信息！";
         try {
             reservationDao.delete(reservation);
             return "删除成功！";
         } catch (DataAccessException e) {
+            LOGGER.error("",e);
             return "删除失败，请确认预定信息合法且用户存在！";
         }
     }
@@ -68,7 +73,7 @@ public class ReservationService {
         if(reservation == null)
             return "签到失败，该预定信息不存在！";
         if(reservation.getSignoutTime() != null) {
-            return "无法对已签退的预定信息操作！";
+            return "无法对已签退/放弃的预定信息操作！";
         }
         if (reservation.getSigninTime() != null) {
             return "不可重复签到！";
@@ -102,7 +107,11 @@ public class ReservationService {
         return "签退成功！";
     }
 
-    public List<Reservation> getReservationsByUser(int uid,int page) {
-        return reservationDao.getReservationsByUser(uid,(page-1)*PAGE_SIZE,PAGE_SIZE);
+    public List<Reservation> getReservations(int uid, int page) {
+        return reservationDao.getReservationsByUser(uid,(page-1)*PAGE_SIZE,PAGE_SIZE,"reservation_time", BaseDao.Order.DESCEND);
+    }
+
+    public List<Reservation> getReservations(int page){
+        return reservationDao.getReservations((page-1)*PAGE_SIZE,PAGE_SIZE,"reservation_time", BaseDao.Order.DESCEND);
     }
 }

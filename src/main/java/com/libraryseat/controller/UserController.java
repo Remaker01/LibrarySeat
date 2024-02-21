@@ -5,7 +5,6 @@ import com.libraryseat.pojo.User;
 import com.libraryseat.services.UserService;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
-import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -54,7 +53,6 @@ public class UserController {
         String username = params.get("username"),pswd = params.get("pswd"),vcode = params.get("vcode"),token = params.get("token");
         String realVcode = (String) session.getAttribute("CHECKCODE_SERVER");
         session.removeAttribute("CHECKCODE_SERVER");
-        response.setContentType("application/json");
         if(!realVcode.equals(vcode)) { //real的写在前面，万一出错直接报500方便排错
             Response r = new Response("/user/login.do","POST","验证码错误");
             JsonUtil.writeResponse(r,out);
@@ -87,7 +85,6 @@ public class UserController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         OutputStream out = resp.getOutputStream();
         String username = params.get("username"),
                 pswd = params.get("pswd"),
@@ -104,9 +101,10 @@ public class UserController {
         }
         if(!VerifyUtil.verifyTimestamp(token)) {
             resp.sendError(403,"校验失败");
+            return;
         }
         short role;
-        if(roleStr.equals("1")) role = (short)1;
+        if(roleStr.equals("1"))  role = (short)1;
         else if (roleStr.equals("2"))   role = (short)2;
         else {
             resp.sendError(400,"参数错误");
@@ -136,7 +134,6 @@ public class UserController {
             return;
         }
         fileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
-        resp.setContentType("application/json");
         try {
             String info = userService.addUsersInFileItem(fileUpload.parseRequest(req).get(0));
             JsonUtil.writeResponse(new Response("/user/add_users.do","POST",info),resp.getOutputStream());
@@ -159,7 +156,6 @@ public class UserController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         String info = userService.removeUser(uid);
         JsonUtil.writeResponse(new Response("/user/delete.do","POST",info),resp.getOutputStream());
     }
@@ -209,7 +205,6 @@ public class UserController {
         String uid = params.get("uid"),uname = params.get("uname"),trueName = params.get("truename"),phone = params.get("phone");
         try{
             int uid_ = Integer.parseInt(uid);
-            resp.setContentType("application/json");
             User u = userService.getUserById(uid_); //不能直接new不然密码不正确
             u.setUsername(uname);u.setTruename(trueName);u.setPhone(phone);
             String info = userService.updateUser(u);
@@ -224,7 +219,7 @@ public class UserController {
         return "redirect:/";
     }
 
-    @RequestMapping(value = "/listusers.do",method = {RequestMethod.GET,RequestMethod.POST})
+    @RequestMapping(value = "/listusers.do",method = {RequestMethod.POST,RequestMethod.GET})
     @ResponseBody
     public void listUsers(@RequestParam(value = "pageno",required = false) Integer pageno,
                           @RequestParam(required = false) Short role,

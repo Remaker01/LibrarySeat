@@ -10,3 +10,4 @@ function hashPassword(t){return null==t?null:CryptoJS.MD5(CryptoJS.MD5(t)).toStr
 function randInt(l,h){return Math.floor(Math.random()*(h-l))+l}
 function getCurrentParam(t){for(var n=document.location.search.split("&"),e=-1,r=0;r<n.length;r++)if(0<=n[r].indexOf(t)){e=r;break}return 0>e?"":n[e].split("=")[1]}
 function sendMessage(t,co){$.ajax({url:_ROOT_+"message/send.do",type:"post",data:{title:t,content:co}})}
+function getRoomById(t){var x;$.ajax({url:_ROOT_+"room/getbyid.do", type:"post", data:{"roomid":t}, async:false}).done(function (d){x=d.info;}).fail(function (){x=null;});return x;}

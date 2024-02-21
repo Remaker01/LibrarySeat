@@ -80,8 +80,18 @@ public class ReservationDao extends BaseDao{
                 r.getResTime());
     }
 
+    public List<Reservation> getReservations(int start,int rows){
+        String sql = "select * from reservation where 1=1";
+        return super.findByPage(sql,ReservationMapper.INSTANCE,start,rows,new HashMap<>(0));
+    }
+
+    public List<Reservation> getReservations(int start,int rows,String orderBy, Order order){
+        String sql = "select * from reservation where 1=1";
+        return super.findByPage(sql,ReservationMapper.INSTANCE,start,rows,new HashMap<>(0),orderBy,order);
+    }
+
     public List<Reservation> getReservationsByUser(int uid,int start,int rows) {
-        String sql = "select * from reservation where uid=?";
+        String sql = "select * from reservation where 1=1";
         HashMap<String,String> condition = new HashMap<>(1);
         condition.put("uid",Integer.toString(uid));
         return super.findByPage(sql,ReservationMapper.INSTANCE,start,rows,condition);

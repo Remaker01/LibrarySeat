@@ -64,7 +64,6 @@ public class RoomController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         User adminAccount = userService.getUserById(admin);
         if (adminAccount == null||adminAccount.getRole() != 1) {
             JsonUtil.writeResponse(new Response("/room/add.do","POST","指定的用户不存在或不是图书室管理员"), resp.getOutputStream());
@@ -82,7 +81,6 @@ public class RoomController {
             response.sendError(403,"校验失败");
             return;
         }
-        response.setContentType("application/json");
         String info = roomService.deleteRoom(id);
         JsonUtil.writeResponse(new Response("/room/delete.do","POST",info),response.getOutputStream());
     }
@@ -94,7 +92,6 @@ public class RoomController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         User adminAccount = userService.getUserById(admin);
         if (adminAccount==null||adminAccount.getRole() != 1) {
             JsonUtil.writeResponse(new Response("/room/add.do","POST","指定的用户不存在或不是图书室管理员"), resp.getOutputStream());
@@ -134,7 +131,6 @@ public class RoomController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         Room room = roomService.getRoom(roomid);
         JsonUtil.writePojo(room,resp.getOutputStream());
     }

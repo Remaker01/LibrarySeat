@@ -66,10 +66,10 @@ public abstract class BaseDao {
         }
 //        LogUtil.log(LOGGER,Level.FINE,sb.toString());
         //添加分页查询
-        sb.append(" limit ?,? ");
         if (VerifyUtil.verifyNonEmptyStrings(orderColumn)&&order != null) {
-            sb.append(" order by ").append(orderColumn).append(order.value);
+            sb.append(" order by ").append(orderColumn).append(' ').append(order.value);
         }
+        sb.append(" limit ?,? ");
         //添加分页查询参数值
         params.add(start);
         params.add(rows);

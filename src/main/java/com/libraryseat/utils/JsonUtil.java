@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 //除list和Response外均统一格式
@@ -20,13 +21,13 @@ public class JsonUtil {
     private JsonUtil() {}
 
     public static void writePojo(Object obj, OutputStream stream) throws IOException{
-        if (obj == null) {
-            writeNullObject(stream);
-        } else {
-            Map<String,Object> map = new HashMap<>(1);
-            map.put("info",obj);
-            MAPPER.writeValue(stream,map);
+        if (obj instanceof Reservation) {
+            writeReservation((Reservation) obj, stream);
+            return;
         }
+        Map<String,Object> map = new HashMap<>(1);
+        map.put("info",obj);
+        MAPPER.writeValue(stream,map);
     }
 
     public static void writeCollection(Collection<?> collection, OutputStream stream) throws IOException {
@@ -34,38 +35,37 @@ public class JsonUtil {
     }
 
     public static void writeReservations(Collection<Reservation> reservations, OutputStream stream) throws IOException {
-        JsonGenerator generator = newGenerator(stream);
+        JsonGenerator generator = FACTORY.createGenerator(stream);
         generator.writeStartArray();
         if(reservations != null) {
             final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (Reservation reservation:reservations) {
+                generator.writeStartObject();
                 generator.writeNumberField("seatid",reservation.getSeatid());
                 generator.writeNumberField("roomid",reservation.getRoomid());
                 generator.writeNumberField("uid",reservation.getUid());
-                generator.writeStringField("resTime", dateFormat.format(reservation.getResTime()));
-                generator.writeStringField("signinTime", dateFormat.format(reservation.getSigninTime()));
-                generator.writeStringField("signoutTime", dateFormat.format(reservation.getSignoutTime()));
+                generator.writeStringField("resTime", formatTime(dateFormat,reservation.getResTime()));
+                generator.writeStringField("signinTime", formatTime(dateFormat,reservation.getSigninTime()));
+                generator.writeStringField("signoutTime", formatTime(dateFormat,reservation.getSignoutTime()));
+                generator.writeEndObject();
             }
         }
         generator.writeEndArray();
-        writeEndAndClose(generator);
+        generator.close();
     }
 //jackson默认把日期时间序列化成时间戳，需特殊处理
     public static void writeReservation(Reservation reservation, OutputStream stream) throws IOException {
-        if(reservation == null) {
-            writeNullObject(stream);
-        } else {
-            JsonGenerator generator = newGenerator(stream);
-            generator.writeObjectFieldStart("info");
-            generator.writeNumberField("seatid",reservation.getSeatid());
-            generator.writeNumberField("roomid",reservation.getRoomid());
-            generator.writeNumberField("uid",reservation.getUid());
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            generator.writeStringField("resTime", dateFormat.format(reservation.getResTime()));
-            generator.writeStringField("signinTime", dateFormat.format(reservation.getSigninTime()));
-            generator.writeStringField("signoutTime", dateFormat.format(reservation.getSignoutTime()));
-            writeEndAndClose(generator);
-        }
+        JsonGenerator generator = newGenerator(stream);
+        generator.writeObjectFieldStart("info");
+        generator.writeNumberField("seatid",reservation.getSeatid());
+        generator.writeNumberField("roomid",reservation.getRoomid());
+        generator.writeNumberField("uid",reservation.getUid());
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        generator.writeStringField("resTime", formatTime(dateFormat,reservation.getResTime()));
+        generator.writeStringField("signinTime", formatTime(dateFormat,reservation.getSigninTime()));
+        generator.writeStringField("signoutTime", formatTime(dateFormat,reservation.getSignoutTime()));
+        generator.writeEndObject();
+        generator.close();
     }
     public static void writeResponse(Response response,OutputStream stream) throws IOException {
         MAPPER.writeValue(stream,response);
@@ -76,16 +76,11 @@ public class JsonUtil {
         return generator;
     }
 
-    private static void writeEndAndClose(JsonGenerator generator) throws IOException {
-        if (generator.isClosed())
-            return;
-        generator.writeEndObject();
-        generator.close();
-    }
-
-    private static void writeNullObject(OutputStream stream) throws IOException {
-        JsonGenerator generator = newGenerator(stream);
-        generator.writeNullField("info");
-        writeEndAndClose(generator);
+    private static String formatTime(SimpleDateFormat formatter,Date date){
+        if (formatter == null)
+            return null;
+        if(date == null)
+            return "";
+        return formatter.format(date);
     }
 }

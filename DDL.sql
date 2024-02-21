@@ -67,3 +67,14 @@ create table if not exists reservation
         foreign key (uid) references users (uid)
             on update cascade
 );
+# 超时自动放弃座位
+create event auto_signout
+    on schedule every 30 second
+    on completion preserve
+    do
+    update reservation,seat set signout_time=NOW(),seat.status=0
+    where reservation.seatid=seat.seatid
+      and reservation.roomid=seat.roomid
+      and signin_time is null
+      and signout_time is null
+      and TIMESTAMPDIFF(minute,reservation_time,NOW())>=30;
