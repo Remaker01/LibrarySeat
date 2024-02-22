@@ -50,3 +50,16 @@ function getRoomById(id){
     });
     return x;
 }
+function timeDiff(before,after){
+    var _typeofDate=typeof new Date();
+    if(typeof before !== _typeofDate||typeof after !== _typeofDate)
+        throw new TypeError();
+    var diffTimeStamp=Math.floor((after.getTime()-before.getTime())/1000);
+    var result={}
+    var level2 = diffTimeStamp % (3600);
+    // result.date=Math.floor(diffTimeStamp / (24 * 3600)); // 计算出天数
+    result.hours=Math.floor(diffTimeStamp / (3600));
+    result.minutes=Math.floor(level2 / (60));
+    result.seconds=Math.floor(level2%60);
+    return result;
+}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>预定管理</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <style>
+        body{
+            background-image: url("../img/bg-iframes.jpg");
+            background-size: cover;
+        }
+        div.panel{
+            margin-top: 10%;
+            position: relative;
+            left: 1%;
+            width: 98%;
+            display: none;
+        }
+    </style>
+    <script>
+        var reservation=null;
+        $(document).ready(function (){
+            checkLogin(function (data) {
+                var user=data.info;
+                if (user == null||user.role!==2) {
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else{
+                    $.ajax({
+                        url:_ROOT_+"reservation/list.do", type:"post", data:{uid:user.uid}
+                    }).done(function (d) {
+                        reservation = getActiveReservation(d,user);
+                        // console.log(reservation);
+                        initPanel().css("display","block");
+                    })
+                }
+            });
+        });
+        var signIn = function (){
+            if (!reservation||reservation.signinTime!=="")
+                return FALSE;
+            $("p.status").text("验证中……");
+            var param={
+                seatid: reservation.seatid,
+                roomid: reservation.roomid,
+                time: new Date(reservation.resTime).getTime()
+            }
+            $.ajax({
+                url: _ROOT_+"reservation/signin.do", type: "post", data: param
+            }).done(function (d) {
+                $("p.status").text(d.msg);
+            }).fail(function (xhr) {
+                $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+            });
+            return FALSE;
+        }
+        var signOut = function (){
+            if (!reservation)
+                return FALSE;
+            if (reservation.signinTime!==""?confirm("确认要退座吗？"):confirm("确认要放弃座位吗")) {
+                var param = {
+                    seatid: reservation.seatid,
+                    roomid: reservation.roomid,
+                    time: new Date(reservation.resTime).getTime()
+                }
+                $.ajax({
+                    url: _ROOT_+"reservation/signout.do", type: "post", data: param
+                }).done(function (d) {
+                    $("p.status").text(d.msg);
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                })
+            }
+            return FALSE;
+        }
+        function getActiveReservation(arr,u){
+            if (reservation != null)
+                return reservation;
+            for(var i=0; i<arr.length; i++){
+                if(arr[i].uid===u.uid&&arr[i].signoutTime==="")
+                    return arr[i];
+            }
+            return null;
+        }
+        var initPanel = function (){
+            var ret;
+            if (!reservation||reservation.signoutTime!==""){
+                ret = $("#no-reservation");
+                ret.find("input[type='button']").on("click",function () {
+                    document.location.href=_ROOT_+"library/seat.html";
+                })
+            }
+            //已预定未签到
+            else if (reservation.signinTime===""){
+                ret = $("#not-signin");
+                ret.find("p>strong").text(getRoomById(reservation.roomid).roomname+' '+reservation.seatid+"号座位");
+                var latestSignInTime = new Date(new Date(reservation.resTime).getTime() + 30*60*1000);
+                // console.log(latestSignInTime);
+                ret.find("p.time").text("请在"+latestSignInTime.getHours()+":"+latestSignInTime.getMinutes()+"之前签到，否则自动放弃座位！");
+                ret.find("input[type='button']").on("click",signIn);
+                ret.find("a.quit").on("click",signOut);
+            }
+            //已签到但未退座
+            else {
+                ret = $("#using");
+                ret.find("p>strong").text(getRoomById(reservation.roomid).roomname+' '+reservation.seatid+"号座位");
+                var diff=timeDiff(new Date(reservation.signinTime),new Date());
+                // console.log(diff);
+                var str="已学习";
+                /*  显示方法：
+                * 1.不足1分钟的，显示秒数
+                * 2.1分钟~1小时，显示分钟数+秒数
+                * 3.>1小时，显示小时数+分钟数
+                */
+                if (diff.hours===0){ //不足1小时
+                    if (diff.minutes===0){//不足1分钟
+                        str+=diff.seconds+"秒";
+                    } else { //一分钟以上
+                        str+=diff.minutes+"分钟"+diff.seconds+"秒";
+                    }
+                } else {
+                    str+=diff.hours+"小时"+diff.minutes+"分钟";
+                }
+                ret.find("p.time").text(str);
+                ret.find("input[type='button']").on("click",signOut);
+            }
+            return ret;
+        }
+    </script>
+</head>
+<body>
+<div class="panel panel-warning" id="no-reservation">
+    <div class="panel-heading">
+        <h3 class="panel-title">当前预定信息</h3>
+    </div>
+    <div class="panel-body">
+        <p>你还没有预定任何座位哦~<input type="button" class="btn btn-warning" value="去预定" style="float:right"/></p>
+        <p>快去选择能让你专注学习的座位吧！</p>
+    </div>
+</div>
+<div class="panel panel-warning" id="not-signin">
+    <div class="panel-heading">
+        <h3 class="panel-title">当前预定信息</h3>
+    </div>
+    <div class="panel-body">
+        <p><strong></strong><input type="button" class="btn btn-warning" value="去签到" style="float:right" /></p>
+        <p class="time"> </p><a class="quit" href="#" style="float: right">放弃座位</a>
+    </div>
+</div>
+<div class="panel panel-warning" id="using">
+    <div class="panel-heading">
+        <h3 class="panel-title">当前预定信息</h3>
+    </div>
+    <div class="panel-body">
+        <p><strong></strong><input type="button" class="btn btn-warning" value="签退" style="float:right" /></p>
+        <p class="time"></p>
+    </div>
+</div>
+<p class="status"></p>
+</body>
+</html>

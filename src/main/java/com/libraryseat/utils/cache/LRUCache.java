@@ -31,7 +31,7 @@ public class LRUCache<K,V> implements Cache<K,V>{
         return node.value;
     }
     @Override
-    public V put(K key, V value) {
+    public void put(K key, V value) {
         DLinkedNode<K,V> node = map.get(key);
         if (node == null) {
             // 如果 key 不存在，创建一个新的节点
@@ -46,19 +46,16 @@ public class LRUCache<K,V> implements Cache<K,V>{
                 // 删除哈希表中对应的项
                 map.remove(tail_.key);
                 //返回
-                return (tail_ != head&&tail_.dirty) ? tail_.value : null;
             } /*else {
                 size.getAndIncrement();
             }*/
-            return null;
         }
         else {
             // 如果 key 存在，先通过哈希表定位，再修改 value，并移到头部
             node.value = value;
-            node.dirty = true;
+//            node.dirty = true;
             moveToHead(node);
         }
-        return null;
     }
     @Override
     public int getSize() {
@@ -70,10 +67,9 @@ public class LRUCache<K,V> implements Cache<K,V>{
         return capacity;
     }
     @Override
-    public V invalidate(K k) {
-        DLinkedNode<K,V> removed = map.remove(k);
+    public void invalidate(K k) {
+        map.remove(k);
 //        size.getAndDecrement();
-        return (removed != null&&removed.dirty) ? removed.value : null;
     }
 
     //添加到头部节点（放在伪头部后面）
@@ -84,7 +80,7 @@ public class LRUCache<K,V> implements Cache<K,V>{
         head.next = node;
     }
     //移除节点
-    private synchronized void removeNode(DLinkedNode node) {
+    private synchronized void removeNode(DLinkedNode<K,V> node) {
         node.prev.next = node.next;
         node.next.prev = node.prev;
     }

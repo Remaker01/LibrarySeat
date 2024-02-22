@@ -1,6 +1,5 @@
 package com.libraryseat.utils.cache;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -26,10 +25,10 @@ public class FIFOCache<K,V> implements Cache<K,V>{
     }
 
     @Override
-    public V put(K k, V v) {
+    public void put(K k, V v) {
         DLinkedNode<K,V> node = map.get(k);
         if (node != null) {
-            node.dirty = true;
+//            node.dirty = true;
             node.value = v;
         }
         else {
@@ -42,10 +41,8 @@ public class FIFOCache<K,V> implements Cache<K,V>{
                 // 删除哈希表中对应的项
                 map.remove(tail_.key);
                 //返回
-                return (tail_ != head&&tail_.dirty) ? tail_.value : null;
             }
         }
-        return null;
     }
 
     @Override
@@ -59,9 +56,8 @@ public class FIFOCache<K,V> implements Cache<K,V>{
     }
 
     @Override
-    public V invalidate(K k) {
-        DLinkedNode<K,V> removed = map.remove(k);
-        return (removed != null&&removed.dirty) ? removed.value : null;
+    public void invalidate(K k) {
+        map.remove(k);
     }
 
     private synchronized void addToHead(DLinkedNode<K,V> node) {

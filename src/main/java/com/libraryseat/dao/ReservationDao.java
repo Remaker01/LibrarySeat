@@ -36,7 +36,7 @@ public class ReservationDao extends BaseDao{
         template.update(sql,
                 r.getSeatid(),
                 r.getRoomid(),
-                r.getUid(),
+                r.getUid(),//bug2:缺参数
                 r.getResTime(),
                 r.getSigninTime(),
                 r.getSignoutTime());
@@ -64,9 +64,10 @@ public class ReservationDao extends BaseDao{
                 r.getSignoutTime(),
                 r.getSeatid(),
                 r.getRoomid(),
+                r.getUid(), //bug3:缺参数
                 r.getResTime());
     }
-    /**更新预定表的同时更新座位表。将两次更新操作合并为一次，防止不一致问题，可能提高效率.*/
+    /**更新预定表的同时更新座位表。将两次更新操作合并为一次，可能解决并发问题和提高效率.*/
     public int updateWithStatus(Reservation r,short status) {
         String sql = "update reservation r,seat s set r.signin_time=?, r.signout_time=?, s.status=? " +
                 "where r.seatid=s.seatid and r.roomid=s.roomid and " +
@@ -77,7 +78,8 @@ public class ReservationDao extends BaseDao{
                 status,status,
                 r.getSeatid(),
                 r.getRoomid(),
-                r.getResTime());
+                r.getUid(),
+                r.getResTime()); //bug4:缺参数
     }
 
     public List<Reservation> getReservations(int start,int rows){
@@ -98,7 +100,7 @@ public class ReservationDao extends BaseDao{
     }
 
     public List<Reservation> getReservationsByUser(int uid,int start,int rows,String orderBy,Order order) {
-        String sql = "select * from reservation where uid=?";
+        String sql = "select * from reservation where 1=1"; //bug5:条件错误(重复)
         HashMap<String,String> condition = new HashMap<>(1);
         condition.put("uid",Integer.toString(uid));
         return super.findByPage(sql,ReservationMapper.INSTANCE,start,rows,condition,orderBy,order);
@@ -114,7 +116,7 @@ public class ReservationDao extends BaseDao{
     }
     //获取某用户未签退的预定信息总数，目前仅在预定座位时校验使用。
     public int getActiveReservationCountByUser(int uid) {
-        String sql = "select count(*) from reservation where uid=? and signout_time is null";
+        String sql = "select count(*) from reservation where uid=? and signout_time is null"; //bug6:多了个not
         Integer ret = template.queryForObject(sql,Integer.class,uid);
         return ret == null ? -1 :ret;
     }

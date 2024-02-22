@@ -41,7 +41,7 @@ public class ReservationService {
         try {
             reservationDao.add(reservation);
             return "预定成功，请在30分钟内签到，逾期视为自动放弃！";
-        } catch (DataAccessException e) {
+        } catch (DataAccessException e) { //bug1:预定失败没有回退
             seat.setStatus((short) 0);
             seatDao.update(seat);
             LOGGER.error("",e);
@@ -102,9 +102,9 @@ public class ReservationService {
         Timestamp now = new Timestamp((System.currentTimeMillis()/1000)*1000L);
         reservation.setSignoutTime(now);
         if(reservationDao.updateWithStatus(reservation,(short) 0) == 0) {
-            return "签退失败，请稍后重试。";
+            return "操作失败，请稍后重试。";
         }
-        return "签退成功！";
+        return "操作成功！";
     }
 
     public List<Reservation> getReservations(int uid, int page) {
