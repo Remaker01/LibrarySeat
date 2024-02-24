@@ -1,106 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache">
-    <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
-    <meta name="viewport" content="width=device-width"/>
-    <title>图书馆选座管理系统 - 管理页</title>
-    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
-    <script src="../static/commons.js"></script>
-    <script src="https://cdn.staticfile.net/jquery-easing/1.4.1/jquery.easing.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.net/normalize/4.2.0/normalize.min.css">
-    <script>
-        $(document).ready(function () {
-            checkLogin(function (d) {
-                if(d.info==null||d.info.role!==0) {
-                    $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='../'>点击返回</a>";
-                    return;
-                }
-                $(".treebox .level1>a").on("click",function(){
-                    $(this).addClass('current')   //给当前元素添加"current"样式
-                        .find('i').addClass('down')   //小箭头向下样式
-                        .parent().next().slideDown(500,'easeOutQuad')  //下一个元素显示
-                        .parent().siblings().children('a').removeClass('current')//父元素的兄弟元素的子元素去除"current"样式
-                        .find('i').removeClass('down').parent().next().slideUp(500,'easeOutQuad');//隐藏
-                    return false; //阻止默认时间
-                });
-                $("#img1").on("click",function (){
-                    $("iframe[name='yem']")[0].src="about:blank";
-                    $(".treebox .level1>a").removeClass("current"). //自身去除current样式
-                        find("i").removeClass("down"). //去除小箭头向下样式
-                        parent().next().slideUp(500,'easeOutQuad'); //上滑
-                });
-            });
-        });
-        var confirm_close = function() {
-            if(confirm('确认要退出吗？')) {
-                window.open(_ROOT_+'user/exit.do','_self');
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="../static/library.css">
+	<meta charset="UTF-8">
+	<meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
+	<meta name="viewport" content="width=device-width"/>
+	<title>图书馆选座系统</title>
+	<link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../static/library.css">
+	<script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.net/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+	<script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<script src="../static/commons.js"></script>
+	<script>
+		var confirm_close;
+		$(document).ready(function () {
+			checkLogin(function (d) {
+				if(d.info==null||d.info.role!==0) {
+					$("body")[0].innerHTML = "<p>您尚未登录！</p><a href='../'>点击返回</a>";
+				} else {
+					confirm_close = function() {
+						if(confirm('确认要退出吗？')) {
+							window.open(_ROOT_+'user/exit.do','_self');
+						}
+					}
+				}
+			});
+			//----实现导航栏下拉滚动效果----
+			$('.dropdown').on('click', function(e) {
+				e.stopPropagation();
+				// 隐藏所有二级导航栏
+				$('.dropdown-menu').removeClass('show');
+				// 仅显示被点击的一级导航项下的二级导航栏
+				$(this).find('.dropdown-menu').addClass('show');
+			});
+			$("body,.dropdown-menu li a").on('click', function(e) {
+				e.stopPropagation(); //阻止事件冒泡到父元素
+				// 隐藏所有二级导航栏
+				$('.dropdown-menu').removeClass('show');
+			});
+			//----点击图片返回----
+			$("#img1").on("click",function (){
+				$("iframe[name='yem']")[0].src="about:blank";
+			});
+		});
+	</script>
 </head>
 <body>
-    <div id="a1">
-        <img src="../img/logo.png" style="vertical-align: bottom;width: 60px;height: 60px" alt="校徽">
-        <b><span style="font-size: 10px;"> xx大学图书馆选座管理系统服务平台</span></b>
-    </div>
-    <div id="a2">
-    <span style="text-align: center">
-        <div id="aa1">
-            <a href="#" onclick="confirm_close()"><span id="top"><b>退出</b></span></a>
-        </div>
-    </span>
-    </div>
-    <div id="tab1">
-        <div id="tab2">
-            <table style="border: 0;" cellspacing="0" cellpadding="0" id="t2">
-                <tr>
-                    <td>
-                        <img src="../img/RC.jpg" width="100px" height="100px"
-                             id="img1" alt="图书馆logo">
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="treebox">
-            <ul class="menu">
-                <li class="level1">
-                    <a href="#none"><em class="ico ico2"></em>阅览室管理<i></i></a>
-                    <ul class="level2">
-                        <li><a href="../room/show.do" target="yem">阅览室信息</a></li>
-                        <li><a href="room_add.html" target="yem">新增阅览室</a></li>
-                    </ul>
-                </li>
-                <li class="level1">
-                    <a href="#none">
-                        <em class="ico ico3"></em>座位管理<i></i></a>
-                    <ul class="level2">
-                        <li><a href="seat.html" target="yem">座位信息查询</a></li>
-                        <li><a href="seat_add.html" target="yem">座位信息添加</a></li>
-                    </ul>
-                </li>
-                <li class="level1">
-                    <a href="#none"><em class="ico ico3"></em>预定管理<i></i></a>
-                    <ul class="level2">
-                        <li><a href="../reservation/show.do" target="yem">预定查询</a></li>
-                    </ul>
-                </li>
-                <li class="level1">
-                    <a href="#none"><em class="ico ico1"></em>用户管理<i></i></a>
-                    <ul class="level2">
-                        <li><a href="user_add.html" target="yem">新增用户</a></li>
-                        <li><a href="users.html" target="yem">用户信息管理</a></li>
-                        <li><a href="profile.html" target="yem">修改个人信息</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-    <div id="main_">
-        <iframe src="about:blank" width="100%" height="580px" id="yem" name="yem" style="border: 0">
-        </iframe>
-    </div>
+<div id="a1">
+	<img id="img1" src="../img/logo.png" alt="校徽">
+	<b><span style="font-size: 10px;">xx大学图书馆选座管理系统服务平台</span></b>
+</div>
+<br>
+<nav class="navbar navbar-default" role="navigation">
+	<div class="container-fluid">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="profile.html" target="yem"><img src="../img/user-img.jpg" id="img2" alt="个人信息管理">
+		</a>
+	</div>
+	<div>
+		<ul class="nav navbar-nav">
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					阅览室管理
+					<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					<li><a href="../room/show.do" target="yem">阅览室信息</a></li>
+					<li><a href="room_add.html" target="yem">新增阅览室</a></li>
+				</ul>
+			</li>
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					座位管理
+					<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					<li><a href="seat.html" target="yem">座位信息查询</a></li>
+					<li><a href="seat_add.html" target="yem">座位信息添加</a></li>
+				</ul>
+			</li>
+			<li>
+				<a href="../reservation/show.do" target="yem" class="dropdown-toggle">预定管理</a>
+			</li>
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					用户管理
+					<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					<li><a href="user_add.html" target="yem">新增用户</a></li>
+					<li><a href="users.html" target="yem">用户信息管理</a></li>
+				</ul>
+			</li>
+		</ul>
+	<ul class="nav navbar-nav navbar-right">
+		<li><a href="#" onclick="confirm_close()"> 退出</a></li>
+    </ul>
+	</div>
+	</div>
+</nav>
+<div id="main_">
+	<iframe name="yem"></iframe>
+</div>
+<div>
+	<p class="copyright">版权所有：xx大学</p>
+</div>
 </body>
 </html>

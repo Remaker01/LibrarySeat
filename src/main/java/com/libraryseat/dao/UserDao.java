@@ -129,11 +129,12 @@ public class UserDao extends BaseDao {
             throw new IllegalArgumentException();
         User user = (User) o;
         if(user.getUid() != 0) {
-            String sql = "update users set uid=-uid,username=CONCAT(username,'#'),phone=CONCAT(phone,'#') where uid=?";
+            String sql = "update users set uid=-uid,username=CONCAT(username,uid),phone=CONCAT(phone,uid) where uid=?";
+            //防止后续出现唯一键冲突。注意concat要在uid=-uid之后，这样方便提取真正的用户名出来
             //删除用户后将uid变为负数，关联表查的时候过滤一下
             template.update(sql, user.getUid());
         } else {
-            String sql = "update users set uid=-uid,username=CONCAT(username,'#'),phone=CONCAT(phone,'#') where username=?";
+            String sql = "update users set uid=-uid,username=CONCAT(username,uid),phone=CONCAT(phone,uid) where username=?";
             template.update(sql,user.getUsername());
         }
     }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>登录</title>
     <link rel="stylesheet" type="text/css" href="static/main.css" />
-    <meta name=”viewport” content=”width=device-width">
+    <meta name="viewport" content="width=device-width">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
     <script src="static/commons.js"></script>
     <script>
@@ -28,9 +28,9 @@
                 return FALSE;
             }
             var params={
-                "phone":pswd_input,
-                "vcode":vcode,
-                "token":Math.round(new Date().getTime()/1000)
+                phone:pswd_input,
+                vcode:vcode,
+                token:Math.round(new Date().getTime()/1000)
             };
             if($("#vcode-phone-text").val()!=phone_code) { //不用!==
                 $("#status").text("手机验证码错误！");
@@ -74,7 +74,7 @@
         <input type="button" id="vcode-phone-btn" value="获取验证码" style="display: inline" required/>&emsp;
         <input type="submit" id="submit" value="登录"/>
     </form>
-    <span style="text-align: left"><a href="index.html">使用用户名登录</a></span>
+    <span style="text-align: left"><a href="./">使用用户名登录</a></span>
     <p id="status"></p>
 </div>
 </body>

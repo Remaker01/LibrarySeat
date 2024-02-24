@@ -1,13 +1,8 @@
-*{margin: 0;padding: 0;}
 #a1 {
     width: 80%;
     height: 70px;
     padding-left: 23px;
     padding-top: 20px;
-    margin-bottom: 10px;
-    margin-top: 5px;
-    box-shadow: 0 0 1500px 0 #DDDDDD;
-    float: left;
     z-index: 1;
 }
 #top{
@@ -29,10 +24,9 @@
 #t2{height: 150px;width: 100%;}
 #t2 tr th{height: 30px;font-size: x-large;}
 img{border:0;}
-#img1{margin-top: 5px;border-radius: 49%;}
+#img1{margin-top: 5px;border-radius: 49%;width: 60px;height: 60px;vertical-align: bottom;}
+#img2{margin-top: -3px;padding: 0;}
 ul,li{list-style-type:none;}
-a{color:#505050;text-decoration:none;}
-a:hover {color:#bd0a01;text-decoration:underline;}
 .treebox{ width: 100%; margin: 0 auto; background-color: #505050;}
 .menu{ overflow: hidden; border-color: #ddd; border-style: solid ; border-width: 0 1px 1px ; }
 /*第一层*/
@@ -74,4 +68,22 @@ a:hover {color:#bd0a01;text-decoration:underline;}
     font-size: 17px;
     transition:all 0.4s linear 0s;
 }
-#main_{width: 80%;height: 100%;float: left;margin-left: 5px; box-shadow: 0 0 35px 0 #DDDDDD;z-index: 0;}
+#main_>iframe{width:100%;height:520px;border:0;z-index: 0;}
+nav.navbar{margin: 0;}
+nav.navbar .dropdown-menu {
+    display: none;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    padding-bottom: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.175);
+    animation: fadeIn 0.4s linear;
+}
+nav.navbar .dropdown-menu.show {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+p.copyright{text-align: center;font-size: small;color: #505050;}

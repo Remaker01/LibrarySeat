@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>登录</title>
     <link rel="stylesheet" type="text/css" href="static/main.css" />
-    <meta name=”viewport” content=”width=device-width">
+    <meta name="viewport" content="width=device-width">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
     <script src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
@@ -24,12 +24,11 @@
             var uname=$("input[name='uname']").val(),pswd_input=$("input[name='pswd']").val(),vcode=$("input[name='vcode']").val();
             var pswd=hashPassword(pswd_input);
             var params={
-                "username":uname,
-                "pswd":pswd,
-                "vcode":vcode,
-                "token":Math.round(new Date().getTime()/1000)
+                username:uname,
+                pswd:pswd,
+                vcode:vcode,
+                token:Math.round(new Date().getTime()/1000)
             };
-            // console.log(params);
             $.ajax({url:_ROOT_+"user/login.do",
                 type:"post",
                 data:params,
@@ -66,7 +65,7 @@
         </div>
         <input type="submit" id="submit" value="登录"/>
     </form>
-    <span style="text-align: left;font-size: small"><a href="login2.html">使用手机号登录</a></span>
+    <span style="text-align: left"><a href="login2.html">使用手机号登录</a></span>
     <p style="text-align: right;color: white;font-size: small">如忘记密码或用户名，请联系管理员重置</p>
     <p id="status"></p>
 </div>
