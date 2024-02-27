@@ -74,4 +74,12 @@ public class SeatService {
     public Seat getSeatById(int seatid,int roomid){
         return seatDao.getSeatById(seatid,roomid);
     }
+
+    public int getSeatCountInRoom(int roomid,short status) {
+        return seatDao.getSeatsInRoom(roomid,status);
+    }
+
+    public int getTotalSeatCountInRoom(int roomid){
+        return seatDao.getTotalSeatsInRoom(roomid);
+    }
 }

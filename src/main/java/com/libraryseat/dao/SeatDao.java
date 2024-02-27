@@ -62,10 +62,15 @@ public class SeatDao extends BaseDao{
         conditions.put("roomid",Integer.toString(roomid));
         return super.findByPage(sql, MAPPER,start,rows,conditions,orderBy,order);
     }
-    //虽然也可通过上面的方法.size()，但可能性能啥的会有问题
-    public int getFreeSeatsInRoom(int roomid) {
-        String sql = "select count(*) from seat where roomid=? and `status`=0";
+
+    public int getTotalSeatsInRoom(int roomid){
+        String sql = "select count(*) from seat where roomid=?";
         Integer ret = template.queryForObject(sql,Integer.class,roomid);
+        return ret == null ? -1 : ret;
+    }
+    public int getSeatsInRoom(int roomid,short status) {
+        String sql = "select count(*) from seat where roomid=? and `status`=?";
+        Integer ret = template.queryForObject(sql,Integer.class,roomid,status);
         return ret == null ? -1 : ret;
     }
 

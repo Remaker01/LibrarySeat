@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/seat")
@@ -110,5 +112,26 @@ public class SeatController {
         resp.setContentType("application/json");
         Seat seat = seatService.getSeatById(seatid,roomid);
         JsonUtil.writePojo(seat,resp.getOutputStream());
+    }
+    @RequestMapping(value = "/count.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void getSeatCount(Integer roomid, @RequestParam(required = false)Short status, HttpServletResponse resp, HttpSession session)
+        throws IOException{
+        User u = (User)session.getAttribute("user");
+        if (u == null) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        Response response = new Response("/seat/count.do","POST","查找成功");
+        HashMap<String,Integer> extra = new HashMap<>(2);
+        int count,totalCount;
+        if (status != null) {
+            count = seatService.getSeatCountInRoom(roomid,status);
+            extra.put("count",count);
+        }
+        totalCount = seatService.getTotalSeatCountInRoom(roomid);
+        extra.put("totalCount",totalCount);
+        response.setExtra(extra);
+        JsonUtil.writeResponse(response,resp.getOutputStream());
     }
 }

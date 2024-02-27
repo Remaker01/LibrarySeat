@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class Response {
     private String uri,method,msg;
-    private Map<String,String> extra;
+    private Map<String,?> extra;
 
     public Response() {}
 
@@ -38,11 +38,11 @@ public class Response {
         this.method = method;
     }
 
-    public Map<String, String> getExtra() {
+    public Map<String, ?> getExtra() {
         return extra;
     }
 
-    public void setExtra(Map<String, String> extra) {
+    public void setExtra(Map<String, ?> extra) {
         this.extra = extra;
     }
 }

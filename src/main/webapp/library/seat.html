@@ -10,38 +10,84 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../static/iframes.css">
+    <style>
+        hr{margin: 0;}
+    </style>
     <script>
         $(document).ready(function (){
             checkLogin(function (d) {
                 var user = d.info;
                 if (user == null) {
                     $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='" + _ROOT_ + "'>点击返回主页</a>";
-                } else {
-                    initSelect();
-                }
+                } else
+                    init();
             });
         })
-        function initSelect(){
+        var initCard = function (elem,container){
+            $.ajax({
+                url: _ROOT_ + "/seat/count.do", type: "post", data: {roomid: elem.roomid, status: 0}
+            }).done(function (d2) {
+                createRoomCard(elem, d2.extra.count, d2.extra.totalCount, container);
+            });
+        }
+        var init = function (){
+            var container=$("div.container")[0];
+            $(container).find("h4").text("加载中……");
             $.ajax({
                 url:_ROOT_+"room/listrooms.do", type:"post"
-            }).done(function (d){
-                var select=$("#rooms-select")[0];
-                for(var i=0; i<d.length; i++){
-                    var elem=d[i], option=document.createElement("option");
-                    option.value=elem.roomid;
-                    option.innerText=elem.roomname;
-                    select.appendChild(option);
+            }).done(function (d) {
+                // var select=$("#rooms-select")[0];
+                // for(var i=0; i<d.length; i++){
+                //     var elem=d[i], option=document.createElement("option");
+                //     option.value=elem.roomid;
+                //     option.innerText=elem.roomname;
+                //     select.appendChild(option);
+                // }
+                for (var i = 0; i < d.length; i++) {
+                    initCard(d[i],container); //异步请求，不能直接把initcard复制到里面。另一种思路是const elem=d[i]
                 }
+                $(container).find("h4").text("请选择要查看座位的阅览室");
             });
             return FALSE;
+        }
+        function createRoomCard(room,free,total,container){
+            var div1=document.createElement("div");
+            $(div1).addClass("media");
+
+            var media_left=document.createElement("div");
+            $(media_left).addClass("media-left");
+
+            var media_body=document.createElement("div");
+            $(media_body).addClass("media_body");
+
+            var media_heading=document.createElement("a");
+            media_heading.href="../seat/show.do?roomid="+room.roomid;
+            media_heading.innerText=room.roomname;
+            $(media_heading).addClass("media-heading");
+
+            var content=document.createElement("p");
+            content.innerText="可用座位"+free+"/"+total;
+
+            var img=document.createElement("img");
+            img.src="../img/RC.jpg";//TODO:指定src
+            $(img).addClass("media-object").css("width",32).css("height",32).css("border-radius","49%");
+
+            media_left.appendChild(img);
+            media_body.appendChild(media_heading);media_body.appendChild(content);
+            div1.appendChild(media_left);div1.appendChild(media_body);
+            container.appendChild(div1);
+            container.appendChild(document.createElement("hr"));
         }
     </script>
 </head>
 <body>
-<form action="../seat/show.do" method="get">
-    <p><label>请选择要查看座位的阅览室<br><select id="rooms-select" class="form-control" name="roomid"></select></label>
-    </p>
-    <input type="submit" class="btn btn-primary" value="提交">
-</form>
+<!--<form action="../seat/show.do" method="get">-->
+<!--    <p><label>请选择要查看座位的阅览室<br><select id="rooms-select" class="form-control" name="roomid"></select></label>-->
+<!--    </p>-->
+<!--    <input type="submit" class="btn btn-primary" value="提交">-->
+<!--</form>-->
+<div class="container">
+    <h4>请选择要查找座位的阅览室</h4>
+</div>
 </body>
 </html>

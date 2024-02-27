@@ -3,7 +3,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * 实现了LRU淘汰算法的缓存。支持写回式策略。
+ * 实现了LRU淘汰算法的缓存。
  */
 public class LRUCache<K,V> implements Cache<K,V>{
     public static final int DEFAULT_CAPACITY = 15;
@@ -59,7 +59,6 @@ public class LRUCache<K,V> implements Cache<K,V>{
     }
     @Override
     public int getSize() {
-//        System.out.println(cache.size() == size.get());
         return map.size();
     }
     @Override
@@ -69,7 +68,6 @@ public class LRUCache<K,V> implements Cache<K,V>{
     @Override
     public void invalidate(K k) {
         map.remove(k);
-//        size.getAndDecrement();
     }
 
     //添加到头部节点（放在伪头部后面）

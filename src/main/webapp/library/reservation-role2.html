@@ -16,7 +16,7 @@
             checkLogin(function (d) {
                 user=d.info;
                 pageno=getCurrentParam("page");
-                if (user == null||user.role!==0) {
+                if (user == null||user.role!==2) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
                     initTable();
@@ -29,7 +29,7 @@
                 pageno = '1';
             //当前页
             $("#current-page-text").text("当前第"+pageno+"页");
-            var npage=parseInt(pageno),uid=getCurrentParam("uid");
+            var npage=parseInt(pageno),uid=user.uid;
             //下一页
             $("#next-btn").on("click",function (){
                 document.location.href=_ROOT_+"reservation/show.do?pageno="+(npage+1)+"&uid="+uid;
@@ -49,53 +49,27 @@
             return FALSE;
         }
         function initTable() {
-            var uid=getCurrentParam("uid"),tbody=$("table>tbody")[0];
-            var param={}
-            if (uid.length>0)   param.uid=uid;
+            var tbody=$("table>tbody")[0];
+            var param={uid:user.uid}
             if (pageno.length>0)    param.pageno=pageno;
             $("#loading").text("正在加载，请稍后");
+            // console.log(param)
             $.ajax({
                 url:_ROOT_+"reservation/list.do", type:"post", data:param
             }).done(function (data) {
                 for(var i=0; i<data.length; i++){
                     var elem=data[i];
                     var tr=document.createElement("tr");
-                    tr.innerHTML+="<td>"+elem.uid+"</td>";
                     tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById(elem.roomid).roomname+"</td>";
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+elem.resTime+"</td>";
                     tr.innerHTML+="<td>"+elem.signinTime+"</td>";
                     tr.innerHTML+="<td>"+elem.signoutTime+"</td>";
-                    if (elem.signoutTime.length>0)
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
-                    else
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
                     tbody.appendChild(tr);
                 }
                 $("#loading").text("查询结果如下");
             });
             return FALSE;
-        }
-        function doRemove(obj) { //TODO:删除前输入密码确认
-            if (confirm("确认删除吗，此过程不可逆！！")){
-                var td=$(obj).parent().siblings();
-                var param={
-                    "uid":td[0].innerText,
-                    "seatid":td[2].innerText,
-                    "roomid":$(td[1]).attr("value"),
-                    "resTime":new Date(td[3].innerText).getTime()
-                }
-                $.ajax({
-                    url:_ROOT_+"/reservation/delete.do", type: "post", data:param
-                }).done(function (d){
-                    $("p.status").text(d.msg);
-                    if(d.msg.indexOf("成功")>0){
-                        td.parent().remove();
-                    }
-                }).fail(function (xhr) {
-                    $("p.status").text("出错了，请稍后重试，错误码："+xhr.status);
-                });
-            }
         }
     </script>
 </head>
@@ -104,13 +78,11 @@
 <table class="table table-striped">
     <thead>
     <tr>
-        <th>预定用户</th>
         <th>阅览室</th>
         <th>座位号</th>
         <th>预定时间</th>
         <th>签到时间</th>
         <th>签退/放弃时间</th>
-        <th>操作</th>
     </tr>
     </thead>
     <tbody>
