@@ -8,7 +8,7 @@
     <script src="static/commons.js"></script>
     <title>欢迎使用图书馆座位预定系统！</title>
     <script>
-        $(document).ready(function () {
+        window.onload=(function () {
             checkLogin(function (d) {
                 var user=d.info;
                 if(user == null) {
