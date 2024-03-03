@@ -66,6 +66,8 @@ public class User {
         return role;
     }
     public void setRole(short role) {
+        if (role < 0)
+            throw new IllegalArgumentException();
         this.role = role;
     }
 
@@ -90,5 +92,16 @@ public class User {
     @Override
     public int hashCode() {
         return Arrays.hashCode(new Object[]{uid,username,password,truename,phone});
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "uid=" + uid +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", truename='" + truename + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }

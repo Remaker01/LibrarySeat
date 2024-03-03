@@ -13,8 +13,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 @Service
 public class ReservationService {
@@ -31,12 +33,14 @@ public class ReservationService {
         if(seat == null||seat.getStatus() != (short) 0)
             return "预定失败，座位不存在或已被占用";
         seat.setStatus((short) 1);
+        Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);
+        if (getCloseTimeStamp()-timestamp.getTime()<=30*60*1000L)
+            return "21:30以后不能预定座位！";
         if(reservationDao.getActiveReservationCountByUser(uid) > 0){
             return "不可重复预定座位！";
         }
         if (seatDao.update(seat) == 0)
             return "锁定座位失败，请稍后重试。";
-        Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);
         Reservation reservation = new Reservation(seatid,roomid,uid,timestamp);
         try {
             reservationDao.add(reservation);
@@ -86,14 +90,14 @@ public class ReservationService {
         }
 //        reservationDao.update(reservation); //既然预定信息存在，就一定能更新成功
 //        seatDao.update(seat);
-        return "签到成功！";
+        return "签到成功，请于闭馆时间22:00之前退座，逾期将自动退座！";
     }
     /**签退或放弃座位*/
     public String signOut(int seatid, int roomid, int uid, Date resTime) {
         Timestamp old = new Timestamp(resTime.getTime());
         Reservation reservation = reservationDao.getReservation(seatid,roomid,uid,old);
         if (reservation == null) {
-            return "签退失败，该预定信息不存在！";
+            return "操作失败，该预定信息不存在！";
         }
         if (reservation.getSignoutTime() != null) {
             return "无法对已签退的预定信息操作！";
@@ -113,5 +117,14 @@ public class ReservationService {
 
     public List<Reservation> getReservations(int page){
         return reservationDao.getReservations((page-1)*PAGE_SIZE,PAGE_SIZE,"reservation_time", BaseDao.Order.DESCEND);
+    }
+
+    private static long getCloseTimeStamp(){
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        calendar.set(Calendar.HOUR_OF_DAY, 22);
+        calendar.set(Calendar.MINUTE, 0); // 设置分钟为0
+        calendar.set(Calendar.SECOND, 0); // 设置秒为0
+        calendar.set(Calendar.MILLISECOND, 0); // 设置毫秒为0
+        return calendar.getTimeInMillis();
     }
 }

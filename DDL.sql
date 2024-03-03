@@ -78,3 +78,13 @@ create event auto_signout
       and signin_time is null
       and signout_time is null
       and TIMESTAMPDIFF(minute,reservation_time,NOW())>=30;
+# 每晚11：00闭馆，已签到的自动退座，未签到的自动放弃座位
+create event auto_signout_every_night
+    on schedule every 1 day
+    starts timestamp(CURDATE(),'22:00:00')
+    on completion preserve
+    do
+        update reservation,seat set signout_time=NOW(),seat.status=0
+        where reservation.seatid=seat.seatid
+        and reservation.roomid=seat.roomid
+        and signout_time is null

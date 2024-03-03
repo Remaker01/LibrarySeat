@@ -47,4 +47,13 @@ public class Room {
         result = 31 * result + (roomname != null ? roomname.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Room{" +
+                "roomid=" + roomid +
+                ", admin=" + admin +
+                ", roomname='" + roomname + '\'' +
+                '}';
+    }
 }

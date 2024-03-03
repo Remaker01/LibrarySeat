@@ -32,6 +32,8 @@ public class Seat {
     }
 
     public void setStatus(short status) {
+        if (status < 0)
+            throw new IllegalArgumentException();
         this.status = status;
     }
 
@@ -53,5 +55,14 @@ public class Seat {
         result = 31 * result + roomid;
         result = 31 * result + (int) status;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Seat{" +
+                "seatid=" + seatid +
+                ", roomid=" + roomid +
+                ", status=" + status +
+                '}';
     }
 }
