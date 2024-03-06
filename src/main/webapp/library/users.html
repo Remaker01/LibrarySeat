@@ -151,7 +151,7 @@
                 return FALSE;
             }
             $.ajax({
-                url:_ROOT_+"user/update.do", type:"post", data:{"uid":uid,"uname":uname,"truename":name,"phone":phone}
+                url:_ROOT_+"user/update.do", type:"post", data:{"uid":uid,"uname":uname,"truename":name,"phone":phone.encodeb()}
             }).done(function (d) {
                 status.text(d.msg);
             }).fail(function (xhr){

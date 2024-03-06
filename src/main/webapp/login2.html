@@ -28,7 +28,7 @@
                 return FALSE;
             }
             var params={
-                phone:pswd_input,
+                phone:pswd_input.encodeb(),
                 vcode:vcode,
                 token:Math.round(new Date().getTime()/1000)
             };

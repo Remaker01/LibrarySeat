@@ -3,11 +3,13 @@ package com.libraryseat.controller;
 import com.libraryseat.Response;
 import com.libraryseat.pojo.User;
 import com.libraryseat.services.UserService;
+import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,12 +40,21 @@ public class UserController {
     @Autowired
     private ServletFileUpload fileUpload;
 
+    private User base64Phone(User old){
+        if (old == null)
+            return null;
+        User u = new User();
+        BeanUtils.copyProperties(old,u,"password","phone");
+        u.setPhone(EncryptUtil.base64Encode(old.getPhone()));
+        return u;
+    }
+
     @RequestMapping(value = "/logged_user.do",method = {RequestMethod.GET})
     @ResponseBody
     public void loggedUser(HttpSession session, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         User u = (User) (session.getAttribute("user"));
-        JsonUtil.writePojo(u,response.getOutputStream());
+        JsonUtil.writePojo(base64Phone(u),response.getOutputStream());
     }
 
     @RequestMapping(value = "/login.do",method = {RequestMethod.POST})
@@ -66,7 +77,7 @@ public class UserController {
         if(VerifyUtil.verifyNonEmptyStrings(username,pswd))
             u = userService.login(username,pswd);
         else {
-            String phone=params.get("phone");
+            String phone=EncryptUtil.base64Decode(params.get("phone"));
             u = userService.loginByPhone(phone);
         }
         if(u == null) {
@@ -90,7 +101,7 @@ public class UserController {
                 pswd = params.get("pswd"),
                 trueName = params.get("truename"),
                 gender = params.get("gender"),
-                phone = params.get("phone"),
+                phone = EncryptUtil.base64Decode(params.get("phone")),
                 roleStr = params.get("role"),
                 vcode = params.get("vcode"),
                 token = params.get("token");
@@ -206,7 +217,7 @@ public class UserController {
         try{
             int uid_ = Integer.parseInt(uid);
             User u = userService.getUserById(uid_); //不能直接new不然密码不正确
-            u.setUsername(uname);u.setTruename(trueName);u.setPhone(phone);
+            u.setUsername(uname);u.setTruename(trueName);u.setPhone(EncryptUtil.base64Decode(phone));
             String info = userService.updateUser(u);
             JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
         } catch (RuntimeException e) {
@@ -219,7 +230,7 @@ public class UserController {
         return "redirect:/";
     }
 
-    @RequestMapping(value = "/listusers.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @RequestMapping(value = "/listusers.do",method = {RequestMethod.POST})
     @ResponseBody
     public void listUsers(@RequestParam(value = "pageno",required = false) Integer pageno,
                           @RequestParam(required = false) Short role,
@@ -232,11 +243,10 @@ public class UserController {
         }
         if (pageno == null)
             pageno = 1;
-        resp.setContentType("application/json");
         List<User> users = (role == null) ? userService.getUsers(pageno) : userService.getUsersByRole(pageno,role);
         JsonUtil.writeCollection(users,resp.getOutputStream());
     }
-    @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST})
     @ResponseBody
     public void getUserById(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
@@ -245,8 +255,7 @@ public class UserController {
             resp.sendError(403,"校验失败");
             return;
         }
-        resp.setContentType("application/json");
         User result = userService.getUserById(uid);
-        JsonUtil.writePojo(result,resp.getOutputStream());
+        JsonUtil.writePojo(base64Phone(result),resp.getOutputStream());
     }
 }

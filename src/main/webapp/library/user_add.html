@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
-<!--    <meta http-equiv="Cache-Control" content="no-cache">-->
     <title>用户添加</title>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
@@ -13,7 +12,6 @@
     <script src="../static/commons.js" defer></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <link rel="">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         $(document).ready(function () {
@@ -51,6 +49,7 @@
                 return FALSE;
             }
             param.pswd=hashPassword(param.pswd);
+            param.phone=param.phone.encodeb();
             param.token=Math.round(new Date().getTime()/1000); //时间戳
             $.ajax({
                 url:_ROOT_+"user/add.do", type:"post", data:param

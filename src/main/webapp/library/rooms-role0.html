@@ -81,6 +81,7 @@
                 if(d.info!=null&&d.info.role!==1)//非管理员
                     d.info=null;
                 x=d;
+                x.info.phone = window.atob(x.info.phone);
             }).fail(function (){x=null;});
             return x;
         }

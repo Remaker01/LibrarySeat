@@ -26,12 +26,11 @@
                     $("#id").text(user.uid);
                     $("#uname").text(user.username);
                     $("#name").text(user.truename);
-                    $("#phone").text(user.phone);
+                    $("#phone").text(window.atob(user.phone));
                     var $role=$("#role");
                     switch (user.role) {
                         case 0:
                             $role.text("超级管理员");
-                            $("#modify-data").css("display","inline-block");
                             break;
                         case 1:$role.text("图书室管理员");break;
                         case 2:$role.text("学生");break;
