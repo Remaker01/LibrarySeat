@@ -1,4 +1,10 @@
-body{margin-left: 4px;margin-top: 4px;}
+body{
+    margin-left: 4px;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.4s linear;
+}
+body.ready{opacity: 1;}
 p.status{color: red;font-size: small;}
 label,.form-control{display: inline;max-width: 240px;}
 table.table{position: relative;left: 1%;width: 98%;}

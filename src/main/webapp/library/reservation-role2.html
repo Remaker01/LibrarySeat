@@ -13,6 +13,7 @@
     <script>
         var user,pageno;
         $(document).ready(function () {
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 user=d.info;
                 pageno=getCurrentParam("page");

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         $(document).ready(function (){
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 var user=d.info;
                 if(user==null||user.role!==0){

@@ -11,10 +11,11 @@ public class GenericFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
         //如果是ajax
-        if (isAjax((HttpServletRequest) request))
+        if (isAjax((HttpServletRequest) request)) {
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
+        }
         chain.doFilter(request, response);
     }
 }

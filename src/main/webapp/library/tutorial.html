@@ -9,6 +9,7 @@
     <script src="../static/commons.js"></script>
     <script>
         $(document).ready(function () {
+            $("body").addClass("ready");
             checkLogin(function (data) {
                 var user=data.info;
                 if (user==null)

@@ -13,6 +13,7 @@
     <script>
         var statuses=["空闲","已被预定","已被占用"],room,page;
         $(document).ready(function () {
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 var user=d.info;
                 room=getRoomById(getCurrentParam("roomid"));

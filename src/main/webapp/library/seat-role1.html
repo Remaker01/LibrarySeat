@@ -13,6 +13,7 @@
     <script>
         var statuses=["空闲","已被预定","已被占用"],room,page,u;
         $(document).ready(function () {
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 u=d.info;
                 room=getRoomById(getCurrentParam("roomid"));
@@ -26,17 +27,6 @@
                 }
             })
         });
-        function getRoomById(id){
-            var x;
-            $.ajax({
-                url:_ROOT_+"room/getbyid.do", type:"post", data:{"roomid":id}, async:false
-            }).done(function (d){
-                x=d.info;
-            }).fail(function (){
-                x=null;
-            });
-            return x;
-        }
         function connect() {
             if (page === '')
                 page = '1';

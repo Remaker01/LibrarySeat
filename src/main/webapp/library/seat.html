@@ -15,6 +15,7 @@
     </style>
     <script>
         $(document).ready(function (){
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 var user = d.info;
                 if (user == null) {
@@ -69,7 +70,7 @@
             content.innerText="可用座位"+free+"/"+total;
 
             var img=document.createElement("img");
-            img.src="../img/RC.jpg";//TODO:指定src
+            img.src="../img/RC.jpg";
             $(img).addClass("media-object").css("width",32).css("height",32).css("border-radius","49%");
 
             media_left.appendChild(img);

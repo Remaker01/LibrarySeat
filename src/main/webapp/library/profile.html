@@ -17,6 +17,7 @@
     <script>
         var user;
         $(document).ready(function () {
+            $("body").addClass("ready");
             checkLogin(function (d) {
                 user=d.info;
                 if(user==null) {

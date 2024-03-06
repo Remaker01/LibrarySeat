@@ -24,6 +24,7 @@
     <script>
         var reservation=null;
         $(document).ready(function (){
+            $("body").addClass("ready");
             checkLogin(function (data) {
                 var user=data.info;
                 if (user == null||user.role!==2) {

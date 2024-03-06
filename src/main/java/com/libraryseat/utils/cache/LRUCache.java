@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LRUCache<K,V> implements Cache<K,V>{
     public static final int DEFAULT_CAPACITY = 15;
-    private ConcurrentMap<K, DLinkedNode<K,V>> map;
+    private ConcurrentMap<K, DLinkedNode<K,V>> map; //map指示是否存在对应结点
     private final int capacity;
-    private DLinkedNode<K,V> head, tail;
+    private final DLinkedNode<K,V> head, tail;
     /**用默认容量构造*/
     public LRUCache() {this(DEFAULT_CAPACITY);}
     public LRUCache(int capacity) {
@@ -67,7 +67,7 @@ public class LRUCache<K,V> implements Cache<K,V>{
     }
     @Override
     public void invalidate(K k) {
-        map.remove(k);
+        removeNode(map.remove(k));
     }
 
     //添加到头部节点（放在伪头部后面）
@@ -79,6 +79,8 @@ public class LRUCache<K,V> implements Cache<K,V>{
     }
     //移除节点
     private synchronized void removeNode(DLinkedNode<K,V> node) {
+        if (node == null)
+            return;
         node.prev.next = node.next;
         node.next.prev = node.prev;
     }

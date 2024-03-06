@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         $(document).ready(function (){
+            $("body").addClass("ready");
             checkLogin(function (d){
                 var user=d.info;
                 if(user==null||user.role===2){
@@ -41,10 +42,14 @@
             return FALSE;
         }
         function submit_(){
+            var seatid_input = $("#seatid-input")[0],rooms_select=$("#rooms-select")[0];
             $.ajax({
-                url:_ROOT_+"seat/add.do", type: "post", data: {"seatid":$("#seatid-input").val(),"roomid":$("#rooms-select").val()}
+                url:_ROOT_+"seat/add.do", type: "post", data: {"seatid":seatid_input.value,"roomid":rooms_select.value}
             }).done(function (d) {
                 $("p.status").text(d.msg);
+                if (d.msg.indexOf("成功")>0){
+                    sendMessage("座位添加通知","管理员在阅览室"+getRoomById(rooms_select.value).roomname+"添加了"+seatid_input.value+"号座位");
+                }
             }).fail(function (xhr) {
                 $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
             });

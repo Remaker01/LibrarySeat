@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 public class FIFOCache<K,V> implements Cache<K,V>{
     private ConcurrentMap<K,DLinkedNode<K,V>> map;
     private final int capacity;
-    private DLinkedNode<K,V> head,tail;
+    private final DLinkedNode<K,V> head,tail;
 
     public FIFOCache() {this(LRUCache.DEFAULT_CAPACITY);}
     public FIFOCache(int capacity) {
@@ -57,7 +57,7 @@ public class FIFOCache<K,V> implements Cache<K,V>{
 
     @Override
     public void invalidate(K k) {
-        map.remove(k);
+        removeNode(map.remove(k));
     }
 
     private synchronized void addToHead(DLinkedNode<K,V> node) {
@@ -65,6 +65,13 @@ public class FIFOCache<K,V> implements Cache<K,V>{
         node.next = head.next;
         head.next.prev = node;
         head.next = node;
+    }
+
+    private synchronized void removeNode(DLinkedNode<K,V> node) {
+        if (node == null)
+            return;
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
     }
 
     private synchronized DLinkedNode<K,V> removeTail() {
