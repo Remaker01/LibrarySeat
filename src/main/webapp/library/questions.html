@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--TODO:不写死在代码里-->
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="max-age=3600">
+    <title>常见问题</title>
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("body").addClass("ready");
+            checkLogin(function (data) {
+                var user=data.info;
+                if (user==null)
+                    $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='" + _ROOT_ + "'>点击返回主页</a>";
+                else {
+                    $.ajax({
+                        url:_ROOT_+"reservation/getopenandclose.do", type:"get"
+                    }).done(function (data){
+                        $("#open-time").text(data.info.open);
+                        $("#close-time").text(data.info.close);
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<h3>Q1:图书馆的开放和闭馆时间？</h3>
+<p>A1:图书馆开放时间为每天<span id="open-time"></span>，闭馆时间为每天<span id="close-time"></span>，闭馆前30分钟停止开放预定座位。</p>
+<h3>Q2:是否能同时预定多个座位？</h3>
+<p>A2:<em>不可以</em>，同一用户一次只能预定一个座位。要预定新座位，必须先退座。</p>
+<h3>Q3:如何修改个人信息？</h3>
+<p>A3:如需修改密码，请点击左上角个人头像，再点击“修改密码”按钮；修改其他信息请联系管理员。</p>
+</body>
+</html>

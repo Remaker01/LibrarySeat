@@ -12,11 +12,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 @Service
 public class ReservationService {
@@ -26,6 +24,8 @@ public class ReservationService {
     @Autowired
     @Lazy
     private SeatDao seatDao;
+    private final Calendar open,close;
+    private final Calendar latest;
     private static final Logger LOGGER = LogManager.getLogger(ReservationService.class.getName());
 
     public String addReservation(int seatid, int roomid, int uid) {
@@ -34,8 +34,10 @@ public class ReservationService {
             return "预定失败，座位不存在或已被占用";
         seat.setStatus((short) 1);
         Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);
-        if (getCloseTimeStamp()-timestamp.getTime()<=30*60*1000L)
-            return "21:30以后不能预定座位！";
+        if (timestamp.getTime() >= latest.getTimeInMillis())
+            return String.format("%d:%d以后不能预定座位！",latest.get(Calendar.HOUR_OF_DAY),latest.get(Calendar.MINUTE));
+        if (timestamp.getTime() < open.getTimeInMillis())
+            return String.format("尚未到预定时间，请于%d:%d之后预定！",open.get(Calendar.HOUR_OF_DAY),open.get(Calendar.MINUTE));
         if(reservationDao.getActiveReservationCountByUser(uid) > 0){
             return "不可重复预定座位！";
         }
@@ -90,7 +92,7 @@ public class ReservationService {
         }
 //        reservationDao.update(reservation); //既然预定信息存在，就一定能更新成功
 //        seatDao.update(seat);
-        return "签到成功，请于闭馆时间22:00之前退座，逾期将自动退座！";
+        return String.format("签到成功，请于闭馆时间%d:%d之前退座，逾期将自动退座！",close.get(Calendar.HOUR_OF_DAY),close.get(Calendar.MINUTE));
     }
     /**签退或放弃座位*/
     public String signOut(int seatid, int roomid, int uid, Date resTime) {
@@ -119,12 +121,55 @@ public class ReservationService {
         return reservationDao.getReservations((page-1)*PAGE_SIZE,PAGE_SIZE,"reservation_time", BaseDao.Order.DESCEND);
     }
 
-    private static long getCloseTimeStamp(){
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-        calendar.set(Calendar.HOUR_OF_DAY, 22);
-        calendar.set(Calendar.MINUTE, 0); // 设置分钟为0
-        calendar.set(Calendar.SECOND, 0); // 设置秒为0
-        calendar.set(Calendar.MILLISECOND, 0); // 设置毫秒为0
-        return calendar.getTimeInMillis();
+    public Map<String,String> getOpenAndCloseTime(){
+        HashMap<String,String> result = new HashMap<>(2);
+        StringBuilder str = new StringBuilder(5);
+        str.append(open.get(Calendar.HOUR_OF_DAY)).append(':');
+        if (open.get(Calendar.MINUTE) < 10){
+            str.append('0');
+        }
+        str.append(open.get(Calendar.MINUTE));
+        result.put("open",str.toString());
+
+        str.setLength(0);
+        str.append(close.get(Calendar.HOUR_OF_DAY)).append(':');
+        if (close.get(Calendar.MINUTE) < 10){
+            str.append('0');
+        }
+        str.append(close.get(Calendar.MINUTE));
+        result.put("close",str.toString());
+        return result;
+    }
+    /**
+     * 默认开馆时间8:00，闭馆时间22:00
+     */
+    public ReservationService(){
+        open = Calendar.getInstance(TimeZone.getDefault());
+        close = Calendar.getInstance(TimeZone.getDefault());
+        Properties properties = new Properties();
+        // 想改就到properties里，代码就不用动了
+        try(InputStream stream = ReservationService.class.getResourceAsStream("/library.properties")){
+            properties.load(stream);
+            String openHour = properties.getProperty("open.hour","8");
+            String closeHour = properties.getProperty("close.hour","22");
+            String openMinute = properties.getProperty("open.minute","0");
+            String closeMinute = properties.getProperty("close.minute","0");
+            setCalendar(open,Integer.parseInt(openHour),Integer.parseInt(openMinute));
+            setCalendar(close,Integer.parseInt(closeHour),Integer.parseInt(closeMinute));
+            LOGGER.debug("open={}:{}",openHour,openMinute);
+        } catch (Exception e) {
+            LOGGER.error("配置文件不存在或格式错误：",e);
+            setCalendar(open,8,0);
+            setCalendar(close,22,0);
+        }
+        latest = (Calendar) close.clone();
+        latest.add(Calendar.MINUTE,-30);
+    }
+
+    private static void setCalendar(Calendar calendar,int hour,int minute){
+        calendar.set(Calendar.HOUR_OF_DAY,hour);
+        calendar.set(Calendar.MINUTE,minute);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
     }
 }

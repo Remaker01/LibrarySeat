@@ -135,4 +135,16 @@ public class ReservationController {
         }
         JsonUtil.writeReservations(reservations, resp.getOutputStream());
     }
+    @RequestMapping(value = "/getopenandclose.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @ResponseBody
+    public void getOpenAndCloseTime(HttpServletResponse resp,HttpSession session) throws IOException{
+        User u = (User) session.getAttribute("user");
+        if (u == null){
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json;charset=utf-8");
+        Map<String,String> result = reservationService.getOpenAndCloseTime();
+        JsonUtil.writePojo(result,resp.getOutputStream());
+    }
 }

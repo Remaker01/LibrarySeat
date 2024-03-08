@@ -1,9 +1,12 @@
 package com.libraryseat.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
 
 public class Message {
     private int uid;
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp time;
     private String title,content;
 
