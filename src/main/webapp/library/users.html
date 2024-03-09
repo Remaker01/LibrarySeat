@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
-    <meta http-equiv="Cache-Control" content="no-cache">
     <title>用户信息管理</title>
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script src="../static/commons.js"></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js" defer></script>
+    <script src="../static/commons.js" defer></script>
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
         var user,pageno;
@@ -36,8 +38,8 @@
             });
             //页数
             $("#page-input").on("keyup paste blur",function (){
-                var val=$(this).val();
-                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+                var val=this.value;
+                this.value=(val.replace(REGEXP_NOT_NUM,''));
             });
             //上一页
             if (pageno === '1')
@@ -52,7 +54,7 @@
             //select
             $("label>select>option[value='"+role+"']").attr("selected",true);
             $("label>select").on("change",function (){
-                var role2=$(this).val();
+                var role2=this.value;
                 if (role2!=="-1")
                     document.location.href="users.html?pageno="+pageno+"&role="+role2;
                 else
@@ -89,6 +91,7 @@
                         if(elem.role!==0)
                             tr.innerHTML+="<td>" +
                                 "<input type='button' class='btn btn-primary' value='修改'> " +
+                                "<input type='button' class='btn' value='重置密码'>" +
                                 "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'>" +
                                 "</td>";
                         else
@@ -101,7 +104,7 @@
                 if (user.role===0){
                     $("table input[value='修改']").on("click",function (){
                         var tds=$(this).parent().siblings();
-                        $("#uid-text").text(tds[0].innerText);
+                        $("#modify-user span.uid-text").text(tds[0].innerText);
                         $("#uname-input").val(tds[1].innerText);
                         $("#name-input").val(tds[2].innerText);
                         $("#phone-input").val(tds[4].innerText);
@@ -114,6 +117,11 @@
                             $("#uname-input").attr("readonly",false);
                         }
                         $("#modify-user").modal("show");
+                    });
+                    $("table input[value='重置密码']").on("click",function () {
+                        var tds=$(this).parent().siblings();
+                        $("#reset-pswd span.uid-text").text(tds[0].innerText);
+                        $("#reset-pswd").modal("show");
                     });
                 }
             });
@@ -141,7 +149,7 @@
         }
         function submit_modify() {
             var uid=$("#uid-text").text(),uname=$("#uname-input").val(),name=$("#name-input").val(),phone=$("#phone-input").val();
-            var status=$("#modify-user p.status")
+            var status=$("#modify-user p.status");
             if(!REGEXP_USERNAME.test(uname)){
                 status.text(USERNAME_REQUIREMENT);
                 return FALSE;
@@ -159,6 +167,26 @@
             });
             return FALSE;
         }
+        function submit_reset_pswd() {
+            var uid=$("#reset-pswd span.uid-text").text(),
+                new_pswd = $("#reset-pswd input[name='new']").val(),
+                vcode=$("#reset-pswd input[name='vcode']").val();
+            var status = $("#reset-pswd p.status");
+            if (!REGEXP_PASS.test(new_pswd)){
+                status.text(PASS_REQUIREMENT);
+                return FALSE;
+            }
+            $.ajax({
+                url:_ROOT_+"user/modifypswd.do", type:"post", data:{"uid":uid,"new":hashPassword(new_pswd),"vcode":vcode}
+            }).done(function (d) {
+                status.text(d.msg);
+            }).fail(function (xhr) {
+                status.text("出错了！请稍后重试，错误码："+xhr.status);
+            }).always(function (){
+                $("#vcode-img").trigger("click");
+            });
+            return FALSE;
+        }
     </script>
 </head>
 <body>
@@ -171,19 +199,18 @@
 </label>
 <span style="font-size: small;color: #505050" id="current-page-text"></span>
 <table class="table table-striped">
-    <thead>
-    <tr>
+    <thead><tr>
         <th>学号/工号</th>
         <th>用户名</th>
         <th>姓名</th>
         <th>性别</th>
         <th>手机号</th>
         <th>身份</th>
-    </tr>
-    </thead>
+    </tr></thead>
     <tbody></tbody>
 </table>
 <p class="status"></p>
+
 <div class="modal fade" id="modify-user" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -191,7 +218,7 @@
                 <h4 class="modal-title" id="myModalLabel">修改用户信息</h4>
             </div>
             <form class="modal-body" onsubmit="return submit_modify()">
-                <p>学号/工号：<span id="uid-text"></span></p>
+                <p>学号/工号：<span class="uid-text"></span></p>
                 <p><label>用户名：<input type="text" id="uname-input" class="form-control" required/></label></p>
                 <p><label>姓名：<input type="text" id="name-input" class="form-control" maxlength="20" required/></label>
                 </p>
@@ -204,6 +231,28 @@
                 </p>
             </form>
         </div><!-- /.modal-content -->
+    </div>
+</div>
+
+<div class="modal fade" id="reset-pswd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">重置密码</h4>
+            </div>
+            <form class="modal-body" onsubmit="return submit_reset_pswd()">
+                <p>学号/工号：<span class="uid-text"></span></p>
+                <p><label>新密码：<input type="password" name="new" class="form-control" maxlength="20" autocomplete="off" required/></label>
+                </p>
+                <p><label>验证码：<input type="text" name="vcode" class="form-control number" maxlength="5" autocomplete="off" required/></label>
+                    <br><img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?'+Math.random()" alt="验证码"/></p>
+                <p class="status"></p>
+                <p class="modal-footer">
+                    <input type="button" class="btn exit" data-dismiss="modal" value="关闭">
+                    <input type="submit" class="btn btn-primary" value="提交更改">
+                </p>
+            </form>
+        </div>
     </div>
 </div>
 <div class="to-page">

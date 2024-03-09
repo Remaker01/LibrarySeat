@@ -41,7 +41,7 @@
             });
         });
         var signIn = function (){
-            if (!reservation||reservation.signinTime!=="")
+            if (!reservation||reservation.signinTime!=null)
                 return FALSE;
             $("p.status").text("验证中……");
             var param={
@@ -53,6 +53,7 @@
                 url: _ROOT_+"reservation/signin.do", type: "post", data: param
             }).done(function (d) {
                 $("p.status").text(d.msg);
+                setTimeout(function (){document.location.reload();},1000);
             }).fail(function (xhr) {
                 $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
             });
@@ -61,7 +62,7 @@
         var signOut = function (){
             if (!reservation)
                 return FALSE;
-            if (reservation.signinTime!==""?confirm("确认要退座吗？"):confirm("确认要放弃座位吗")) {
+            if (reservation.signinTime!=null?confirm("确认要退座吗？"):confirm("确认要放弃座位吗")) {
                 var param = {
                     seatid: reservation.seatid,
                     roomid: reservation.roomid,
@@ -71,6 +72,7 @@
                     url: _ROOT_+"reservation/signout.do", type: "post", data: param
                 }).done(function (d) {
                     $("p.status").text(d.msg);
+                    setTimeout(function (){document.location.reload();},1000);
                 }).fail(function (xhr) {
                     $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
                 })
@@ -81,21 +83,21 @@
             if (reservation != null)
                 return reservation;
             for(var i=0; i<arr.length; i++){
-                if(arr[i].uid===u.uid&&arr[i].signoutTime==="")
+                if(arr[i].uid===u.uid&&arr[i].signoutTime==null)
                     return arr[i];
             }
             return null;
         }
         var initPanel = function (){
             var ret;
-            if (!reservation||reservation.signoutTime!==""){
+            if (!reservation||reservation.signoutTime!=null){
                 ret = $("#no-reservation");
                 ret.find("input[type='button']").on("click",function () {
                     document.location.href=_ROOT_+"library/seat.html";
                 })
             }
             //已预定未签到
-            else if (reservation.signinTime===""){
+            else if (reservation.signinTime==null){
                 ret = $("#not-signin");
                 ret.find("p>strong").text(getRoomById(reservation.roomid).roomname+' '+reservation.seatid+"号座位");
                 var latestSignInTime = new Date(new Date(reservation.resTime).getTime() + 30*60*1000);

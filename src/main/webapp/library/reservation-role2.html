@@ -64,8 +64,8 @@
                     tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById(elem.roomid).roomname+"</td>";
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+elem.resTime+"</td>";
-                    tr.innerHTML+="<td>"+elem.signinTime+"</td>";
-                    tr.innerHTML+="<td>"+elem.signoutTime+"</td>";
+                    tr.innerHTML+="<td>"+(elem.signinTime||"") +"</td>";
+                    tr.innerHTML+="<td>"+(elem.signoutTime||"")+"</td>";
                     tbody.appendChild(tr);
                 }
                 $("#loading").text("查询结果如下");
