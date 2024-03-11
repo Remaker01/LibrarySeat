@@ -1,5 +1,6 @@
 package com.libraryseat.services;
 
+import com.libraryseat.dao.BaseDao;
 import com.libraryseat.dao.MessageDao;
 import com.libraryseat.pojo.Message;
 import org.apache.logging.log4j.LogManager;
@@ -39,8 +40,18 @@ public class MessageService {
             return "添加成功！";
         } catch (DataAccessException e){
             LOGGER.error("",e);
-            return "添加消息失败，请稍后重试！";
+            return "添加通知失败，请稍后重试！";
         }
+    }
+
+    public String updateMessage(int uid, Date time, String content) {
+        Message m = messageDao.getMessage(uid,new Timestamp(time.getTime()));
+        if (m == null)
+            return "更新失败，通知不存在！";
+        m.setContent(content);
+        if (messageDao.update(m) != 0)
+            return "更新成功！";
+        return "更新失败，请稍后重试！";
     }
 
     public String removeMessage(int uid, Date time) {
@@ -59,9 +70,10 @@ public class MessageService {
      * 获取某一页的通知摘要，限长limit.
      */
     public List<Message> getMessageSummaries(int page,int limit) {
-        List<Message> messages = messageDao.getMessages(page-1,PAGE_SIZE);
+        List<Message> messages = messageDao.getMessages((page-1)*PAGE_SIZE,PAGE_SIZE,"time", BaseDao.Order.DESCEND);
         for(Message m:messages) {
-            m.setContent(m.getContent().substring(0,limit)); //TODO:是否会真正更改？
+            if (m.getContent().length() > limit)
+                m.setContent(m.getContent().substring(0,limit));
         }
         return messages;
     }

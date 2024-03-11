@@ -40,21 +40,22 @@
             });
             //----点击图片返回----
             $("#img1").on("click",function (){
-                $("iframe[name='yem']")[0].src="about:blank";
+                $("iframe[name='yem']")[0].src="message-summaries.html";
             });
         });
     </script>
 </head>
 <body>
 <div id="a1">
-    <img id="img1" src="../img/logo.png" alt="校徽">
+    <img id="img1" src="../img/logo.png" title="回到个人主页" alt="校徽">
     <b><span style="font-size: 10px;">xx大学图书馆选座管理系统服务平台</span></b>
 </div>
 <br>
 <nav class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="profile.html" target="yem"><img src="../img/user-img.jpg" id="img2" alt="个人信息管理">
+            <a class="navbar-brand" href="profile.html" target="yem">
+                <img src="../img/user-img.jpg" id="img2" title="个人信息" alt="头像">
             </a>
         </div>
         <div>
@@ -90,7 +91,7 @@
     </div>
 </nav>
 <div id="main_">
-    <iframe name="yem"></iframe>
+    <iframe name="yem" src="message-summaries.html"></iframe>
 </div>
 <div>
     <p class="copyright">版权所有：xx大学</p>

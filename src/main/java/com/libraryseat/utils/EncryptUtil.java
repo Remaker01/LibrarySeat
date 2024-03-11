@@ -17,7 +17,7 @@ public class EncryptUtil {
         if (str == null)
             return null;
         Base64.Encoder encoder = Base64.getEncoder();
-        return encoder.encodeToString(str.getBytes(StandardCharsets.ISO_8859_1));
+        return encoder.encodeToString(str.getBytes(StandardCharsets.UTF_8));
     }
     /**Base64解码，支持去掉末尾等号的密文。*/
     public static String base64Decode(String base64) {

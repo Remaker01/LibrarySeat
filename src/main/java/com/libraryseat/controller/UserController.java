@@ -23,6 +23,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 /* 用户Controller(/user)
@@ -52,7 +53,7 @@ public class UserController {
     @RequestMapping(value = "/logged_user.do",method = {RequestMethod.GET})
     @ResponseBody
     public void loggedUser(HttpSession session, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
+        response.setContentType("application/json;charset=utf-8");
         User u = (User) (session.getAttribute("user"));
         JsonUtil.writePojo(base64Phone(u),response.getOutputStream());
     }
@@ -144,7 +145,8 @@ public class UserController {
             resp.sendError(400,"参数错误：文件不合法");
             return;
         }
-        fileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+        if (fileItemFactory.getRepository() == null)
+            fileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
         try {
             String info = userService.addUsersInFileItem(fileUpload.parseRequest(req).get(0));
             JsonUtil.writeResponse(new Response("/user/add_users.do","POST",info),resp.getOutputStream());
@@ -157,11 +159,6 @@ public class UserController {
     @RequestMapping(value = "/delete.do",method = {RequestMethod.POST})
     @ResponseBody
     public void removeUser(@RequestParam Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
-//        String uid == req.getParameter("uid")[0];
-//        if(uid == null) {
-//            resp.sendError(400,"参数错误");
-//            return;
-//        }
         User u = (User) session.getAttribute("user");
         if(u == null||u.getRole() != 0) {
             resp.sendError(403,"校验失败");
