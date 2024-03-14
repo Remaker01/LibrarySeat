@@ -26,6 +26,9 @@
         });
         function initTable() {
             //1.获取room信息
+            if (my==='') {
+                my = '1';
+            }
             if (my==='1') {
                 $("table>thead th")[2].innerText="操作";
             }
@@ -46,6 +49,8 @@
                     }
                     tbody.appendChild(tr);
                 }
+            }).fail(function (xhr) {
+                $("p.status").text("初始化出错，请稍后重试！错误码"+xhr.status);
             });
             return FALSE;
         }
@@ -55,11 +60,17 @@
                 url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":$obj.attr("value")}
             }).done(function (d){
                 var u=d.info;
-                // console.log(u);
-                $("#admin-name").text(u.truename);
-                $("#admin-uname").text(u.username);
-                $("#admin-phone").text(u.phone);
-                $("#admin-info").modal("show");
+                if (u!=null) {
+                    // console.log(u);
+                    $("#admin-name").text(u.truename);
+                    $("#admin-uname").text(u.username);
+                    $("#admin-phone").text(window.atob(u.phone));
+                    $("#admin-info").modal("show");
+                } else {
+                    $("p.status").text("发生异常，请稍后重试！");
+                }
+            }).fail(function (xhr) {
+                $("p.status").text("发生异常，请稍后重试！错误码"+xhr.status);
             });
         }
         function showSeat(obj){
@@ -80,6 +91,7 @@
     <tbody>
     </tbody>
 </table>
+<p class="status"></p>
 <div class="modal fade" id="admin-info" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

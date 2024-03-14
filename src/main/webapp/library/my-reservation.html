@@ -22,7 +22,7 @@
         }
     </style>
     <script>
-        var reservation=null;
+        var reservation=null,loc=null;
         $(document).ready(function (){
             $("body").addClass("ready");
             checkLogin(function (data) {
@@ -31,11 +31,16 @@
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else{
                     $.ajax({
+                        url: _ROOT_+"reservation/getlibraryloc.do", type:"get", cache:true, async:false
+                    }).done(function (d2) {loc=d2.info;});
+                    $.ajax({
                         url:_ROOT_+"reservation/list.do", type:"post", data:{uid:user.uid}
                     }).done(function (d) {
                         reservation = getActiveReservation(d,user);
                         // console.log(reservation);
                         initPanel().css("display","block");
+                    }).fail(function (xhr) {
+                        $("p.status").text("初始化出错，请稍后重试。错误码："+xhr.status);
                     })
                 }
             });
@@ -44,18 +49,31 @@
             if (!reservation||reservation.signinTime!=null)
                 return FALSE;
             $("p.status").text("验证中……");
-            var param={
-                seatid: reservation.seatid,
-                roomid: reservation.roomid,
-                time: new Date(reservation.resTime).getTime()
-            }
+            //获取用户地区。这里只是用ip模拟，只要城市符合即可。在实际环境中可改为用地理位置比对。
+            //备用地址：https://api.vvhan.com/api/getIpInfo
+            //备用地址：https://ip.useragentinfo.com/json，需自己转换json。其他能查到的api基本不支持跨域。
             $.ajax({
-                url: _ROOT_+"reservation/signin.do", type: "post", data: param
+                url: "http://ip-api.com/json/?fields=57375", type:"get"
             }).done(function (d) {
-                $("p.status").text(d.msg);
-                setTimeout(function (){document.location.reload();},1000);
+                if (d.countryCode !== "CN"||d.regionName!==loc.province||d.city!==loc.city){
+                    $("p.status").text("验证失败，您尚未在图书馆！如您启用代理服务器，请将其关闭后重试！");
+                    return;
+                }
+                var param={
+                    seatid: reservation.seatid,
+                    roomid: reservation.roomid,
+                    time: new Date(reservation.resTime).getTime()
+                }
+                $.ajax({
+                    url: _ROOT_+"reservation/signin.do", type: "post", data: param
+                }).done(function (d2) {
+                    $("p.status").text(d2.msg);
+                    setTimeout(function (){document.location.reload();},1800);
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                });
             }).fail(function (xhr) {
-                $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                $("p.status").text("当前无法验证您的位置，请确保网络正常！错误码"+xhr.status);
             });
             return FALSE;
         }
@@ -72,7 +90,7 @@
                     url: _ROOT_+"reservation/signout.do", type: "post", data: param
                 }).done(function (d) {
                     $("p.status").text(d.msg);
-                    setTimeout(function (){document.location.reload();},1000);
+                    setTimeout(function (){document.location.reload();},1800);
                 }).fail(function (xhr) {
                     $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
                 })

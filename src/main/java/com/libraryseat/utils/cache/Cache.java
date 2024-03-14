@@ -1,6 +1,10 @@
 package com.libraryseat.utils.cache;
-//可以再实现一个FIFOCache对比一下性能
+/**通用的缓存接口*/
 public interface Cache<K,V> {
+    /**
+     * 在缓存中获取一个元素。
+     * @return k在缓存中对应的值。如找不到则返回null
+     */
     V get(K k);
     /**
      * 在缓存中添加一个元素。
@@ -8,6 +12,9 @@ public interface Cache<K,V> {
     void put(K k,V v);
     int getSize();
     int getCapacity();
+    /**
+     * 让缓存中的某一项失效
+     */
     void invalidate(K k);
 }
 class DLinkedNode<K,V> {

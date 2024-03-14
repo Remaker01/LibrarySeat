@@ -49,7 +49,7 @@
                     $("#room-id-text").text(room[0].innerText);
                     $("#old-roomname-text").text(room[1].innerText);
                     $("#name-input").val(room[1].innerText);
-                    $("#admin-input").val("");
+                    $("#admin-input").val(room.eq(2).find("a").attr("value"));
                     $("#show-admin-text,#modify-info p.status").text("");
                     $("#modify-info").modal("show");
                 });
@@ -65,11 +65,14 @@
                 $.ajax({
                     url:_ROOT_+"/room/delete.do", type: "post", data: {"id":id}
                 }).done(function (d){
+                    d.msg=d.msg||"";
                     $("p.status").text(d.msg);
                     if(d.msg.indexOf("成功")>0){
                         td.parent().remove();
                         sendMessage("阅览室删除通知","管理员删除了阅览室 "+td[1].innerText);
                     }
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
                 });
             }
         }
@@ -80,19 +83,24 @@
             }).done(function(d) {
                 if(d.info!=null&&d.info.role!==1)//非管理员
                     d.info=null;
+                if (d.info!=null)
+                    d.info.phone = window.atob(d.info.phone);
                 x=d;
-                x.info.phone = window.atob(x.info.phone);
             }).fail(function (){x=null;});
             return x;
         }
         function showAdmin(obj){
             var $obj=$(obj);
             var u=getAdmin($obj.attr("value")).info;
-            // console.log(u);
-            $("#admin-name").text(u.truename);
-            $("#admin-uname").text(u.username);
-            $("#admin-phone").text(u.phone);
-            $("#admin-info").modal("show");
+            if (u!=null) {
+                // console.log(u);
+                $("#admin-name").text(u.truename);
+                $("#admin-uname").text(u.username);
+                $("#admin-phone").text(u.phone);
+                $("#admin-info").modal("show");
+            } else {
+                alert("发生异常，请稍后尝试！");
+            }
         }
         function showSeat(obj){
             var td=$(obj).parent().siblings()[0];
@@ -119,6 +127,7 @@
             $.ajax({
                 url:_ROOT_+"room/update.do", type:"post", data:{"id":id, "name":name, "admin":admin}
             }).done(function (d){
+                d.msg=d.msg||"";
                 $("p.status").text(d.msg);
                 if (d.msg.indexOf("成功")>0)
                     sendMessage("阅览室信息修改通知","管理员已将阅览室 "+$("#old-roomname-text").text()+" 的信息修改，详情请见阅览室信息界面！");

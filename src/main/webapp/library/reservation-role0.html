@@ -60,13 +60,14 @@
             }).done(function (data) {
                 for(var i=0; i<data.length; i++){
                     var elem=data[i];
+                    elem.signinTime = elem.signinTime||""; elem.signoutTime = elem.signoutTime||"";
                     var tr=document.createElement("tr");
                     tr.innerHTML+="<td>"+elem.uid+"</td>";
                     tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById(elem.roomid).roomname+"</td>";
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+elem.resTime+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signinTime||"")+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signoutTime||"")+"</td>";
+                    tr.innerHTML+="<td>"+(elem.signinTime)+"</td>";
+                    tr.innerHTML+="<td>"+(elem.signoutTime)+"</td>";
                     if (elem.signoutTime.length>0)
                         tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
                     else
@@ -74,6 +75,8 @@
                     tbody.appendChild(tr);
                 }
                 $("#loading").text("查询结果如下");
+            }).fail(function (xhr) {
+                $("#loading").text("初始化出错，请稍后重试！错误码"+xhr.status);
             });
             return FALSE;
         }
@@ -89,12 +92,13 @@
                 $.ajax({
                     url:_ROOT_+"/reservation/delete.do", type: "post", data:param
                 }).done(function (d){
+                    d.msg=d.msg||"";
                     $("p.status").text(d.msg);
                     if(d.msg.indexOf("成功")>0){
                         td.parent().remove();
                     }
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了，请稍后重试，错误码："+xhr.status);
+                    $("p.status").text("出错了！请稍后重试，错误码："+xhr.status);
                 });
             }
         }

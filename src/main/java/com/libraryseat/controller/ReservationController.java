@@ -147,4 +147,16 @@ public class ReservationController {
         Map<String,String> result = reservationService.getOpenAndCloseTime();
         JsonUtil.writePojo(result,resp.getOutputStream());
     }
+    @RequestMapping(value = "/getlibraryloc.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @ResponseBody
+    public void getLibraryLocation(HttpServletResponse resp, HttpSession session) throws IOException{
+        User u = (User) session.getAttribute("user");
+        if (u == null){
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        resp.setContentType("application/json;charset=utf-8");
+        Map<String,String> result = reservationService.getLibraryLocation();
+        JsonUtil.writePojo(result,resp.getOutputStream());
+    }
 }

@@ -52,7 +52,7 @@
         function initTable() {
             var tbody=$("table>tbody")[0];
             var param={uid:user.uid}
-            if (pageno.length>0)    param.pageno=pageno;
+            if (pageno!=='')    param.pageno=pageno;
             $("#loading").text("正在加载，请稍后");
             // console.log(param)
             $.ajax({
@@ -60,15 +60,18 @@
             }).done(function (data) {
                 for(var i=0; i<data.length; i++){
                     var elem=data[i];
+                    elem.signinTime = elem.signinTime||""; elem.signoutTime = elem.signoutTime||"";
                     var tr=document.createElement("tr");
                     tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById(elem.roomid).roomname+"</td>";
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+elem.resTime+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signinTime||"") +"</td>";
-                    tr.innerHTML+="<td>"+(elem.signoutTime||"")+"</td>";
+                    tr.innerHTML+="<td>"+(elem.signinTime) +"</td>";
+                    tr.innerHTML+="<td>"+(elem.signoutTime)+"</td>";
                     tbody.appendChild(tr);
                 }
                 $("#loading").text("查询结果如下");
+            }).fail(function (xhr) {
+                $("#loading").text("初始化出错，请稍后重试！错误码"+xhr.status);
             });
             return FALSE;
         }

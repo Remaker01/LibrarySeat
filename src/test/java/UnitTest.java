@@ -1,6 +1,7 @@
 import com.libraryseat.pojo.*;
 import com.libraryseat.utils.ExcelUtil;
 import com.libraryseat.utils.JsonUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
@@ -31,7 +32,7 @@ public class UnitTest {
             JsonUtil.writeReservations(reservations, stream);
             stream.write('\n');
             JsonUtil.writePojo(null,stream);
-            System.out.println(stream.toString(StandardCharsets.UTF_8));
+            System.out.println(new String(stream.toByteArray(),StandardCharsets.UTF_8));
         }catch (IOException e){
             throw new AssertionError(e);
         }
@@ -42,6 +43,7 @@ public class UnitTest {
         try {
             BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
             List<User> users = ExcelUtil.getUsersInWorkbook(inputStream, "xlsx");
+            Assert.assertEquals("size",users.size(),3);
             users.stream().forEach(user -> {
                 System.out.print(user.getUsername());
                 System.out.println(':'+user.getTruename());

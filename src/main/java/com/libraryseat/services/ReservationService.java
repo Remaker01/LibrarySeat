@@ -26,6 +26,7 @@ public class ReservationService {
     private SeatDao seatDao;
     private final Calendar open,close;
     private final Calendar latest;
+    private String province,city;
     private static final Logger LOGGER = LogManager.getLogger(ReservationService.class.getName());
 
     public String addReservation(int seatid, int roomid, int uid) {
@@ -35,9 +36,9 @@ public class ReservationService {
         seat.setStatus((short) 1);
         Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);
         if (timestamp.getTime() >= latest.getTimeInMillis())
-            return String.format("%d:%d以后不能预定座位！",latest.get(Calendar.HOUR_OF_DAY),latest.get(Calendar.MINUTE));
+            return String.format("%d:%02d以后不能预定座位！",latest.get(Calendar.HOUR_OF_DAY),latest.get(Calendar.MINUTE));
         if (timestamp.getTime() < open.getTimeInMillis())
-            return String.format("尚未到预定时间，请于%d:%d之后预定！",open.get(Calendar.HOUR_OF_DAY),open.get(Calendar.MINUTE));
+            return String.format("尚未到预定时间，请于%d:%02d之后预定！",open.get(Calendar.HOUR_OF_DAY),open.get(Calendar.MINUTE));
         if(reservationDao.getActiveReservationCountByUser(uid) > 0){
             return "不可重复预定座位！";
         }
@@ -92,7 +93,7 @@ public class ReservationService {
         }
 //        reservationDao.update(reservation); //既然预定信息存在，就一定能更新成功
 //        seatDao.update(seat);
-        return String.format("签到成功，请于闭馆时间%d:%d之前退座，逾期将自动退座！",close.get(Calendar.HOUR_OF_DAY),close.get(Calendar.MINUTE));
+        return String.format("签到成功，请于闭馆时间%d:%02d之前退座，逾期将自动退座！",close.get(Calendar.HOUR_OF_DAY),close.get(Calendar.MINUTE));
     }
     /**签退或放弃座位*/
     public String signOut(int seatid, int roomid, int uid, Date resTime) {
@@ -140,6 +141,13 @@ public class ReservationService {
         result.put("close",str.toString());
         return result;
     }
+    //TODO:把这个放到其他类里面？
+    public Map<String,String> getLibraryLocation(){
+        HashMap<String,String> result = new HashMap<>(2);
+        result.put("province",province);
+        result.put("city",city);
+        return result;
+    }
     /**
      * 默认开馆时间8:00，闭馆时间22:00
      */
@@ -150,6 +158,8 @@ public class ReservationService {
         // 想改就到properties里，代码就不用动了
         try(InputStream stream = ReservationService.class.getResourceAsStream("/library.properties")){
             properties.load(stream);
+            province = properties.getProperty("location.province");
+            city = properties.getProperty("location.city");
             String openHour = properties.getProperty("open.hour","8");
             String closeHour = properties.getProperty("close.hour","22");
             String openMinute = properties.getProperty("open.minute","0");
