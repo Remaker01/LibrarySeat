@@ -2,13 +2,13 @@ package com.libraryseat.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libraryseat.Response;
-import com.libraryseat.pojo.Reservation;
+import com.libraryseat.pojo.LibraryMetadata;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +27,10 @@ public class JsonUtil {
             writeResponse((Response) obj,stream);
             return;
         }
+        if (obj instanceof LibraryMetadata) {
+            writeMetadata((LibraryMetadata) obj,stream);
+            return;
+        }
         Map<String,Object> map = new HashMap<>(1);
         map.put("info",obj);
         MAPPER.writeValue(stream,map);
@@ -36,13 +40,31 @@ public class JsonUtil {
         MAPPER.writeValue(stream,collection);
     }
 
-    public static void writeReservations(Collection<Reservation> reservations, OutputStream stream) throws IOException {
-        writeCollection(reservations,stream);
-    }
-    public static void writeReservation(Reservation reservation, OutputStream stream) throws IOException {
-        writePojo(reservation,stream);
-    }
     public static void writeResponse(Response response,OutputStream stream) throws IOException {
         MAPPER.writeValue(stream,response);
+    }
+
+    public static void writeMetadata(LibraryMetadata metadata,OutputStream stream) throws IOException{
+        JsonGenerator generator = FACTORY.createGenerator(stream);
+        generator.writeStartObject();
+        if (metadata == null){
+            generator.writeNullField("info");
+        } else {
+            Calendar open = metadata.getOpenTime(),close=metadata.getCloseTime(),latest=metadata.getLatestReservationTime();
+            generator.writeObjectFieldStart("info");
+            generator.writeStringField("open",formatCalendar(open));
+            generator.writeStringField("close",formatCalendar(close));
+            generator.writeStringField("latest",formatCalendar(latest));
+            generator.writeStringField("province", metadata.getProvince());
+            generator.writeStringField("city", metadata.getCity());
+        }
+        generator.writeEndObject();
+        generator.close();
+    }
+
+    private static String formatCalendar(Calendar calendar){
+        if (calendar == null)
+            return null;
+        return String.format("%d:%02d",calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE));
     }
 }

@@ -2,6 +2,7 @@ package com.libraryseat.controller;
 
 import com.libraryseat.Response;
 import com.libraryseat.pojo.*;
+import com.libraryseat.services.MetadataService;
 import com.libraryseat.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,8 @@ import com.libraryseat.utils.JsonUtil;
 public class ReservationController {
     @Autowired
     private ReservationService reservationService;
+    @Autowired
+    private MetadataService metadataService;
 
 //    public String currentReservation(HttpSession session) {
 //
@@ -133,30 +136,19 @@ public class ReservationController {
             }
             reservations = reservationService.getReservations(pageno);
         }
-        JsonUtil.writeReservations(reservations, resp.getOutputStream());
+        JsonUtil.writeCollection(reservations, resp.getOutputStream());
     }
-    @RequestMapping(value = "/getopenandclose.do",method = {RequestMethod.POST,RequestMethod.GET})
+
+    @RequestMapping(value = "/librarymetadata.do",method = {RequestMethod.POST,RequestMethod.GET})
     @ResponseBody
-    public void getOpenAndCloseTime(HttpServletResponse resp,HttpSession session) throws IOException{
+    public void getLibraryMetadata(HttpServletResponse resp, HttpSession session) throws IOException{
         User u = (User) session.getAttribute("user");
         if (u == null){
             resp.sendError(403,"校验失败");
             return;
         }
         resp.setContentType("application/json;charset=utf-8");
-        Map<String,String> result = reservationService.getOpenAndCloseTime();
-        JsonUtil.writePojo(result,resp.getOutputStream());
-    }
-    @RequestMapping(value = "/getlibraryloc.do",method = {RequestMethod.POST,RequestMethod.GET})
-    @ResponseBody
-    public void getLibraryLocation(HttpServletResponse resp, HttpSession session) throws IOException{
-        User u = (User) session.getAttribute("user");
-        if (u == null){
-            resp.sendError(403,"校验失败");
-            return;
-        }
-        resp.setContentType("application/json;charset=utf-8");
-        Map<String,String> result = reservationService.getLibraryLocation();
-        JsonUtil.writePojo(result,resp.getOutputStream());
+        LibraryMetadata metadata = metadataService.getMetadata();
+        JsonUtil.writeMetadata(metadata,resp.getOutputStream());
     }
 }

@@ -8,7 +8,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class UnitTest {
@@ -27,13 +26,15 @@ public class UnitTest {
         try(ByteArrayOutputStream stream = new ByteArrayOutputStream(100)) {
             JsonUtil.writePojo(room, stream);
             stream.write('\n');
-            JsonUtil.writeReservation(r1, stream);
+            JsonUtil.writePojo(r1, stream);
             stream.write('\n');
-            JsonUtil.writeReservations(reservations, stream);
+            JsonUtil.writeCollection(reservations, stream);
             stream.write('\n');
             JsonUtil.writePojo(null,stream);
+            stream.write('\n');
+            JsonUtil.writeMetadata(new LibraryMetadata("Jiangsu","Nanjing"),stream);
             System.out.println(new String(stream.toByteArray(),StandardCharsets.UTF_8));
-        }catch (IOException e){
+        } catch (IOException e){
             throw new AssertionError(e);
         }
     }
