@@ -7,6 +7,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>classpath*:applicationContext.xml</param-value>
     </context-param>
+<!--    listener-->
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
@@ -27,6 +28,7 @@
         <servlet-name>springmvc</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+<!--    filter-->
     <filter>
         <filter-name>My-filter</filter-name>
         <filter-class>com.libraryseat.GenericFilter</filter-class>
@@ -36,9 +38,16 @@
         <url-pattern>*.jsp</url-pattern>
         <url-pattern>*.do</url-pattern>
     </filter-mapping>
+
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+<!--    error page-->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/404.html</location>
+    </error-page>
+
     <resource-ref>
         <description>DB connection</description>
         <res-ref-name>jdbc/library</res-ref-name>

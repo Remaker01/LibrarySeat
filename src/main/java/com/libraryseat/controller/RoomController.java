@@ -39,6 +39,7 @@ public class RoomController {
             return null;
         }
         resp.setHeader("Cache-Control","no-cache");
+        resp.setCharacterEncoding(null);
         switch (u.getRole()) {
             case 0:
                 return "/library/rooms-role0.html" + ((uid == null) ? "" : String.format("?uid=%d", uid));
@@ -51,8 +52,7 @@ public class RoomController {
                     return null;
                 }
                 return "/library/rooms-role1.html?my=" + my;
-            case 2:
-                return "/library/rooms-role2.html";
+            default:resp.sendError(403,"校验失败");
         }
         return null; //不会发生
     }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>通知详情</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <style>
+        div.message p{
+            text-indent: 1em;
+            line-height: 150%;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("body").addClass("ready");
+            checkLogin(function (data) {
+                if (data.info==null){
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else {
+                    var uid=getCurrentParam("uid"),time=getCurrentParam("time");
+                    initMessage(uid,time);
+                }
+            });
+        });
+        var initMessage = function (uid_,time_){
+            $.ajax({
+                url:_ROOT_+"message/get.do", type:"post", data:{uid:uid_, time:time_}
+            }).done(function (data) {
+                if (data.info!=null) {
+                    $("div.message-title>h3").text(data.info.title);
+                    $("div.message-content>p").text(data.info.content);
+                    $("p.sender").text("发布时间:"+data.info.time+" ");
+                }
+            }).fail(function (xhr) {
+                $("div.message-content>p").text("通知加载失败！请稍后重试，错误码"+xhr.status);
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="message">
+    <strong>通知详情</strong>
+    <div class="message-title">
+        <h3 style="text-align: center"></h3>
+        <p class="sender" style="color: gray;font-size: small;text-align: right;"></p>
+    </div>
+    <hr>
+    <div class="message-content">
+        <p></p>
+    </div><br>
+    <a href="#" onclick="window.history.go(-1)">返回上一页</a>
+</div>
+</body>
+</html>

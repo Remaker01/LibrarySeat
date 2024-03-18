@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <title>404 Not Found</title>
+    <script>
+        var _ROOT_="/LibrarySeat/";
+        window.onload=function (){
+            document.getElementById("err_img").src=_ROOT_+"img/404.jpg";
+        }
+    </script>
+    <style>
+        body, p, ul, li, form, img, h1, h2, h3, select, input {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            color: #434f52;
+            font-family: tahoma,arial,'Microsoft YaHei', SimSun, sans-serif;
+            line-height: 21px;
+            text-align: center;
+        }
+        img {
+            border: 0 none;
+            vertical-align: middle;
+        }
+
+        .wrap1180 {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .error-info-container {
+            padding-top: 100px;
+            text-align: center;
+        }
+
+        .error-info-container .error-img {
+            width: 90%;
+            margin: 0 auto 25px auto;
+        }
+
+
+        @media only screen and (min-device-width : 473px) {
+            .error-info-container .error-img {
+                width:426px;
+                margin: 0 auto 25px auto;
+            }
+        }
+
+        .error-info-container h2 {
+            margin: 24px 0 6px;
+            line-height: 32px;
+            font-size: 24px;
+            color: #333;
+            font-weight: 700;
+        }
+        .error-info-container .error-info {
+            line-height: 22px;
+            margin-bottom: 40px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        a, a:link, a:visited {
+            color: #333;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="error-info-container wrap1180">
+    <div class="error-img"><img id="err_img" alt="错误"></div>
+    <h2>出错了</h2>
+    <div class="error-info">404 Not Found (没有找到访问的页面)</div>
+    <button class="btn btn-primary" onclick="document.location.href=_ROOT_">返回首页</button>
+</div>
+</body>
+</html>
