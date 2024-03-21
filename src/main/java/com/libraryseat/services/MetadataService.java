@@ -48,7 +48,31 @@ public class MetadataService {
             setCalendar(close,22,0);
         }
     }
-    private static void setCalendar(Calendar calendar,int hour,int minute){
+    /**
+     * 每天更新年月日。
+     */
+    public void resetDaily(){
+        Calendar today = Calendar.getInstance(TimeZone.getDefault());
+        int year = today.get(Calendar.YEAR),month = today.get(Calendar.MONTH),date = today.get(Calendar.DATE);
+        metadata.getOpenTime().set(year,month,date); //三个time不用创建新的Calendar，直接设置属性即可。
+        metadata.getCloseTime().set(year,month,date);
+        metadata.getLatestReservationTime().set(year,month,date);
+    }
+    /**
+     * 更新图书馆开、闭馆时间。
+     * @throws IllegalArgumentException 若给出的时间错误。
+     */
+    public void setMetadata(int openHour, int openMinute, int closeHour, int closeMinute) throws IllegalArgumentException{
+        setCalendar(metadata.getOpenTime(),openHour,openMinute);
+        setCalendar(metadata.getCloseTime(),closeHour,closeMinute);
+        metadata.setLatestReservationTime((Calendar) metadata.getCloseTime().clone());
+        metadata.getLatestReservationTime().add(Calendar.MINUTE,-30);
+    }
+    private static void setCalendar(Calendar calendar,int hour,int minute) throws IllegalArgumentException{
+        if (hour < 0 || hour >= 24)
+            throw new IllegalArgumentException("Wrong hour:" + hour);
+        if (minute < 0||minute >= 60)
+            throw new IllegalArgumentException("Wrong minute:" + minute);
         calendar.set(Calendar.HOUR_OF_DAY,hour);
         calendar.set(Calendar.MINUTE,minute);
         calendar.set(Calendar.SECOND,0);

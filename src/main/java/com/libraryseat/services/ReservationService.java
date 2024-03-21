@@ -34,6 +34,7 @@ public class ReservationService {
         if(seat == null||seat.getStatus() != (short) 0)
             return "预定失败，座位不存在或已被占用";
         seat.setStatus((short) 1);
+        metadataService.resetDaily(); //只在有预定&签退时更新。预定到签到只有30分钟所以签到时不用更新。
         Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);
         Calendar open = metadataService.getMetadata().getOpenTime(),latest = metadataService.getMetadata().getLatestReservationTime();
         if (timestamp.getTime() >= latest.getTimeInMillis())
@@ -113,6 +114,7 @@ public class ReservationService {
         if(reservationDao.updateWithStatus(reservation,(short) 0) == 0) {
             return "操作失败，请稍后重试。";
         }
+        metadataService.resetDaily();
         return "操作成功！";
     }
 

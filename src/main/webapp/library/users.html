@@ -111,10 +111,10 @@
                         $("#modify-user p.status").text("");
                         if(tds[0].innerText===user.uid.toString()) {
                             $("#myModalLabel").text("修改个人信息");
-                            $("#uname-input").attr("readonly",true);
+                            $("#uname-input").attr("readonly",true).attr("disabled",true);
                         } else{
                             $("#myModalLabel").text("修改用户信息");
-                            $("#uname-input").attr("readonly",false);
+                            $("#uname-input").attr("readonly",false).attr("disabled",false);
                         }
                         $("#modify-user").modal("show");
                     });
@@ -148,7 +148,8 @@
             }
         }
         function submit_modify() {
-            var uid=$("#uid-text").text(),uname=$("#uname-input").val(),name=$("#name-input").val(),phone=$("#phone-input").val();
+            var uid=$("#modify-user span.uid-text").text(),uname=$("#uname-input").val(),name=$("#name-input").val(),
+                phone=$("#phone-input").val();
             var status=$("#modify-user p.status");
             if(!REGEXP_USERNAME.test(uname)){
                 status.text(USERNAME_REQUIREMENT);
