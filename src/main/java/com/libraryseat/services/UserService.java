@@ -70,6 +70,7 @@ public class UserService {
                 int add=userDao.add(parseResult);
                 return String.format("上传成功，共添加%d条数据.", add);
             } catch (DataIntegrityViolationException e){
+                LOGGER.debug(e.getMessage());
                 return "至少有一个用户的用户名或手机号与已有信息重复！";
             } catch (IOException|DataAccessException ex){
                 LOGGER.error("",ex);

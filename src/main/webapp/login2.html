@@ -16,6 +16,11 @@
                 $(this).val($(this).val().replace(REGEXP_NOT_NUM,''));
             });
             $("#vcode-phone-btn").on("click",function (){
+                var phone=$("input[name='phone']").val();
+                if (phone==null||phone===""){
+                    $("p#status").text("请输入手机号！");
+                    return;
+                }
                 phone_code=randInt(1e5,1e6);
                 $("#vcode-phone-text").attr("placeholder","测试功能，请输入"+phone_code).val("");
             });//onclick

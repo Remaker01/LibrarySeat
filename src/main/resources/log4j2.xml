@@ -23,9 +23,9 @@
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
         </RollingFile>
-        <!--输出Debug及以下的信息-->
-        <RollingFile name="RollingFileDebug" fileName="log/debug.log"
-                     filePattern="log/$${date:yyyy-MM}/warn-%d{yyyy-MM-dd}-%i.log">
+        <!--输出Debug及以下的信息。不是很重要，不用立即写入磁盘-->
+        <RollingFile name="RollingFileDebug" fileName="log/debug.log" immediateFlush="false" bufferSize="4096"
+                     filePattern="log/$${date:yyyy-MM}/debug-%d{yyyy-MM-dd}-%i.log">
             <ThresholdFilter level="info" onMatch="DENY" onMismatch="ACCEPT"/>
             <PatternLayout pattern="[%d{yyMMdd HH:mm:ss.SSS}] [%p] - %l - %m%n"/>
             <Policies>

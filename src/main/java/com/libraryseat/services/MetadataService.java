@@ -58,16 +58,7 @@ public class MetadataService {
         metadata.getCloseTime().set(year,month,date);
         metadata.getLatestReservationTime().set(year,month,date);
     }
-    /**
-     * 更新图书馆开、闭馆时间。
-     * @throws IllegalArgumentException 若给出的时间错误。
-     */
-    public void setMetadata(int openHour, int openMinute, int closeHour, int closeMinute) throws IllegalArgumentException{
-        setCalendar(metadata.getOpenTime(),openHour,openMinute);
-        setCalendar(metadata.getCloseTime(),closeHour,closeMinute);
-        metadata.setLatestReservationTime((Calendar) metadata.getCloseTime().clone());
-        metadata.getLatestReservationTime().add(Calendar.MINUTE,-30);
-    }
+
     private static void setCalendar(Calendar calendar,int hour,int minute) throws IllegalArgumentException{
         if (hour < 0 || hour >= 24)
             throw new IllegalArgumentException("Wrong hour:" + hour);
