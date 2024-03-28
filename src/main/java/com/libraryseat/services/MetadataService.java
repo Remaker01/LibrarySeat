@@ -58,6 +58,27 @@ public class MetadataService {
         metadata.getCloseTime().set(year,month,date);
         metadata.getLatestReservationTime().set(year,month,date);
     }
+    /**
+     * 重新加载配置。
+     */
+    public void reload(){
+        Properties properties = new Properties();
+        try(InputStream stream = ReservationService.class.getResourceAsStream("/library.properties")){
+            properties.load(stream);
+            String openHour = properties.getProperty("open.hour","8");
+            String closeHour = properties.getProperty("close.hour","22");
+            String openMinute = properties.getProperty("open.minute","0");
+            String closeMinute = properties.getProperty("close.minute","0");
+            //直接修改原来calender里的属性，不用新建
+            setCalendar(metadata.getOpenTime(),Integer.parseInt(openHour),Integer.parseInt(openMinute));
+            setCalendar(metadata.getCloseTime(),Integer.parseInt(closeHour),Integer.parseInt(closeMinute));
+            Calendar latest = (Calendar) metadata.getCloseTime().clone();
+            latest.add(Calendar.MINUTE,-30);
+            metadata.setLatestReservationTime(latest);
+        } catch (Exception e) {
+            LOGGER.error("配置文件不存在或格式错误：",e);
+        }
+    }
 
     private static void setCalendar(Calendar calendar,int hour,int minute) throws IllegalArgumentException{
         if (hour < 0 || hour >= 24)

@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <style>
         hr{margin: 0;}
+        img.media-object{
+            width: 32px; height: 32px; border-radius: 49%;
+        }
     </style>
     <script>
         $(document).ready(function (){
@@ -53,25 +56,22 @@
         }
         function createRoomCard(room,free,total,container){
             var div1=document.createElement("div");
-            $(div1).addClass("media");
+            div1.className="media";
 
             var media_left=document.createElement("div");
-            $(media_left).addClass("media-left");
+            media_left.className=("media-left");
 
             var media_body=document.createElement("div");
-            $(media_body).addClass("media_body");
+            media_body.className=("media_body");
 
             var media_heading=document.createElement("a");
-            media_heading.href="../seat/show.do?roomid="+room.roomid;
-            media_heading.innerText=room.roomname;
-            $(media_heading).addClass("media-heading");
+            $(media_heading).text(room.roomname).addClass("media-heading").attr("href","../seat/show.do?roomid="+room.roomid);
 
             var content=document.createElement("p");
             content.innerText="可用座位"+free+"/"+total;
 
             var img=document.createElement("img");
-            img.src="../img/RC.jpg";
-            $(img).addClass("media-object").css("width",32).css("height",32).css("border-radius","49%");
+            $(img).addClass("media-object").attr("src","../img/RC.jpg");
 
             media_left.appendChild(img);
             media_body.appendChild(media_heading);media_body.appendChild(content);

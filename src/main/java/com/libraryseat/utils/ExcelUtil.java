@@ -24,7 +24,8 @@ public class ExcelUtil {
             Workbook workbook = new HSSFWorkbook(stream,true);
             workbook.setMissingCellPolicy(Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             return workbook;
-        } else if (format.equalsIgnoreCase("xlsx")||format.equalsIgnoreCase("xlsm")) {
+        }
+        if (format.equalsIgnoreCase("xlsx")||format.equalsIgnoreCase("xlsm")) {
             Workbook workbook = new XSSFWorkbook(stream);
             workbook.setMissingCellPolicy(Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             return workbook;
@@ -51,19 +52,11 @@ public class ExcelUtil {
     }
 
     private static String getGender(String original){
-        if (original == null)
-            return null;
-        if (original.equals("男")||original.equals("女"))
-            return original;
-        return null;
+        return ("男".equals(original)||"女".equals(original)) ? original : null;
     }
 
     private static String getPhone(String original){
-        if (original == null)
-            return null;
-        if (VerifyUtil.verifyPhone(original))
-            return original;
-        return null;
+        return  (VerifyUtil.verifyPhone(original)) ? original : null;
     }
     /**
      * 从包含excel文件的流中解析用户信息。行格式{用户名，密码，姓名，性别，手机号，身份}
