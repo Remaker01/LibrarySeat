@@ -5,6 +5,7 @@ import com.libraryseat.dao.ReservationDao;
 import com.libraryseat.dao.SeatDao;
 import com.libraryseat.pojo.Reservation;
 import com.libraryseat.pojo.Seat;
+import com.libraryseat.pojo.LibraryMetadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -75,7 +75,11 @@ public class ReservationService {
         }
     }
 
-    public String signIn(int seatid, int roomid, int uid, Date resTime) {
+    public String signIn(int seatid, int roomid, int uid, Date resTime, String province, String city) {
+        LibraryMetadata metadata = metadataService.getMetadata();
+        if (!metadata.getProvince().equalsIgnoreCase(province)||!metadata.getCity().equalsIgnoreCase(city)){
+            return "位置验证失败，您尚未在图书馆！如您启用代理服务器，请将其关闭后重试！";
+        }
         Timestamp old = new Timestamp(resTime.getTime());
         Timestamp now = new Timestamp((System.currentTimeMillis()/1000)*1000L);
         Reservation reservation = reservationDao.getReservation(seatid,roomid,uid,old);

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
-        var user,pageno;
+        var user,pageno,rooms=[];
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
@@ -50,6 +50,16 @@
             return FALSE;
         }
         function initTable() {
+            function getRoomById_cached(id) {
+                ///尝试在数组中寻找room，如果找不到就发送网络请求。
+                for(var i=0; i<rooms.length; i++){
+                    if (rooms[i].roomid===id)
+                        return rooms[i];
+                }
+                var result = getRoomById(id);
+                rooms.push(result);
+                return result;
+            }
             var tbody=$("table>tbody")[0];
             var param={uid:user.uid}
             if (pageno!=='')    param.pageno=pageno;
@@ -62,7 +72,7 @@
                     var elem=data[i];
                     elem.signinTime = elem.signinTime||""; elem.signoutTime = elem.signoutTime||"";
                     var tr=document.createElement("tr");
-                    tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById(elem.roomid).roomname+"</td>";
+                    tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById_cached(elem.roomid).roomname+"</td>";
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+elem.resTime+"</td>";
                     tr.innerHTML+="<td>"+(elem.signinTime) +"</td>";

@@ -71,14 +71,17 @@ public class ReservationController {
 
     @RequestMapping(value = "/signin.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void signIn(Integer seatid, Integer roomid, Long time, HttpServletResponse resp, HttpSession session) //bug0:大小写错误
+    public void signIn(@RequestParam Map<String,String> params, HttpServletResponse resp, HttpSession session) //bug0:大小写错误
         throws IOException {
         User u = (User) session.getAttribute("user");
         if(u == null||u.getRole() != 2) {
             resp.sendError(403,"校验失败，只有学生可以签到");
             return;
         }
-        String info = reservationService.signIn(seatid,roomid,u.getUid(),new Date(time));
+        int seatid = Integer.parseInt(params.get("seatid")), roomid=Integer.parseInt(params.get("roomid"));
+        long time = Long.parseLong(params.get("time"));
+        String province = params.get("province"),city = params.get("city");
+        String info = reservationService.signIn(seatid,roomid,u.getUid(),new Date(time),province,city);
         JsonUtil.writeResponse(new Response("/reservation/signin.do","POST",info),resp.getOutputStream());
     }
     @RequestMapping(value = "/signout.do",method = {RequestMethod.POST})
