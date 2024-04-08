@@ -3,10 +3,11 @@ package com.libraryseat.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Arrays;
-@JsonIgnoreProperties({"password"})
+@JsonIgnoreProperties({"password","salt"})
 public class User {
     private int uid;
     private String username,password,truename,gender,phone;
+    private int salt;
     private short role;
 //    private boolean valid = true; //这个可能不需要
 
@@ -71,7 +72,14 @@ public class User {
         this.role = role;
     }
 
-//    public boolean isValid() {
+    public int getSalt() {
+        return salt;
+    }
+
+    public void setSalt(int salt) {
+        this.salt = salt;
+    }
+    //    public boolean isValid() {
 //        return valid;
 //    }
 

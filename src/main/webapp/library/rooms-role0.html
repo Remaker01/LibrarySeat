@@ -94,6 +94,7 @@
             var u=getAdmin($obj.attr("value")).info;
             if (u!=null) {
                 // console.log(u);
+                $("#admin-id").text(u.uid);
                 $("#admin-name").text(u.truename);
                 $("#admin-uname").text(u.username);
                 $("#admin-phone").text(u.phone);
@@ -158,6 +159,7 @@
                 <h4 class="modal-title">管理员信息</h4>
             </div>
             <form class="modal-body">
+                <p>工号：<span id="admin-id"></span> </p>
                 <p>用户名：<span id="admin-uname"></span> </p>
                 <p>姓名：<span id="admin-name"></span></p>
                 <p>手机号：<span id="admin-phone"></span></p>

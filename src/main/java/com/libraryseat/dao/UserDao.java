@@ -25,6 +25,7 @@ public class UserDao extends BaseDao {
             u.setGender(resultSet.getString("gender"));
             u.setPhone(resultSet.getString("phone"));
             u.setRole(resultSet.getShort("role"));
+            u.setSalt(resultSet.getInt("salt"));
             return u;
         }
     }
@@ -95,19 +96,20 @@ public class UserDao extends BaseDao {
         if(!(o instanceof User))
             throw new IllegalArgumentException();
         User user = (User) o;
-        String sql = "insert into users(username,`password`,truename,gender,phone,`role`) values(?,?,?,?,?,?)";
+        String sql = "insert into users(username,`password`,truename,gender,phone,`role`,salt) values(?,?,?,?,?,?,?)";
         template.update(sql,
                 user.getUsername(),
                 user.getPassword(),
                 user.getTruename(),
                 user.getGender(),
                 user.getPhone(),
-                user.getRole());
+                user.getRole(),
+                user.getSalt());
     }
     /**批量添加*/
     public int add(Collection<User> users){
         List<Object[]> args = new ArrayList<>(users.size());
-        String sql = "insert into users(username,`password`,truename,gender,phone,`role`) values(?,?,?,?,?,?)";
+        String sql = "insert into users(username,`password`,truename,gender,phone,`role`,salt) values(?,?,?,?,?,?,?)";
         for (User user:users){
             if (user == null)
                 continue;
@@ -117,7 +119,8 @@ public class UserDao extends BaseDao {
                     user.getTruename(),
                     user.getGender(),
                     user.getPhone(),
-                    user.getRole()
+                    user.getRole(),
+                    user.getSalt()
             });
         }
         return Arrays.stream(template.batchUpdate(sql,args)).reduce(0,Integer::sum);

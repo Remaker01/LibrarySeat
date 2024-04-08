@@ -20,9 +20,16 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/* 已测试功能
+* 1.登录--ok
+* 2.新增单个--ok
+* 3.批量新增--ok
+* 3.重置密码--ok
+*/
 @Service
 public class UserService {
     private static final Cache<String,User> userNameCache = new LRUCache<>(60);
@@ -38,17 +45,39 @@ public class UserService {
     @Autowired
     @Lazy
     private RoomDao roomDao;
+    private final SecureRandom generator;
+
+    public UserService() {
+        SecureRandom sr;
+        try {
+            sr = SecureRandom.getInstance("SHA1PRNG"); //防止linux中可能发生阻塞
+        } catch (NoSuchAlgorithmException e) { //基本不可能发生
+            sr = new SecureRandom();
+        }
+        generator = sr;
+    }
+    /**
+     * 采用加盐的方式对密码进行hash.
+     */
+    private void encryptPasswordSalted(User user){
+        int salt = generator.nextInt(); //可能为负数
+        String saltString = Integer.toString(salt);
+        user.setPassword(EncryptUtil.encrypt(user.getPassword(),saltString,StandardCharsets.ISO_8859_1));
+        user.setSalt(salt);
+    }
 
     /**给出用户信息，增加用户*/
     public String addUser(String[] info,short role) {
         assert role>=0&&role<=2;
         String uname = info[0],
-                pswd = EncryptUtil.encrypt(info[1],Short.toString(role),StandardCharsets.ISO_8859_1),
+                pswd = info[1],
                 trueName = info[2],
                 gender = info[3],
                 phone = info[4];
         try {
-            userDao.add(new User(uname, pswd, trueName, gender, phone, role));
+            User newUser = new User(uname, pswd, trueName, gender, phone, role);
+            encryptPasswordSalted(newUser);
+            userDao.add(newUser);
             return "添加成功！";
         } catch (DataAccessException e){
             return "添加失败,用户名或手机号可能已存在！";
@@ -63,10 +92,7 @@ public class UserService {
                 if (parseResult.isEmpty())
                     return "文件中不包含任何有效信息！";
                 parseResult = parseResult.stream()
-                        .peek(user->{
-                            String pswd = user.getPassword();
-                            user.setPassword(EncryptUtil.encrypt(pswd,Short.toString(user.getRole()),StandardCharsets.ISO_8859_1));
-                        }).collect(Collectors.toList());
+                        .peek(user->encryptPasswordSalted(user)).collect(Collectors.toList());
                 int add=userDao.add(parseResult);
                 return String.format("上传成功，共添加%d条数据.", add);
             } catch (DataIntegrityViolationException e){
@@ -94,12 +120,11 @@ public class UserService {
                 return "更新失败，该用户尚有未签退/放弃的座位预定信息！";
         }
         if(VerifyUtil.verifyPassword(u.getPassword())) { //是md5
-            String pswd = EncryptUtil.encrypt(u.getPassword(), Short.toString(role), StandardCharsets.ISO_8859_1);
-            u.setPassword(pswd);
+            encryptPasswordSalted(u);
         }
         int res = userDao.update(u);
         if(res != 0) {
-            synchronized (this) {
+            synchronized (UserService.class) {
                 userNameCache.put(u.getUsername(), u);
                 idCache.put(uid, u);
                 phoneCache.put(u.getPhone(),u);
@@ -126,7 +151,7 @@ public class UserService {
         //2.从缓存中删除
         try {
             userDao.delete(u);
-            synchronized (this) {
+            synchronized (UserService.class) {
                 userNameCache.invalidate(u.getUsername());
                 idCache.invalidate(uid);
                 phoneCache.invalidate(u.getPhone());
@@ -155,7 +180,7 @@ public class UserService {
         //2.从2个缓存中删除。
         try {
             userDao.delete(u);
-            synchronized (this) {
+            synchronized (UserService.class) {
                 //从缓存1中删除
                 userNameCache.invalidate(username);
                 //从缓存2中删除
@@ -176,10 +201,10 @@ public class UserService {
             userNameCache.put(username,u);
         }
         if (u != null) {
-            password = EncryptUtil.encrypt(password, Short.toString(u.getRole()), StandardCharsets.ISO_8859_1);
+            password = EncryptUtil.encrypt(password, Integer.toString(u.getSalt()), StandardCharsets.ISO_8859_1);
             return u.getPassword().equals(password) ? u : null;
         }
-        return null;
+        return null; //用户不存在
     }
     /**使用手机号+验证码登录，也可用于忘记密码时寻找密码*/
     public User loginByPhone(String phone) {

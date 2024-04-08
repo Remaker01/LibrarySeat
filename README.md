@@ -8,6 +8,9 @@
 2.8  基本完成后端功能，前端页面部分完善中。
 
 3.21 基本完成全部功能。
+
+**4.7 重大更新：修改密码加密方式，改为加盐，需要在`users`表中新增一列`salt`。**
+**详情见下文“数据库密码存储方式”一节。**
 ### 项目信息
 **环境**
 
@@ -25,7 +28,7 @@
 > 数据库密码存储方式：
 > ```
 > pswd_md5=md5(md5(user.password)).toHexString()
-> pswd_final=HmacSHA256(text=pswd_md5,key=user.role.toString())
+> pswd_final=HmacSHA256(text=pswd_md5,key=user.salt.toString())
 > //学生的默认密码为Student1，管理员的默认密码为Admin135
 > ```
 运行rand_users.py获取随机的用户数据文件users.sql。运行此sql文件向数据库中添加随机用户。
