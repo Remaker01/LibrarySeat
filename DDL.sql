@@ -9,6 +9,7 @@ create table if not exists users
     phone    varchar(24) charset latin1   not null,
     role     tinyint unsigned default '2' null comment '0:超级管理员，1:图书室管理员，2:学生',
     valid    tinyint unsigned default '1' null,
+    salt     int              default 0   null,
     constraint username
         unique (username),
     constraint users_phone_uindex
@@ -68,7 +69,7 @@ create table if not exists reservation
             on update cascade
 );
 # 超时自动放弃座位
-create event auto_signout
+create event if not exists auto_signout
     on schedule every 30 second
     on completion preserve
     do
@@ -79,7 +80,7 @@ create event auto_signout
       and signout_time is null
       and TIMESTAMPDIFF(minute,reservation_time,NOW())>=30;
 # 每晚11：00闭馆，已签到的自动退座，未签到的自动放弃座位
-create event auto_signout_every_night
+create event if not exists auto_signout_every_night
     on schedule every 1 day
     starts timestamp(CURDATE(),'22:00:00')
     on completion preserve

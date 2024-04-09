@@ -41,13 +41,17 @@ public class UserController {
     @Autowired
     private ServletFileUpload fileUpload;
 
-    private User base64Phone(User old){
+    private User base64Phone(User old,boolean copy){
         if (old == null)
             return null;
-        User u = new User();
-        BeanUtils.copyProperties(old,u,"password","phone");
-        u.setPhone(EncryptUtil.base64Encode(old.getPhone()));
-        return u;
+        if (copy) {
+            User u = new User();
+            BeanUtils.copyProperties(old, u, "password", "phone");
+            u.setPhone(EncryptUtil.base64Encode(old.getPhone()));
+            return u;
+        }
+        old.setPhone(EncryptUtil.base64Encode(old.getPhone()));
+        return old;
     }
 
     @RequestMapping(value = "/logged_user.do",method = {RequestMethod.GET})
@@ -55,7 +59,7 @@ public class UserController {
     public void loggedUser(HttpSession session, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=utf-8");
         User u = (User) (session.getAttribute("user"));
-        JsonUtil.writePojo(base64Phone(u),response.getOutputStream());
+        JsonUtil.writePojo(base64Phone(u,true),response.getOutputStream());
     }
 
     @RequestMapping(value = "/login.do",method = {RequestMethod.POST})
@@ -248,11 +252,11 @@ public class UserController {
     public void getUserById(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         //暂定不允许学生获取用户信息
-        if (u == null||u.getRole()==2) {
+        if (u == null) {
             resp.sendError(403,"校验失败");
             return;
         }
         User result = userService.getUserById(uid);
-        JsonUtil.writePojo(base64Phone(result),resp.getOutputStream());
+        JsonUtil.writePojo(base64Phone(result,false),resp.getOutputStream());
     }
 }

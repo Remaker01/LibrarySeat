@@ -32,7 +32,11 @@
                 if (data.info!=null) {
                     $("div.message-title>h3").text(data.info.title);
                     $("div.message-content>p").text(data.info.content);
-                    $("p.sender").text("发布时间:"+data.info.time+" ");
+                    $.ajax({
+                        url: _ROOT_+"user/getbyid.do", type: "post", data: {uid: data.info.uid}
+                    }).done(function (data2){
+                        $("p.sender").text("发布时间:"+data.info.time+"   发布者:"+data2.info.truename);
+                    });
                 }
             }).fail(function (xhr) {
                 $("div.message-content>p").text("通知加载失败！请稍后重试，错误码"+xhr.status);
@@ -45,7 +49,7 @@
     <strong>通知详情</strong>
     <div class="message-title">
         <h3 style="text-align: center"></h3>
-        <p class="sender" style="color: gray;font-size: small;text-align: right;"></p>
+        <p class="sender" style="color: gray;font-size: small;text-align: right;white-space: pre"></p>
     </div>
     <hr>
     <div class="message-content">

@@ -2,7 +2,7 @@ package com.libraryseat.pojo;
 
 import java.util.Calendar;
 
-public class LibraryMetadata {
+public class LibraryMetadata implements Cloneable {
     private Calendar openTime,closeTime,latestReservationTime;
     private String province = ""; //省份
     private String city = ""; //城市
@@ -52,5 +52,19 @@ public class LibraryMetadata {
 
     public void setCity(String city) {
         this.city = city;
+    }
+    /**
+     * 对此metadata进行深拷贝
+     */
+    @Override
+    public Object clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException e) {}
+        LibraryMetadata another = new LibraryMetadata(province,city);
+        another.setOpenTime((Calendar) openTime.clone());
+        another.setCloseTime((Calendar) closeTime.clone());
+        another.setLatestReservationTime((Calendar) latestReservationTime.clone());
+        return another;
     }
 }

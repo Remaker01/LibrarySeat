@@ -22,8 +22,6 @@ import com.libraryseat.utils.JsonUtil;
 public class ReservationController {
     @Autowired
     private ReservationService reservationService;
-    @Autowired
-    private MetadataService metadataService;
 
 //    public String currentReservation(HttpSession session) {
 //
@@ -119,12 +117,10 @@ public class ReservationController {
     @RequestMapping(value = "/list.do",method = {RequestMethod.POST})
     @ResponseBody
     public void getReservations(@RequestParam(required = false) Integer uid,
-                                @RequestParam(required = false) Integer pageno,
+                                @RequestParam(defaultValue = "1") Integer pageno,
                                 HttpServletResponse resp,
                                 HttpSession session) throws IOException{
         User u = (User) session.getAttribute("user");
-        if(pageno == null)
-            pageno = 1;
         List<Reservation> reservations;
         if(uid != null) {
             if (u.getUid() != uid&&u.getRole() != 0){
@@ -140,18 +136,5 @@ public class ReservationController {
             reservations = reservationService.getReservations(pageno);
         }
         JsonUtil.writeCollection(reservations, resp.getOutputStream());
-    }
-
-    @RequestMapping(value = "/librarymetadata.do",method = {RequestMethod.POST,RequestMethod.GET})
-    @ResponseBody
-    public void getLibraryMetadata(HttpServletResponse resp, HttpSession session) throws IOException{
-        User u = (User) session.getAttribute("user");
-        if (u == null){
-            resp.sendError(403,"校验失败");
-            return;
-        }
-        resp.setContentType("application/json;charset=utf-8");
-        LibraryMetadata metadata = metadataService.getMetadata();
-        JsonUtil.writeMetadata(metadata,resp.getOutputStream());
     }
 }
