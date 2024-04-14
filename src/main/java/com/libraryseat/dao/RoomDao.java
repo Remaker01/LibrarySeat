@@ -19,7 +19,7 @@ public class RoomDao extends BaseDao{
     }
 
     @Override
-    public void delete(Object o) { //TODO:要不要改成逻辑删除？
+    public void delete(Object o) {
         assert (o instanceof Room);
         String sql = "delete from room where roomid=? and `admin`>0";
         template.update(sql,((Room) o).getRoomid());

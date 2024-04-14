@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 /* 用户Controller(/user)
 1.userLogin(login.do): POST:para={username,pswd,vcode(验证码),token(时间戳)} or {name,phone,vcode,token}
 2.userAdd(usr_add.do): POST:para={username,pswd,truename,phone,gender,role,vcode,token}
@@ -46,7 +48,7 @@ public class UserController {
             return null;
         if (copy) {
             User u = new User();
-            BeanUtils.copyProperties(old, u, "password", "phone");
+            BeanUtils.copyProperties(old, u, "password", "phone","salt");
             u.setPhone(EncryptUtil.base64Encode(old.getPhone()));
             return u;
         }
@@ -175,7 +177,6 @@ public class UserController {
     @ResponseBody
     public void modifyPswd(@RequestParam Map<String,String> params,HttpServletResponse resp,HttpSession session) throws IOException {
         User now = (User) session.getAttribute("user");
-        resp.setContentType("application/json");
         if(now == null) {
             resp.sendError(403,"校验失败！");
             return;
@@ -233,7 +234,7 @@ public class UserController {
 
     @RequestMapping(value = "/listusers.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void listUsers(@RequestParam(value = "pageno",required = false) Integer pageno,
+    public void listUsers(@RequestParam(value = "pageno",defaultValue = "1") Integer pageno,
                           @RequestParam(required = false) Short role,
                           HttpServletResponse resp,
                           HttpSession session) throws IOException {
@@ -242,21 +243,21 @@ public class UserController {
             resp.sendError(403,"校验失败！");
             return;
         }
-        if (pageno == null)
-            pageno = 1;
         List<User> users = (role == null) ? userService.getUsers(pageno) : userService.getUsersByRole(pageno,role);
+        users = users.stream()
+                .peek(user -> base64Phone(user, false))
+                .collect(Collectors.toList()); //均来自数据库，可以为false
         JsonUtil.writeCollection(users,resp.getOutputStream());
     }
     @RequestMapping(value = "/getbyid.do",method = {RequestMethod.POST})
     @ResponseBody
     public void getUserById(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
-        //暂定不允许学生获取用户信息
         if (u == null) {
             resp.sendError(403,"校验失败");
             return;
         }
         User result = userService.getUserById(uid);
-        JsonUtil.writePojo(base64Phone(result,false),resp.getOutputStream());
+        JsonUtil.writePojo(base64Phone(result,true),resp.getOutputStream()); //可能来自缓存，必须为true
     }
 }

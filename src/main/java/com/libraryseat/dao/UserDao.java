@@ -147,7 +147,12 @@ public class UserDao extends BaseDao {
         if(!(o instanceof User))
             throw new IllegalArgumentException();
         User user = (User) o;
-        String sql = "update users set username=?, truename=?,`password`=?,phone=? where uid=?";
-        return template.update(sql,user.getUsername(), user.getTruename(), user.getPassword(), user.getPhone(), user.getUid());
+        String sql = "update users set username=?, truename=?,`password`=?,phone=?,salt=? where uid=?";
+        return template.update(sql,user.getUsername(),
+                user.getTruename(),
+                user.getPassword(),
+                user.getPhone(),
+                user.getSalt(),
+                user.getUid());
     }
 }

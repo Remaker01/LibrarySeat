@@ -37,6 +37,9 @@
             $("#prev").on("click",function () {
                 document.location.href=_ROOT_+'library/message-summaries.html?pageno='+(pageno+1);
             });
+            if (user.role===0){
+                $("#add").css("display","inline").text("新增通知").attr("href","add_message.html");
+            }
             return FALSE;
         }
         function initMessages() {
@@ -65,12 +68,13 @@
             timeText.className="time";
             timeText.innerText=message.time;
             $(div).attr("time",new Date(message.time).getTime().toString());
-            $(detailAnchor).text("查看详情").addClass("detail-anchor").attr("href","message-detail.html?uid="+message.uid+"&time="+$(div).attr("time"));
+            $(detailAnchor).text("查看详情").addClass("detail-anchor")
+                .attr("href","message-detail.html?uid="+message.uid+"&time="+$(div).attr("time"));
 
             div.appendChild(h4);//标题
             div.appendChild(content);//内容
             div.appendChild(timeText);//时间
-            if (user.role===0){
+            if (user.role===0||user.uid===message.uid){
                 var delAnchor=document.createElement("a"),blank=document.createElement("span");
                 $(delAnchor).attr("href","#").addClass("del-anchor").text("删除通知");
                 div.appendChild(delAnchor);
@@ -81,7 +85,7 @@
                         delMessage(message.uid,par.attr("time"),par);
                     }
                 }
-                blank.innerText=" ";
+                $(blank).css("white-space","pre").text("  ");
                 div.appendChild(blank);
             }
             div.appendChild(detailAnchor);
@@ -93,7 +97,7 @@
                 url: _ROOT_+"message/remove.do", type: "post", data: {uid:uid,time:timestamp}
             }).done(function (d) {
                 $("p.status").text(d.msg);
-                if (d.msg.indexOf("成功")>0)
+                if (d.msg.indexOf("成功")>0&&objToRemove)
                     objToRemove.remove();
             }).fail(function (xhr) {
                 $("p.status").text("出错了，请稍后重试，错误码"+xhr.status);
@@ -105,9 +109,10 @@
 <h2>最新通知</h2>
 <div><span id="current-page-text" style="text-align: left"></span>
     <span style="text-align: right;font-weight: bold">
-    <a href="#" id="next">上一页</a>
-    <a href="#" id="prev">下一页</a>
-</span></div>
+        <a href="#" id="next">上一页</a>
+        <a href="#" id="prev">下一页</a>&nbsp;&nbsp;
+        <a href="#" id="add" style="display: none"></a>
+    </span></div>
 <p class="status"></p>
 </body>
 </html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>新增通知</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
+    <style>
+        textarea{
+            width: 500px;
+            height: 320px;
+            max-height: 320px;
+            min-height: 320px;
+            max-width: 500px;
+            min-width: 500px;
+            overflow: scroll;
+        }
+    </style>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/commons.js"></script>
+    <script>
+        $(document).ready(function (){
+            $("body").addClass("ready");
+            checkLogin(function (user) {
+                if(user.info == null||user.info.role!==0){
+                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                } else {
+                    $("#content").on("keyup paste blur",function () {
+                        if (this.value.length>1000)
+                            this.value=this.value.substring(0,1000);
+                    });
+                }
+            });
+        });
+        function submit_() {
+            if (confirm("确认发布这条消息吗？发布后内容不能修改！")) {
+                $.ajax({
+                    url: _ROOT_ + "message/send.do", type: "post", data: {title: $("#title").val(), content: $("#content").val()}
+                }).done(function (data) {
+                    $("p.status").text(data.msg);
+                }).fail(function (xhr) {
+                    $("p.status").text("出错了，请稍后重试。错误码"+xhr.status);
+                });
+            }
+            return FALSE;
+        }
+    </script>
+</head>
+<body>
+<p><strong>提示：目前不支持修改已经发布的通知，请在发布前仔细检查内容，感谢合作！</strong></p>
+<form onsubmit="return submit_()">
+    <p><label>通知标题（最多50个字）：<input type="text" maxlength="50" autocomplete="off" class="form-control" id="title"></label>
+    </p>
+    <p><label>通知内容（最多1000个字）：<br>
+        <textarea name="" id="content" cols="30" rows="10" class="form-control" required></textarea></label></p>
+    <input type="submit" value="发布" class="btn btn-primary">&nbsp;&nbsp;
+    <input type="reset" value="重置" class="btn">&nbsp;&nbsp;
+    <input type="button" value="返回" class="btn" onclick="window.history.go(-1)">
+</form>
+<p class="status"></p>
+</body>
+</html>
