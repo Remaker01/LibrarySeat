@@ -8,8 +8,8 @@
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script>
         var statuses=["空闲","已被预定","已被占用"],room,page;
         $(document).ready(function () {
@@ -37,8 +37,7 @@
                 document.location.href=_ROOT_+"seat/show.do?page="+(npage+1)+"&roomid="+room.roomid;
             });
             $("input[name='page']").on("keyup paste blur",function (){
-                var val=$(this).val();
-                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+                this.value=(this.value.replace(REGEXP_NOT_NUM,''));
             });
             //上一页
             if (page === '1')
@@ -51,16 +50,14 @@
             return FALSE;
         }
         function initTable() {
-            var tbody=$("table>tbody")[0];
-            var param={"roomid":room.roomid},page=getCurrentParam("page");
+            var tbody=$("table>tbody")[0],param={"roomid":room.roomid},page=getCurrentParam("page");
+            $("p.loading").text("正在加载，请稍后...");
             if (page.length>0)
                 param.page=page;
             $.ajax({
                 url:_ROOT_+"seat/listseats.do", data:param, type:"post"
             }).done(function (data) {
-                $("p.loading").text("正在加载，请稍后...");
-                for(var i=0; i<data.length; i++){
-                    var elem=data[i];
+                $.each(data,function (i,elem){
                     var tr=document.createElement("tr");
                     tr.innerHTML+="<td>"+elem.seatid+"</td>";
                     tr.innerHTML+="<td>"+statuses[elem.status]+"</td>";
@@ -69,8 +66,10 @@
                     else
                         tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
                     tbody.appendChild(tr);
-                }
+                })
                 $("p.loading").text(room.roomname+" 座位信息如下");
+            }).fail(function (xhr) {
+                $("p.loading").text("初始化出错，请稍后重试！错误码"+xhr.status);
             });
             return FALSE;
         }
@@ -115,7 +114,7 @@
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">
-        跳到第<input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/>页
+        跳到第 <input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/> 页
         <input type="submit" class="btn" value="GO"/>
     </form>
     <input type="button" class="btn" id="next-btn" value="下一页"/>

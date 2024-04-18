@@ -10,6 +10,7 @@
     <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <script>
         var user,pageno,rooms=[];
         $(document).ready(function () {
@@ -36,8 +37,7 @@
                 document.location.href=_ROOT_+"reservation/show.do?pageno="+(npage+1)+"&uid="+uid;
             });
             $("input[name='page']").on("keyup paste blur",function (){
-                var val=$(this).val();
-                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+                this.value=(this.value.replace(REGEXP_NOT_NUM,''));
             });
             //上一页
             if (pageno === '1')
@@ -49,36 +49,25 @@
             }
             return FALSE;
         }
-        function initTable() {
-            function getRoomById_cached(id) {
-                ///尝试在数组中寻找room，如果找不到就发送网络请求。
-                for(var i=0; i<rooms.length; i++){
-                    if (rooms[i].roomid===id)
-                        return rooms[i];
-                }
-                var result = getRoomById(id);
-                rooms.push(result);
-                return result;
+        ///尝试在数组中寻找room，如果找不到就发送网络请求。
+        var getRoomById_cached=function (id) {
+            for(var i=0; i<rooms.length; i++){
+                if (rooms[i].roomid===id)
+                    return rooms[i];
             }
-            var tbody=$("table>tbody")[0];
+            var result = getRoomById(id);
+            rooms.push(result);
+            return result;
+        }
+        function initTable() {
             var param={uid:user.uid}
             if (pageno!=='')    param.pageno=pageno;
             $("#loading").text("正在加载，请稍后");
-            // console.log(param)
+
             $.ajax({
                 url:_ROOT_+"reservation/list.do", type:"post", data:param
             }).done(function (data) {
-                for(var i=0; i<data.length; i++){
-                    var elem=data[i];
-                    elem.signinTime = elem.signinTime||""; elem.signoutTime = elem.signoutTime||"";
-                    var tr=document.createElement("tr");
-                    tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById_cached(elem.roomid).roomname+"</td>";
-                    tr.innerHTML+="<td>"+elem.seatid+"</td>";
-                    tr.innerHTML+="<td>"+elem.resTime+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signinTime) +"</td>";
-                    tr.innerHTML+="<td>"+(elem.signoutTime)+"</td>";
-                    tbody.appendChild(tr);
-                }
+                $("table.table")[0].innerHTML += doT.template($("#data-").html())(data);
                 $("#loading").text("查询结果如下");
             }).fail(function (xhr) {
                 $("#loading").text("初始化出错，请稍后重试！错误码"+xhr.status);
@@ -99,14 +88,24 @@
         <th>签退/放弃时间</th>
     </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <script type="x-dot-template" id="data-">
+        <tbody>
+        {{~it:value:index}}
+        <tr>
+            <td value="{{=value.roomid}}">{{!getRoomById_cached(value.roomid).roomname}}</td>
+            <td>{{!value.seatid}}</td>
+            <td>{{!(value.resTime||"")}}</td>
+            <td>{{!(value.signinTime||"")}}</td>
+            <td>{{!(value.signoutTime||"")}}</td>
+        </tr>{{~}}
+        </tbody>
+    </script>
 </table>
 <p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">
-        跳到第<input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/>页
+        跳到第 <input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/> 页
         <input type="submit" class="btn" value="GO"/>
     </form>
     <input type="button" class="btn" id="next-btn" value="下一页"/>

@@ -9,12 +9,13 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
-    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js" defer></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js" defer></script>
     <script src="../static/commons.js" defer></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <script>
-        var user,pageno;
+        var user,pageno,role_desc=["超级管理员","阅览室管理员","学生"];
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
@@ -63,43 +64,13 @@
             return FALSE;
         }
         function initTable(){
-            if (user.role===0){
-                var th=document.createElement("th");th.innerText="操作";
-                $("table>thead>tr")[0].appendChild(th);
-            }
-            var role=getCurrentParam("role"),tbody=$("table>tbody")[0];
-            var param={};
+            var role=getCurrentParam("role"),param={};
             if (pageno.length!==0)    param.pageno=pageno;
             if (role.length!==0)      param.role=role;
             $.ajax({
                 url:_ROOT_+"user/listusers.do", type:"post", data:param
             }).done(function (d){
-                for(var i=0; i<d.length; i++){
-                    var elem=d[i];
-                    var tr=document.createElement("tr");
-                    tr.innerHTML+="<td>"+elem.uid+"</td>";
-                    tr.innerHTML+="<td>"+elem.username+"</td>";
-                    tr.innerHTML+="<td>"+elem.truename+"</td>";
-                    tr.innerHTML+="<td>"+elem.gender+"</td>";
-                    tr.innerHTML+="<td>"+window.atob(elem.phone)+"</td>";
-                    switch (elem.role) {
-                        case 0:tr.innerHTML+="<td>超级管理员</td>";break;
-                        case 1:tr.innerHTML+="<td>阅览室管理员</td>";break;
-                        case 2:tr.innerHTML+="<td>学生</td>";break;
-                    }
-                    if (user.role===0){
-                        if(elem.role!==0)
-                            tr.innerHTML+="<td>" +
-                                "<input type='button' class='btn btn-primary' value='修改'> " +
-                                "<input type='button' class='btn' value='重置密码'> " +
-                                "<input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'>" +
-                                "</td>";
-                        else
-                            tr.innerHTML+="<td>" +
-                                "<input type='button' class='btn btn-primary' value='修改'></td>"
-                    }
-                    tbody.appendChild(tr);
-                }
+                $("#table-data-area")[0].innerHTML = doT.template($("#table-").html())(d);
                 //按钮
                 if (user.role===0){
                     $("table input[value='修改']").on("click",function (){
@@ -124,6 +95,8 @@
                         $("#reset-pswd").modal("show");
                     });
                 }
+            }).fail(function (xhr) {
+                $("p.status").text("初始化数据失败，错误码"+xhr.status);
             });
             return FALSE;
         }
@@ -149,10 +122,10 @@
         }
         function submit_modify() {
             function updateByUid(uid,uname,name,phone) {
-                var trs=$("tbody>tr");
+                var trs=$("#table-data-area>tbody>tr");
                 for(var i=0; i<trs.length; i++){
-                    if (trs[i].firstChild.innerText===uid.toString()){
-                        var tds=$(trs[i]).children();
+                    var tds=trs.eq(i).children();
+                    if (tds[0].innerText===uid.toString()){
                         tds[1].innerText=uname;
                         tds[2].innerText=name;
                         tds[4].innerText=phone;
@@ -213,7 +186,8 @@
 </select>
 </label>
 <span style="font-size: small;color: #505050" id="current-page-text"></span>
-<table class="table table-striped">
+<table class="table table-striped" id="table-data-area">
+    <script type="x-dot-template" id="table-">
     <thead><tr>
         <th>学号/工号</th>
         <th>用户名</th>
@@ -221,8 +195,31 @@
         <th>性别</th>
         <th>手机号</th>
         <th>身份</th>
+        {{?user.role===0}}
+        <th>操作</th>
+        {{?}}
     </tr></thead>
-    <tbody></tbody>
+    <tbody>
+    {{~it:value:index}}
+    <tr>
+        <td>{{!value.uid}}</td>
+        <td>{{!value.username}}</td>
+        <td>{{!value.truename}}</td>
+        <td>{{!value.gender}}</td>
+        <td>{{!window.atob(value.phone)}}</td>
+        <td>{{!role_desc[value.role]}}</td>
+        {{?user.role===0}}
+        <td>
+            <input type='button' class='btn btn-primary' value='修改'>
+            {{?value.role!==0}}
+            <input type='button' class='btn' value='重置密码'>
+            <input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'>
+            {{?}}
+        </td>
+        {{?}}
+    </tr>{{~}}
+    </tbody>
+    </script>
 </table>
 <p class="status"></p>
 
@@ -273,7 +270,7 @@
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">
-        跳到第<input type="text" id="page-input" class="form-control" maxlength="4" autocomplete="off" required/>页
+        跳到第 <input type="text" id="page-input" class="form-control" maxlength="4" autocomplete="off" required/> 页
         <input type="submit" class="btn" value="GO"/>
     </form>
     <input type="button" class="btn" id="next-btn" value="下一页"/>

@@ -5,11 +5,12 @@
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
     <title>预定信息管理</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="../static/commons.js"></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <script>
         var user,pageno,rooms=[];
         $(document).ready(function () {
@@ -36,8 +37,7 @@
                 document.location.href=_ROOT_+"reservation/show.do?pageno="+(npage+1)+"&uid="+uid;
             });
             $("input[name='page']").on("keyup paste blur",function (){
-                var val=$(this).val();
-                $(this).val(val.replace(REGEXP_NOT_NUM,''));
+                this.value=(this.value.replace(REGEXP_NOT_NUM,''));
             });
             //上一页
             if (pageno === '1')
@@ -49,42 +49,38 @@
             }
             return FALSE;
         }
-        function initTable() {
-            /// 尝试在数组中寻找room，如果找不到就发送网络请求
-            function getRoomById_cached(id) {
-                for(var i=0; i<rooms.length; i++){
-                    if (rooms[i].roomid===id)
-                        return rooms[i];
-                }
-                var result = getRoomById(id);
-                rooms.push(result);
-                return result;
+        /// 尝试在数组中寻找room，如果找不到就发送网络请求
+        var getRoomById_cached = function (id) {
+            for(var i=0; i<rooms.length; i++){
+                if (rooms[i].roomid===id)
+                    return rooms[i];
             }
-            var uid=getCurrentParam("uid"),tbody=$("table>tbody")[0];
-            var param={}
+            var result = getRoomById(id);
+            rooms.push(result);
+            return result;
+        }
+        function initTable() {
+            function initUsers(trs){
+                $.each(trs,function (i){
+                    var uid_=$(trs[i]).children()[0].innerText,truename_=$(trs[i]).children()[1];
+                    $.ajax({
+                        url:_ROOT_+"user/getbyid.do", type:"post", data:{uid:uid_}
+                    }).done(function (data2) {
+                        if (data2.info)
+                            truename_.innerText=data2.info.truename;
+                    });
+                });
+            }
+            var uid=getCurrentParam("uid"), param={}
             if (uid.length>0)   param.uid=uid;
             if (pageno.length>0)    param.pageno=pageno;
             $("#loading").text("正在加载，请稍后");
             $.ajax({
                 url:_ROOT_+"reservation/list.do", type:"post", data:param
             }).done(function (data) {
-                for(var i=0; i<data.length; i++){
-                    var elem=data[i];
-                    elem.signinTime = elem.signinTime||""; elem.signoutTime = elem.signoutTime||"";
-                    var tr=document.createElement("tr");
-                    tr.innerHTML+="<td>"+elem.uid+"</td>";
-                    tr.innerHTML+="<td value='"+elem.roomid+"'>"+getRoomById_cached(elem.roomid).roomname+"</td>";
-                    tr.innerHTML+="<td>"+elem.seatid+"</td>";
-                    tr.innerHTML+="<td>"+elem.resTime+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signinTime)+"</td>";
-                    tr.innerHTML+="<td>"+(elem.signoutTime)+"</td>";
-                    if (elem.signoutTime.length>0)
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' onclick='doRemove(this)'/> </td>";
-                    else
-                        tr.innerHTML+="<td><input type='button' class='btn btn-danger' value='删除' disabled='disabled'/> </td>";
-                    tbody.appendChild(tr);
-                }
+                $("table.table")[0].innerHTML += doT.template($("#data-").html())(data);
                 $("#loading").text("查询结果如下");
+                initUsers($("table.table>tbody>tr"));
             }).fail(function (xhr) {
                 $("#loading").text("初始化出错，请稍后重试！错误码"+xhr.status);
             });
@@ -119,7 +115,8 @@
 <table class="table table-striped">
     <thead>
     <tr>
-        <th>预定用户</th>
+        <th>学号</th>
+        <th>姓名</th>
         <th>阅览室</th>
         <th>座位号</th>
         <th>预定时间</th>
@@ -128,14 +125,30 @@
         <th>操作</th>
     </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <script type="x-dot-template" id="data-">
+        <tbody>
+        {{~it:value:index}}
+        <tr>
+            <td>{{!value.uid}}</td>
+            <td></td>
+            <td value="{{=value.roomid}}">{{!getRoomById_cached(value.roomid).roomname}}</td>
+            <td>{{!value.seatid}}</td>
+            <td>{{!(value.resTime||"")}}</td>
+            <td>{{!(value.signinTime||"")}}</td>
+            <td>{{!(value.signoutTime||"")}}</td>
+            <td><input type='button' class='btn btn-danger' value='删除'
+                       {{=(value.signoutTime!=null ? "onclick='doRemove(this)'" : "disabled='disabled'")}}/>
+            </td>
+        </tr>
+        {{~}}
+        </tbody>
+    </script>
 </table>
 <p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">
-        跳到第<input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/>页
+        跳到第 <input type="text" name="page" class="form-control" maxlength="4" autocomplete="off" required/> 页
         <input type="submit" class="btn" value="GO"/>
     </form>
     <input type="button" class="btn" id="next-btn" value="下一页"/>

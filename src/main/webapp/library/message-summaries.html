@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="../static/commons.js"></script>
+    <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <script>
         var user,pageno;
         $(document).ready(function (){
@@ -45,52 +46,20 @@
         function initMessages() {
             if (user==null)
                 return FALSE;
-            var $body=$("body")[0];
             $.ajax({
                 url:_ROOT_+"message/listmessages.do", type:"post", data:{pageno:pageno,limit:100}
             }).done(function (data) {
-                for(var i=0; i<data.length; i++)
-                    addOneMessage(data[i],$body);
+                //测试：1.页面显示正常？->ok  2.删除正常？->ok  3.详细信息正常？->ok
+                $("#message-summaries")[0].innerHTML += doT.template($("#data-").html())(data);
                 $("div p.time").css("color","darkgray").css("font-size","small");
+                $("a.del-anchor").on("click",function (){
+                    if (confirm("确认删除这条通知吗？")) {
+                        var par = $(this.parentNode);
+                        delMessage(par.attr("muid"),par.attr("mtime"),par);
+                    }
+                });
             });
             return FALSE;
-        }
-        function addOneMessage(message,father) {
-            var div=document.createElement("div");
-            var h4=document.createElement("h4");
-            var hr=document.createElement("hr");
-            var content=document.createElement("p");
-            var timeText=document.createElement("p");
-            var detailAnchor=document.createElement("a");
-
-            h4.innerText=message.title;
-            content.innerText=message.content;
-            timeText.className="time";
-            timeText.innerText=message.time;
-            $(div).attr("time",new Date(message.time).getTime().toString());
-            $(detailAnchor).text("查看详情").addClass("detail-anchor")
-                .attr("href","message-detail.html?uid="+message.uid+"&time="+$(div).attr("time"));
-
-            div.appendChild(h4);//标题
-            div.appendChild(content);//内容
-            div.appendChild(timeText);//时间
-            if (user.role===0||user.uid===message.uid){
-                var delAnchor=document.createElement("a"),blank=document.createElement("span");
-                $(delAnchor).attr("href","#").addClass("del-anchor").text("删除通知");
-                div.appendChild(delAnchor);
-                delAnchor.onclick=function (){
-                    if (confirm("确认删除这条通知吗？")) {
-                        var par = $(div);
-                        // console.log(dataset);
-                        delMessage(message.uid,par.attr("time"),par);
-                    }
-                }
-                $(blank).css("white-space","pre").text("  ");
-                div.appendChild(blank);
-            }
-            div.appendChild(detailAnchor);
-            div.appendChild(hr);
-            father.appendChild(div);
         }
         var delMessage = function (uid,timestamp,objToRemove){
             return $.ajax({
@@ -114,5 +83,23 @@
         <a href="#" id="add" style="display: none"></a>
     </span></div>
 <p class="status"></p>
+
+<div id="message-summaries">
+    <script type="x-dot-template" id="data-">
+        {{~it:message:index}}
+        {{var timestamp=new Date(message.time).getTime().toString();}}
+        <div muid="{{=message.uid}}" mtime="{{=timestamp}}">
+            <h4>{{!message.title}}</h4>
+            <p>{{!message.content}}</p>
+            <p class="time">{{!message.time}}</p>
+            <a class="detail-anchor" href="message-detail.html?uid={{=message.uid}}&time={{=timestamp}}">查看详情</a>
+            {{ if(user.role===0||user.uid===message.uid){ }}
+            &nbsp;<a class="del-anchor" href="#">删除通知</a>
+            {{ } }}
+        </div>
+        <hr>
+        {{~}}
+    </script>
+</div>
 </body>
-</html>
+</html><!--119lines->105-->

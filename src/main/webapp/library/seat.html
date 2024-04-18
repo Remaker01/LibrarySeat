@@ -8,10 +8,11 @@
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <style>
-        hr{margin: 0;}
+        hr{margin: 1px 0;}
         img.media-object{
             width: 32px; height: 32px; border-radius: 49%;
         }
@@ -27,11 +28,11 @@
                     init();
             });
         })
-        var initCard = function (elem,container){
+        var initCount = function (elem,roomid){
             $.ajax({
-                url: _ROOT_ + "/seat/count.do", type: "post", data: {roomid: elem.roomid, status: 0}
+                url: _ROOT_ + "/seat/count.do", type: "post", data: {roomid: roomid, status: 0}
             }).done(function (d2) {
-                createRoomCard(elem, d2.extra.count, d2.extra.totalCount, container);
+                elem.innerText=("可用座位 "+d2.extra.count+"/"+d2.extra.totalCount);
             });
         }
         var init = function (){
@@ -47,48 +48,37 @@
                 //     option.innerText=elem.roomname;
                 //     select.appendChild(option);
                 // }
-                for (var i = 0; i < d.length; i++) {
-                    initCard(d[i],container); //异步请求，不能直接把initcard复制到里面。另一种思路是const elem=d[i]
-                }
+                // for (var i = 0; i < d.length; i++) {
+                //     initCard(d[i],container); //异步请求，不能直接把initcard复制到里面。另一种思路是const elem=d[i]
+                // }
+                $("div.container")[0].innerHTML += doT.template($("#data-").html())(d);
+                $("p.content").each(function (i,obj) {
+                    initCount(obj,$(obj).attr("roomid")); //全部加载后再初始化count
+                });
                 $(container).find("h4").text("请选择要查看座位的阅览室");
             });
             return FALSE;
         }
-        function createRoomCard(room,free,total,container){
-            var div1=document.createElement("div");
-            div1.className="media";
-
-            var media_left=document.createElement("div");
-            media_left.className=("media-left");
-
-            var media_body=document.createElement("div");
-            media_body.className=("media_body");
-
-            var media_heading=document.createElement("a");
-            $(media_heading).text(room.roomname).addClass("media-heading").attr("href","../seat/show.do?roomid="+room.roomid);
-
-            var content=document.createElement("p");
-            content.innerText="可用座位"+free+"/"+total;
-
-            var img=document.createElement("img");
-            $(img).addClass("media-object").attr("src","../img/RC.jpg");
-
-            media_left.appendChild(img);
-            media_body.appendChild(media_heading);media_body.appendChild(content);
-            div1.appendChild(media_left);div1.appendChild(media_body);
-            container.appendChild(div1);
-            container.appendChild(document.createElement("hr"));
-        }
     </script>
 </head>
 <body>
-<!--<form action="../seat/show.do" method="get">-->
-<!--    <p><label>请选择要查看座位的阅览室<br><select id="rooms-select" class="form-control" name="roomid"></select></label>-->
-<!--    </p>-->
-<!--    <input type="submit" class="btn btn-primary" value="提交">-->
-<!--</form>-->
+
 <div class="container">
     <h4>请选择要查找座位的阅览室</h4>
+    <script type="x-dot-template" id="data-">
+        {{~it:room:index}}
+        <div class="media">
+            <div class="media-left">
+                <img class="media-object" src="../img/RC.jpg" alt="图书"/>
+            </div>
+            <div class="media-body">
+                <a class="media-heading" href="../seat/show.do?roomid={{=room.roomid}}">{{!room.roomname}}</a>
+                <p class="content" roomid="{{=room.roomid}}"></p>
+            </div>
+        </div>
+        <hr>
+        {{~}}
+    </script>
 </div>
 </body>
-</html>
+</html><!--95->84-->
