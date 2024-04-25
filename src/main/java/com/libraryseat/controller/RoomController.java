@@ -39,7 +39,6 @@ public class RoomController {
             return null;
         }
         resp.setHeader("Cache-Control","no-cache");
-        resp.setCharacterEncoding(null);
         switch (u.getRole()) {
             case 0:
                 return "/library/rooms-role0.html" + ((uid == null) ? "" : String.format("?uid=%d", uid));
@@ -99,6 +98,18 @@ public class RoomController {
         }
         String info = roomService.updateRoom(id,name,admin);
         JsonUtil.writeResponse(new Response("/room/update.do","POST",info),resp.getOutputStream());
+    }
+
+    @RequestMapping(value = "/updatestate.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void updateRoomState(Integer id, Boolean state,HttpServletResponse resp, HttpSession session) throws IOException {
+        User now = (User) session.getAttribute("user");
+        if (now == null||now.getRole() != 0) {
+            resp.sendError(403,"校验失败");
+            return;
+        }
+        String info = roomService.updateRoomState(id,state);
+        JsonUtil.writeResponse(new Response("/room/updatestate.do","POST",info),resp.getOutputStream());
     }
     @RequestMapping(value = "/listrooms.do",method = {RequestMethod.GET,RequestMethod.POST})
     @ResponseBody

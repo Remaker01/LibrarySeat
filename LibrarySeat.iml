@@ -78,5 +78,6 @@
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.19" level="project" />
     <orderEntry type="library" name="Maven: com.github.virtuald:curvesapi:1.06" level="project" />
     <orderEntry type="library" name="doT" level="application" />
+    <orderEntry type="library" name="sprintf" level="application" />
   </component>
 </module>

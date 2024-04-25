@@ -10,10 +10,17 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+/*
+测试内容
+1. 座位均空闲，管理员将阅览室设为停用/启用--ok
+2. 学生/非此阅览室管理员查看是否启用--ok
+3. 座位不空闲，管理员将阅览室设为停用--ok
+4. 阅览室停用，学生试图预定座位--ok
+ */
 @Service
 public class RoomService {
     private static final Cache<Integer,Room> ROOM_CACHE = new LRUCache<>();
@@ -37,7 +44,7 @@ public class RoomService {
             return "添加成功！";
         } catch (DataAccessException e) {
             LOGGER.error("",e);
-            return "添加失败，请确认1.管理员存在！2.阅览室名称不与其他已存在阅览室相同。";
+            return "添加失败，请确认1.管理员存在！2.阅览室名称未被使用。";
         }
     }
 
@@ -70,6 +77,23 @@ public class RoomService {
             return "更新成功！";
         }
         return "更新失败，请确认管理员用户存在！";
+    }
+
+    public String updateRoomState(int roomid, boolean valid) {
+        Room room = getRoom(roomid);
+        if (room == null){
+            return "阅览室号错误！";
+        }
+        if (seatDao.getNonFreeSeatsInRoom(roomid) > 0) {
+            return "该阅览室尚有座位未释放，无法更新！";
+        }
+        room.setValid(valid);
+        int ret = roomDao.update(room);
+        if (ret != 0) {
+            ROOM_CACHE.put(roomid,room);
+            return "状态更新成功！";
+        }
+        return "更新失败！";
     }
 
     public Room getRoom(int id) {

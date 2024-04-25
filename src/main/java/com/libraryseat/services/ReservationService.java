@@ -2,6 +2,7 @@ package com.libraryseat.services;
 
 import com.libraryseat.dao.BaseDao;
 import com.libraryseat.dao.ReservationDao;
+import com.libraryseat.dao.RoomDao;
 import com.libraryseat.dao.SeatDao;
 import com.libraryseat.pojo.Reservation;
 import com.libraryseat.pojo.Seat;
@@ -26,13 +27,16 @@ public class ReservationService {
     private SeatDao seatDao;
     @Autowired
     @Lazy
+    private RoomDao roomDao;
+    @Autowired
+    @Lazy
     private MetadataService metadataService;
     private static final Logger LOGGER = LogManager.getLogger(ReservationService.class.getName());
 
     public String addReservation(int seatid, int roomid, int uid) {
         Seat seat = seatDao.getSeatById(seatid,roomid);
-        if(seat == null||seat.getStatus() != (short) 0)
-            return "预定失败，座位不存在或已被占用";
+        if(!roomDao.getRoomById(roomid).isValid()||seat == null||seat.getStatus() != (short) 0)
+            return "预定失败，座位不存在或已被占用，或该阅览室已停用！";
         seat.setStatus((short) 1);
         metadataService.resetDaily(); //只在有预定&签退时更新。预定到签到只有30分钟所以签到时不用更新。
         Timestamp timestamp = new Timestamp((System.currentTimeMillis()/1000)*1000L);

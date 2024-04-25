@@ -3,6 +3,7 @@ package com.libraryseat.pojo;
 public class Room {
     private int roomid, admin;
     private String roomname;
+    private boolean valid = true;
 
     public int getRoomid() {
         return roomid;
@@ -28,6 +29,14 @@ public class Room {
         this.roomname = roomname;
     }
 
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -37,6 +46,7 @@ public class Room {
 
         if (roomid != room.roomid) return false;
         if (admin != room.admin) return false;
+        if (valid != room.valid) return false;
         return roomname != null ? roomname.equals(room.roomname) : room.roomname == null;
     }
 
@@ -45,6 +55,7 @@ public class Room {
         int result = roomid;
         result = 31 * result + admin;
         result = 31 * result + (roomname != null ? roomname.hashCode() : 0);
+        result = 31 * result + (valid ? 1 : 0);
         return result;
     }
 

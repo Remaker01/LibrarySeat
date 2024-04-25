@@ -41,3 +41,4 @@ build/
 
 users.sql
 /src/main/resources/jdbc.properties
+*.psd

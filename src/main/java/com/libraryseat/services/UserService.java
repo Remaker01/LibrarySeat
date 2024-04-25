@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 * 2.新增单个--ok
 * 3.批量新增--ok
 * 3.重置密码--ok
+* 4.22:
+为防止将用户名设置为已存在的导致缓存污染，对update进行修改
+测试 1.修改密码--ok  2.重置密码--ok  3.修改信息--ok
+* 每轮测试后，都必须重新登录2次。
 */
 @Service
 public class UserService {
@@ -66,6 +70,18 @@ public class UserService {
         user.setSalt(salt);
     }
 
+    String[] args(User u) {
+        if (u == null)
+            return null;
+        return new String[]{
+                u.getUsername(),
+                u.getPassword(),
+                u.getTruename(),
+                u.getGender(),
+                u.getPhone()
+        };
+    }
+
     /**给出用户信息，增加用户*/
     public String addUser(String[] info,short role) {
         assert role>=0&&role<=2;
@@ -79,7 +95,7 @@ public class UserService {
             encryptPasswordSalted(newUser);
             userDao.add(newUser);
             return "添加成功！";
-        } catch (DataAccessException e){
+        } catch (DataIntegrityViolationException e){
             return "添加失败,用户名或手机号可能已存在！";
         }
     }
@@ -107,31 +123,39 @@ public class UserService {
         }
         return "上传失败，文件不合法！";
     }
+
     /**
-     * 修改用户信息<br>
-     * 可以修改的信息有：1.用户名（仅超管），2.密码（不要通过此处修改，用下面修改密码的方法），3.真实姓名，4.手机号
+     * 修改用户信息。<br>
+     * 可以修改的信息有：1.用户名（仅超管），2.密码（不要通过此处修改，用下面修改密码的方法），3.真实姓名，4.手机号<br>
+     * 盐值将重新计算。
+     * @param info 包括username,password,truename,gender,phone
      */
-    public String updateUser(User u) {
-        short role=u.getRole();
+    public String updateUser(int uid,String[] info,short role,int salt,boolean skipCheck) {
         assert role>=0&&role<=2;
-        int uid = u.getUid();
-        if(role==2) {
-            if (reservationDao.getActiveReservationCountByUser(u.getUid()) > 0)
+        User u = new User(info[0],info[1],info[2],info[3],info[4],role);
+        u.setUid(uid);
+        u.setSalt(salt);
+        if(!skipCheck&&role==2) {
+            if (reservationDao.getActiveReservationCountByUser(uid) > 0)
                 return "更新失败，该用户尚有未签退/放弃的座位预定信息！";
         }
         if(VerifyUtil.verifyPassword(u.getPassword())) { //是md5
             encryptPasswordSalted(u);
         }
-        int res = userDao.update(u);
-        if(res != 0) {
-            synchronized (UserService.class) {
-                userNameCache.put(u.getUsername(), u);
-                idCache.put(uid, u);
-                phoneCache.put(u.getPhone(),u);
+        try {
+            int res = userDao.update(u);
+            if(res != 0) {
+                synchronized (UserService.class) {
+                    userNameCache.put(u.getUsername(), u);
+                    idCache.put(uid, u);
+                    phoneCache.put(u.getPhone(),u);
+                }
+                return "更新成功！";
             }
-            return "更新成功！";
+            return "更新失败，请确认用户存在！";
+        } catch (DataIntegrityViolationException e) {
+            return "更新失败，用户名或手机号已存在！";
         }
-        return "更新失败，请确认用户存在！";
     }
 
     public String removeUser(int uid) {
@@ -206,6 +230,19 @@ public class UserService {
         }
         return null; //用户不存在
     }
+
+    public User login(int uid, String password) {
+        User u = idCache.get(uid);
+        if (u == null) {
+            u = userDao.getUserByUid(uid);
+            idCache.put(uid,u);
+        }
+        if (u != null) {
+            password = EncryptUtil.encrypt(password,Integer.toString(u.getSalt()), StandardCharsets.ISO_8859_1);
+            return u.getPassword().equals(password) ? u : null;
+        }
+        return null;
+    }
     /**使用手机号+验证码登录，也可用于忘记密码时寻找密码*/
     public User loginByPhone(String phone) {
         //1.获取用户名
@@ -242,7 +279,11 @@ public class UserService {
             return String.format("用户%s不存在，或原密码错误！",username);
         //2.存在原用户
         userToBeModified.setPassword(newPswd);
-        return updateUser(userToBeModified);
+        return updateUser(userToBeModified.getUid(),
+                args(userToBeModified),
+                userToBeModified.getRole(),
+                userToBeModified.getSalt(),
+                true);
     }
     /**通过手机号+验证码重置密码。用于忘记密码的情况*/
     public String resetPswd(String phone, String newPswd) {
@@ -252,6 +293,10 @@ public class UserService {
             return "用户不存在！";
         //2.加密用户密码
         u.setPassword(newPswd);
-        return updateUser(u);
+        return updateUser(u.getUid(),
+                args(u),
+                u.getRole(),
+                u.getSalt(),
+                false);
     }
 }

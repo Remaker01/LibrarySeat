@@ -9,20 +9,21 @@
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
-    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js" defer></script>
-    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js" defer></script>
-    <script src="../static/commons.js" defer></script>
+    <script defer src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
+    <script defer src="../static/commons.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <script>
-        var user,pageno,role_desc=["超级管理员","阅览室管理员","学生"];
+        var user,pageno,role_desc=["超级管理员","阅览室管理员","学生"],$table;
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
                 user=d.info;
                 pageno=getCurrentParam("pageno");
                 if(user==null||user.role===2){
-                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                    $("body")[0].innerHTML=sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
                 }else {
                     initTable();
                     connect();
@@ -35,7 +36,7 @@
             var npage=parseInt(pageno),role=getCurrentParam("role");
             //下一页
             $("#next-btn").on("click",function (){
-                document.location.href="users.html?pageno="+(npage+1)+"&role="+role;
+                document.location.href=sprintf("users.html?pageno=%d&role=%s",npage+1,role);
             });
             //页数
             $("#page-input").on("keyup paste blur",function (){
@@ -47,19 +48,19 @@
                 $("#prev-btn").attr("disabled",true);
             else {
                 $("#prev-btn").on("click",function (){
-                    document.location.href="users.html?pageno="+(npage-1)+"&role="+role;
+                    document.location.href=sprintf("users.html?pageno=%d&role=%s",npage-1,role);
                 });
             }
             //第几页
             $("#current-page-text").text("当前第"+pageno+"页");
             //select
-            $("label>select>option[value='"+role+"']").attr("selected",true);
+            $(sprintf("label>select>option[value='%s']",role)).attr("selected",true);
             $("label>select").on("change",function (){
                 var role2=this.value;
                 if (role2!=="-1")
-                    document.location.href="users.html?pageno="+pageno+"&role="+role2;
+                    document.location.href=sprintf("users.html?pageno=%s&role=%s",pageno,role2);
                 else
-                    document.location.href="users.html?pageno="+pageno;
+                    document.location.href=sprintf("users.html?pageno=%s",pageno);
             });
             return FALSE;
         }
@@ -70,6 +71,7 @@
             $.ajax({
                 url:_ROOT_+"user/listusers.do", type:"post", data:param
             }).done(function (d){
+                $table = $("table.table"); //必须放在下一行前面
                 $("#table-data-area")[0].innerHTML = doT.template($("#table-").html())(d);
                 //按钮
                 if (user.role===0){
@@ -102,7 +104,7 @@
         }
         function toPage() {
             var newPage=$("#page-input").val();
-            document.location.href="users.html?pageno="+newPage+"&role="+getCurrentParam("role");
+            document.location.href=sprintf("users.html?pageno=%s&role=%s",newPage,getCurrentParam("role"));
             return FALSE;
         }
         function doRemove(obj) {
@@ -121,7 +123,7 @@
             }
         }
         function submit_modify() {
-            function updateByUid(uid,uname,name,phone) {
+            function updateTable(uid,uname,name,phone) {
                 var trs=$("#table-data-area>tbody>tr");
                 for(var i=0; i<trs.length; i++){
                     var tds=trs.eq(i).children();
@@ -149,7 +151,7 @@
             }).done(function (d) {
                 status.text(d.msg);
                 if (d.msg.indexOf("成功")>0)
-                    updateByUid(uid,uname,name,phone);
+                    updateTable(uid,uname,name,phone);
             }).fail(function (xhr){
                 status.text("出错了！请稍后重试，错误码："+xhr.status);
             });
@@ -189,9 +191,9 @@
 <table class="table table-striped" id="table-data-area">
     <script type="x-dot-template" id="table-">
     <thead><tr>
-        <th>学号/工号</th>
-        <th>用户名</th>
-        <th>姓名</th>
+        <th onclick="sortTable($table,'uid')">学号/工号<img src="" data-title="uid"></th>
+        <th onclick="sortTable($table,'username')">用户名<img src="" data-title="username"></th>
+        <th onclick="sortTable($table,'truename')">姓名<img src="" data-title="truename"></th>
         <th>性别</th>
         <th>手机号</th>
         <th>身份</th>
@@ -202,9 +204,9 @@
     <tbody>
     {{~it:value:index}}
     <tr>
-        <td>{{!value.uid}}</td>
-        <td>{{!value.username}}</td>
-        <td>{{!value.truename}}</td>
+        <td data-title="uid">{{!value.uid}}</td>
+        <td data-title="username">{{!value.username}}</td>
+        <td data-title="truename">{{!value.truename}}</td>
         <td>{{!value.gender}}</td>
         <td>{{!window.atob(value.phone)}}</td>
         <td>{{!role_desc[value.role]}}</td>
@@ -257,7 +259,7 @@
                 <p><label>新密码：<input type="password" name="new" class="form-control" maxlength="20" autocomplete="off" required/></label>
                 </p>
                 <p><label>验证码：<input type="text" name="vcode" class="form-control number" maxlength="5" autocomplete="off" required/></label>
-                    <br><img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?'+Math.random()" alt="验证码"/></p>
+                    <br><img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?_='+Math.random()" alt="验证码"/></p>
                 <p class="status"></p>
                 <p class="modal-footer">
                     <input type="button" class="btn exit" data-dismiss="modal" value="关闭">

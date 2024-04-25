@@ -11,15 +11,16 @@
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="../static/commons.js"></script>
     <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
     <script>
-        var user,pageno,rooms=[];
+        var user,pageno,rooms=[],$table;
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
                 user=d.info;
                 pageno=getCurrentParam("page");
                 if (user == null||user.role!==0) {
-                    $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
+                    $("body")[0].innerHTML=sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
                 } else {
                     initTable();
                     connect();
@@ -34,7 +35,7 @@
             var npage=parseInt(pageno),uid=getCurrentParam("uid");
             //下一页
             $("#next-btn").on("click",function (){
-                document.location.href=_ROOT_+"reservation/show.do?pageno="+(npage+1)+"&uid="+uid;
+                document.location.href=_ROOT_+sprintf("reservation/show.do?pageno=%d&uid=%s",npage+1,uid);
             });
             $("input[name='page']").on("keyup paste blur",function (){
                 this.value=(this.value.replace(REGEXP_NOT_NUM,''));
@@ -44,7 +45,7 @@
                 $("#prev-btn").attr("disabled",true);
             else {
                 $("#prev-btn").on("click",function (){
-                    document.location.href=_ROOT_+"reservation/show.do?pageno="+(npage-1)+"&uid="+uid;
+                    document.location.href=_ROOT_+sprintf("reservation/show.do?pageno=%d&uid=%s",npage-1,uid);
                 });
             }
             return FALSE;
@@ -78,7 +79,8 @@
             $.ajax({
                 url:_ROOT_+"reservation/list.do", type:"post", data:param
             }).done(function (data) {
-                $("table.table")[0].innerHTML += doT.template($("#data-").html())(data);
+                $table = $("table.table");
+                $table[0].innerHTML += doT.template($("#data-").html())(data);
                 $("#loading").text("查询结果如下");
                 initUsers($("table.table>tbody>tr"));
             }).fail(function (xhr) {
@@ -86,14 +88,14 @@
             });
             return FALSE;
         }
-        function doRemove(obj) { //TODO:删除前输入密码确认
+        function doRemove(obj) {
             if (confirm("确认删除吗，此过程不可逆！！")){
-                var td=$(obj).parent().siblings();
+                var td=$(obj.parentNode).siblings();
                 var param={
                     "uid":td[0].innerText,
-                    "seatid":td[2].innerText,
-                    "roomid":$(td[1]).attr("value"),
-                    "resTime":new Date(td[3].innerText).getTime()
+                    "seatid":td[3].innerText,
+                    "roomid":$(td[2]).attr("data-roomid"),
+                    "resTime":new Date(td[4].innerText).getTime()
                 }
                 $.ajax({
                     url:_ROOT_+"/reservation/delete.do", type: "post", data:param
@@ -115,11 +117,11 @@
 <table class="table table-striped">
     <thead>
     <tr>
-        <th>学号</th>
-        <th>姓名</th>
-        <th>阅览室</th>
+        <th onclick="sortTable($table,'uid')">学号<img data-title="uid"> </th>
+        <th onclick="sortTable($table,'truename')">姓名<img data-title="truename" src=""></th>
+        <th onclick="sortTable($table,'roomname')">阅览室<img data-title="roomname" src=""></th>
         <th>座位号</th>
-        <th>预定时间</th>
+        <th onclick="sortTable($table,'resTime')">预定时间<img data-title="resTime" src=""></th>
         <th>签到时间</th>
         <th>签退/放弃时间</th>
         <th>操作</th>
@@ -129,11 +131,11 @@
         <tbody>
         {{~it:value:index}}
         <tr>
-            <td>{{!value.uid}}</td>
-            <td></td>
-            <td value="{{=value.roomid}}">{{!getRoomById_cached(value.roomid).roomname}}</td>
+            <td data-title="uid">{{!value.uid}}</td>
+            <td data-title="truename"></td>
+            <td data-roomid="{{=value.roomid}}" data-title="roomname">{{!getRoomById_cached(value.roomid).roomname}}</td>
             <td>{{!value.seatid}}</td>
-            <td>{{!(value.resTime||"")}}</td>
+            <td data-title="resTime">{{!(value.resTime||"")}}</td>
             <td>{{!(value.signinTime||"")}}</td>
             <td>{{!(value.signoutTime||"")}}</td>
             <td><input type='button' class='btn btn-danger' value='删除'

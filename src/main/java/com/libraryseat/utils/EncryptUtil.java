@@ -7,7 +7,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class EncryptUtil {
@@ -35,7 +34,7 @@ public class EncryptUtil {
                 bytes = decoder.decode(base64+'=');
             }
         }
-        return new String(bytes, StandardCharsets.ISO_8859_1);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     /**
@@ -72,7 +71,7 @@ public class EncryptUtil {
             digest = MessageDigest.getInstance("MD5");
             digest.update(text);
             return digest.digest();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (GeneralSecurityException e) {
             return null;
         }
     }

@@ -5,10 +5,11 @@
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
     <title>座位信息查看</title>
-    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
-    <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
+    <script src="../static/commons.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
     <style>
@@ -18,24 +19,25 @@
         }
     </style>
     <script>
+        var user;
         $(document).ready(function (){
             $("body").addClass("ready");
             checkLogin(function (d) {
-                var user = d.info;
+                user = d.info;
                 if (user == null) {
-                    $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='" + _ROOT_ + "'>点击返回主页</a>";
+                    $("body")[0].innerHTML = sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
                 } else
                     init();
             });
         })
-        var initCount = function (elem,roomid){
-            $.ajax({
-                url: _ROOT_ + "/seat/count.do", type: "post", data: {roomid: roomid, status: 0}
-            }).done(function (d2) {
-                elem.innerText=("可用座位 "+d2.extra.count+"/"+d2.extra.totalCount);
-            });
-        }
         var init = function (){
+            var initCount = function (elem,roomid){
+                $.ajax({
+                    url: _ROOT_ + "/seat/count.do", type: "post", data: {roomid: roomid, status: 0}
+                }).done(function (d2) {
+                    elem.innerText=(sprintf("可用座位 %d/%d",d2.extra.count,d2.extra.totalCount));
+                });
+            }
             var container=$("div.container")[0];
             $(container).find("h4").text("加载中……");
             $.ajax({
@@ -53,7 +55,7 @@
                 // }
                 $("div.container")[0].innerHTML += doT.template($("#data-").html())(d);
                 $("p.content").each(function (i,obj) {
-                    initCount(obj,$(obj).attr("roomid")); //全部加载后再初始化count
+                    initCount(obj,$(obj).attr("data-roomid")); //全部加载后再初始化count
                 });
                 $(container).find("h4").text("请选择要查看座位的阅览室");
             });
@@ -72,8 +74,13 @@
                 <img class="media-object" src="../img/RC.jpg" alt="图书"/>
             </div>
             <div class="media-body">
+                {{?room.valid||user.role===0||room.admin===user.uid}}
                 <a class="media-heading" href="../seat/show.do?roomid={{=room.roomid}}">{{!room.roomname}}</a>
-                <p class="content" roomid="{{=room.roomid}}"></p>
+                <p class="content" data-roomid="{{=room.roomid}}"></p>
+                {{??}}
+                <p style="color: gray">{{!room.roomname}}</p>
+                <p style="color: red">阅览室已停用</p>
+                {{?}}
             </div>
         </div>
         <hr>

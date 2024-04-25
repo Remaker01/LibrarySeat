@@ -4,6 +4,7 @@ import com.libraryseat.pojo.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -93,8 +94,7 @@ public class UserDao extends BaseDao {
     }
     @Override
     public void add(Object o) {
-        if(!(o instanceof User))
-            throw new IllegalArgumentException();
+        Assert.isInstanceOf(User.class,o,"");
         User user = (User) o;
         String sql = "insert into users(username,`password`,truename,gender,phone,`role`,salt) values(?,?,?,?,?,?,?)";
         template.update(sql,
@@ -109,7 +109,7 @@ public class UserDao extends BaseDao {
     /**批量添加*/
     public int add(Collection<User> users){
         List<Object[]> args = new ArrayList<>(users.size());
-        String sql = "insert into users(username,`password`,truename,gender,phone,`role`,salt) values(?,?,?,?,?,?,?)";
+        String sql = "insert ignore into users(username,`password`,truename,gender,phone,`role`,salt) values(?,?,?,?,?,?,?)";
         for (User user:users){
             if (user == null)
                 continue;
@@ -128,8 +128,7 @@ public class UserDao extends BaseDao {
     /**删除user，只要有uid或username即可*/
     @Override
     public void delete(Object o) {
-        if(!(o instanceof User))
-            throw new IllegalArgumentException();
+        Assert.isInstanceOf(User.class,o,"");
         User user = (User) o;
         if(user.getUid() != 0) {
             String sql = "update users set uid=-uid,username=CONCAT(username,uid),phone=CONCAT(phone,uid) where uid=?";
@@ -144,8 +143,7 @@ public class UserDao extends BaseDao {
 
     @Override
     public int update(Object o) {
-        if(!(o instanceof User))
-            throw new IllegalArgumentException();
+        Assert.isInstanceOf(User.class,o,"");
         User user = (User) o;
         String sql = "update users set username=?, truename=?,`password`=?,phone=?,salt=? where uid=?";
         return template.update(sql,user.getUsername(),

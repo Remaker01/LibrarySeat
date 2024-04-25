@@ -1,10 +1,8 @@
 package com.libraryseat;
 
-import java.util.Map;
-
 public class Response {
     private String uri,method,msg;
-    private Map<String,?> extra;
+    private Object extra;
 
     public Response() {}
 
@@ -38,11 +36,11 @@ public class Response {
         this.method = method;
     }
 
-    public Map<String, ?> getExtra() {
+    public Object getExtra() {
         return extra;
     }
 
-    public void setExtra(Map<String, ?> extra) {
+    public void setExtra(Object extra) {
         this.extra = extra;
     }
 }

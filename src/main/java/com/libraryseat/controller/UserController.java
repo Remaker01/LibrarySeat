@@ -68,7 +68,11 @@ public class UserController {
     @ResponseBody
     public void userLogin(@RequestParam Map<String,String> params, HttpServletResponse response, HttpSession session) throws IOException {
         OutputStream out = response.getOutputStream();
-        String username = params.get("username"),pswd = params.get("pswd"),vcode = params.get("vcode"),token = params.get("token");
+        String uid = params.get("uid"),
+                username = params.get("username"),
+                pswd = params.get("pswd"),
+                vcode = params.get("vcode"),
+                token = params.get("token");
         String realVcode = (String) session.getAttribute("CHECKCODE_SERVER");
         session.removeAttribute("CHECKCODE_SERVER");
         if(!realVcode.equals(vcode)) { //real的写在前面，万一出错直接报500方便排错
@@ -81,7 +85,12 @@ public class UserController {
             return;
         }
         User u;
-        if(VerifyUtil.verifyNonEmptyStrings(username,pswd))
+        //账号+密码
+        if (VerifyUtil.verifyNonEmptyStrings(uid,pswd)) {
+            int uid_ = Integer.parseInt(uid);
+            u = userService.login(uid_,pswd);
+        }
+        else if(VerifyUtil.verifyNonEmptyStrings(username,pswd)) //用户名+密码
             u = userService.login(username,pswd);
         else {
             String phone=EncryptUtil.base64Decode(params.get("phone"));
@@ -219,13 +228,19 @@ public class UserController {
         try{
             int uid_ = Integer.parseInt(uid);
             User u = userService.getUserById(uid_); //不能直接new不然密码不正确
-            u.setUsername(uname);u.setTruename(trueName);u.setPhone(EncryptUtil.base64Decode(phone));
-            String info = userService.updateUser(u);
+            String info = userService.updateUser(u.getUid(),new String[]{
+                    uname,
+                    u.getPassword(),
+                    trueName,
+                    u.getGender(),
+                    EncryptUtil.base64Decode(phone)
+            },u.getRole(),u.getSalt(),false);
             JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
         } catch (RuntimeException e) {
             resp.sendError(400,"参数错误！");
         }
     }
+
     @RequestMapping(value = "/exit.do",method = {RequestMethod.GET})
     public String exit(HttpSession session) {
         session.removeAttribute("user");

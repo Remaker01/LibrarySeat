@@ -8,7 +8,6 @@ create table if not exists users
     gender   varchar(5)                   not null,
     phone    varchar(24) charset latin1   not null,
     role     tinyint unsigned default '2' null comment '0:超级管理员，1:图书室管理员，2:学生',
-    valid    tinyint unsigned default '1' null,
     salt     int              default 0   null,
     constraint username
         unique (username),
@@ -34,6 +33,7 @@ create table if not exists room
         primary key,
     roomname varchar(255) not null,
     admin    int          not null,
+    valid    tinyint unsigned null default '1',
     constraint room_roomname_uindex
         unique (roomname),
     constraint room_users_uid_fk
