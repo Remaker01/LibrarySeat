@@ -11,13 +11,15 @@
 	<script src="https://cdn.staticfile.net/jquery-easing/1.4.1/jquery.easing.min.js"></script>
 	<script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 	<script src="../static/commons.js"></script>
+	<script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
 	<script>
 		var confirm_close;
 		$(document).ready(function () {
 			checkLogin(function (d) {
-				if(d.info==null||d.info.role!==0) {
+				if(d.data==null||d.data.role!==0) {
 					$("body")[0].innerHTML = "<p>您尚未登录！</p><a href='../'>点击返回</a>";
 				} else {
+					$("#img2").attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%d",d.data.uid));
 					confirm_close = function() {
 						if(confirm('确认要退出吗？')) {
 							window.open(_ROOT_+'user/exit.do','_self');

@@ -1,7 +1,9 @@
 package com.libraryseat.dao;
 
 import com.libraryseat.pojo.User;
+import com.libraryseat.pojo.UserImg;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -30,6 +32,7 @@ public class UserDao extends BaseDao {
             return u;
         }
     }
+    private static final BeanPropertyRowMapper<UserImg> USER_IMG_MAPPER = new BeanPropertyRowMapper<>(UserImg.class);
 
     public User getUserByUid(int uid) {
         String sql = "select * from users where uid=?";
@@ -37,6 +40,15 @@ public class UserDao extends BaseDao {
             return template.queryForObject(sql,UserMapper.INSTANCE,uid);
         } catch (DataAccessException e) {
             return null;
+        }
+    }
+
+    public UserImg getUserImageByUid(int uid) {
+        String sql = "select * from user_img where uid=?";
+        try {
+            return template.queryForObject(sql,USER_IMG_MAPPER,uid);
+        } catch (DataAccessException e) {
+            return new UserImg();
         }
     }
 
@@ -152,5 +164,10 @@ public class UserDao extends BaseDao {
                 user.getPhone(),
                 user.getSalt(),
                 user.getUid());
+    }
+
+    public int updateImage(int uid, String base64Img,java.sql.Date date) {
+        String sql = "replace into user_img(uid,imgBase64,lastupd) values(?,?,?)";
+        return template.update(sql,uid,base64Img,date);
     }
 }

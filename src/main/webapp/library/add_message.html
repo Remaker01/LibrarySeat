@@ -14,6 +14,7 @@
             max-width: 500px;
             min-width: 500px;
             overflow: scroll;
+            resize: none;
         }
     </style>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
@@ -22,7 +23,7 @@
         $(document).ready(function (){
             $("body").addClass("ready");
             checkLogin(function (user) {
-                if(user.info == null||user.info.role!==0){
+                if(user.data == null||user.data.role!==0){
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
                     $("#content").on("keyup paste blur",function () {
@@ -35,7 +36,7 @@
         function submit_() {
             if (confirm("确认发布这条消息吗？发布后内容不能修改！")) {
                 $.ajax({
-                    url: _ROOT_ + "message/send.do", type: "post", data: {title: $("#title").val(), content: $("#content").val()}
+                    url: _ROOT_ + "message/send.do", type: "post", data: {title: $("#title").val(), content: $("textarea[name='content']").val()}
                 }).done(function (data) {
                     $("p.status").text(data.msg);
                 }).fail(function (xhr) {
@@ -53,8 +54,8 @@
     </p>
     <p><label>通知内容（最多1000个字）：<br>
         <textarea name="" id="content" cols="30" rows="10" class="form-control" required></textarea></label></p>
-    <input type="submit" value="发布" class="btn btn-primary">&nbsp;&nbsp;
-    <input type="reset" value="重置" class="btn">&nbsp;&nbsp;
+    <input type="submit" value="发布" class="btn btn-primary">&emsp;
+    <input type="reset" value="重置" class="btn">&emsp;
     <input type="button" value="返回" class="btn" onclick="window.history.go(-1)">
 </form>
 <p class="status"></p>

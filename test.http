@@ -4,8 +4,9 @@ GET http://localhost/LibrarySeat/checkcode
 ###
 POST http://localhost/LibrarySeat/user/login.do
 Content-Type: application/x-www-form-urlencoded
+X-Requested-With: XMLHttpRequest
 
-username=admin&pswd=2589236782d0b361e87920a3e48ee6fb&vcode=33&token=1707378960
+username=admin&pswd=2589236782d0b361e87920a3e48ee6fb&vcode=2&token=1714201092
 
 ###
 GET http://localhost/LibrarySeat/user/logged_user.do
@@ -45,3 +46,10 @@ X-Requested-With: XMLHttpRequest
 content=测试内容
 ###
 GET http://localhost/LibrarySeat/user/exit.do
+###
+# 错误1：大小写问题
+# 错误2：忘记加content-type
+POST http://localhost/LibrarySeat/user/getimgbyid.do
+Content-Type: application/x-www-form-urlencoded
+
+uid=10001

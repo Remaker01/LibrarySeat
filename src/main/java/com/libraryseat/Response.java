@@ -1,10 +1,18 @@
 package com.libraryseat;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class Response {
-    private String uri,method,msg;
-    private Object extra;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String uri,method,msg = "";
+    private Object data;
 
     public Response() {}
+
+    public Response(String msg,Object data) {
+        this.msg = msg;
+        this.data = data;
+    }
 
     public Response(String uri, String method, String msg) {
         this.uri = uri;
@@ -36,11 +44,11 @@ public class Response {
         this.method = method;
     }
 
-    public Object getExtra() {
-        return extra;
+    public Object getData() {
+        return data;
     }
 
-    public void setExtra(Object extra) {
-        this.extra = extra;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

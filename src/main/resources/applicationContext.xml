@@ -16,7 +16,7 @@
         <property name="sizeThreshold" value="8192"/>
     </bean>
     <bean id="fileUpload" class="org.apache.commons.fileupload.servlet.ServletFileUpload">
-        <property name="fileCountMax" value="1"/>
+        <property name="fileCountMax" value="2"/>
         <property name="fileSizeMax" value="2097152"/>
         <property name="fileItemFactory" value="#{fileItemFactory}"/>
     </bean>

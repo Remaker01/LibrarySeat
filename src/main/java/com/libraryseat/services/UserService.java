@@ -6,6 +6,7 @@ import com.libraryseat.dao.UserDao;
 import com.libraryseat.pojo.User;
 import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.ExcelUtil;
+import com.libraryseat.utils.ImageBase64Util;
 import com.libraryseat.utils.VerifyUtil;
 import com.libraryseat.utils.cache.*;
 import org.apache.commons.fileupload.FileItem;
@@ -40,6 +41,7 @@ public class UserService {
     private static final Cache<Integer,User> idCache = new LRUCache<>(60);
     private static final Cache<String,User> phoneCache = new LRUCache<>(60);
     private static final Logger LOGGER = LogManager.getLogger(UserService.class.getName());
+    private static volatile byte[] DEFAULT_IMAGE_DATA = null;
     public static final int PAGE_SIZE = 20;
     @Autowired
     private UserDao userDao;
@@ -104,7 +106,7 @@ public class UserService {
         if (!fileItem.isFormField()){
             String format = ExcelUtil.detectFormatViaMIME(fileItem.getContentType());
             try(InputStream stream = fileItem.getInputStream()){
-                List<User> parseResult=ExcelUtil.getUsersInWorkbook(stream,format);
+                List<User> parseResult = ExcelUtil.getUsersInWorkbook(stream,format);
                 if (parseResult.isEmpty())
                     return "文件中不包含任何有效信息！";
                 parseResult = parseResult.stream()
@@ -122,6 +124,21 @@ public class UserService {
             }
         }
         return "上传失败，文件不合法！";
+    }
+
+    public String updateImage(int uid, FileItem image) {
+        try(InputStream stream = image.getInputStream()) {
+            String base64 = ImageBase64Util.encodeToBase64(stream,64,64);
+            if (userDao.updateImage(uid, base64,new java.sql.Date(System.currentTimeMillis())) != 0) {
+                return "更新用户头像成功！";
+            }
+            return "更新头像失败！";
+        } catch (IOException e) {
+            LOGGER.error("",e);
+            return "解析图片失败！";
+        } catch (IllegalArgumentException ex) {
+            return ex.getMessage();
+        }
     }
 
     /**
@@ -158,6 +175,34 @@ public class UserService {
         }
     }
 
+    /**通过用户名和密码修改密码*/
+    public String modifyPswd(String username, String oldPswd, String newPswd) {
+        //1.根据用户名密码查找，如果没有符合的，说明用户不存在或原密码错误
+        User userToBeModified = login(username,oldPswd); //id一定not null
+        if (userToBeModified == null)
+            return String.format("用户%s不存在，或原密码错误！",username);
+        //2.存在原用户
+        userToBeModified.setPassword(newPswd);
+        return updateUser(userToBeModified.getUid(),
+                args(userToBeModified),
+                userToBeModified.getRole(),
+                userToBeModified.getSalt(),
+                true);
+    }
+    /**通过手机号+验证码重置密码。用于忘记密码的情况*/
+    public String resetPswd(String phone, String newPswd) {
+        // 1.获取用户信息
+        User u = loginByPhone(phone);
+        if(u == null)
+            return "用户不存在！";
+        //2.加密用户密码
+        u.setPassword(newPswd);
+        return updateUser(u.getUid(),
+                args(u),
+                u.getRole(),
+                u.getSalt(),
+                false);
+    }
     public String removeUser(int uid) {
         //1.根据id查找用户
         User u = idCache.get(uid);
@@ -271,32 +316,23 @@ public class UserService {
         return userDao.getUsers((page-1)*PAGE_SIZE,PAGE_SIZE,role);
     }
 
-    /**通过用户名和密码修改密码*/
-    public String modifyPswd(String username, String oldPswd, String newPswd) {
-        //1.根据用户名密码查找，如果没有符合的，说明用户不存在或原密码错误
-        User userToBeModified = login(username,oldPswd); //id一定not null
-        if (userToBeModified == null)
-            return String.format("用户%s不存在，或原密码错误！",username);
-        //2.存在原用户
-        userToBeModified.setPassword(newPswd);
-        return updateUser(userToBeModified.getUid(),
-                args(userToBeModified),
-                userToBeModified.getRole(),
-                userToBeModified.getSalt(),
-                true);
-    }
-    /**通过手机号+验证码重置密码。用于忘记密码的情况*/
-    public String resetPswd(String phone, String newPswd) {
-        // 1.获取用户信息
-        User u = loginByPhone(phone);
-        if(u == null)
-            return "用户不存在！";
-        //2.加密用户密码
-        u.setPassword(newPswd);
-        return updateUser(u.getUid(),
-                args(u),
-                u.getRole(),
-                u.getSalt(),
-                false);
+    /**
+     * 指定uid，获取用户头像
+     * @return 用户头像数据。如果没有返回null
+     */
+    public byte[] getUserImage(int uid) throws IllegalArgumentException {
+        String base64 = userDao.getUserImageByUid(uid).getImgBase64();
+        byte[] data = ImageBase64Util.base64ToImageData(base64);
+        if (data == null) {
+            if (DEFAULT_IMAGE_DATA == null) {
+                try (InputStream stream = ImageBase64Util.class.getResourceAsStream("/user-img.jpg")) {
+                    assert stream != null;
+                    DEFAULT_IMAGE_DATA = new byte[stream.available()];
+                    stream.read(DEFAULT_IMAGE_DATA);
+                } catch (NullPointerException | IOException e) {LOGGER.error("",e);return null;} //impossible
+            }
+            data = DEFAULT_IMAGE_DATA;
+        }
+        return data;
     }
 }

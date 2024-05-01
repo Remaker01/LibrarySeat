@@ -6,6 +6,7 @@ import com.libraryseat.services.UserService;
 import com.libraryseat.utils.EncryptUtil;
 import com.libraryseat.utils.JsonUtil;
 import com.libraryseat.utils.VerifyUtil;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -23,7 +24,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -106,37 +107,23 @@ public class UserController {
 
     @RequestMapping(value = "/add.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void addUser(@RequestParam Map<String,String> params,HttpServletResponse resp,HttpSession session) throws IOException {
+    public void addUser(User user,
+                        String vcode,
+                        String token,
+                        HttpServletResponse resp,
+                        HttpSession session) throws IOException {
         User logged = (User) session.getAttribute("user");
         if(logged == null||logged.getRole() != 0) {
-            resp.sendError(403,"校验失败");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
-        OutputStream out = resp.getOutputStream();
-        String username = params.get("username"),
-                pswd = params.get("pswd"),
-                trueName = params.get("truename"),
-                gender = params.get("gender"),
-                phone = EncryptUtil.base64Decode(params.get("phone")),
-                roleStr = params.get("role"),
-                vcode = params.get("vcode"),
-                token = params.get("token");
-        if (!VerifyUtil.verifyNonEmptyStrings(username,pswd,trueName,gender,phone,roleStr,vcode,token)||
-                !VerifyUtil.verifyPassword(pswd)) {
-            resp.sendError(400,"参数错误");
-            return;
-        }
+
         if(!VerifyUtil.verifyTimestamp(token)) {
             resp.sendError(403,"校验失败");
             return;
         }
-        short role;
-        if(roleStr.equals("1"))  role = (short)1;
-        else if (roleStr.equals("2"))   role = (short)2;
-        else {
-            resp.sendError(400,"参数错误");
-            return;
-        }
+        OutputStream out = resp.getOutputStream();
+        user.setPhone(EncryptUtil.base64Decode(user.getPhone()));
         String realcode = (String) session.getAttribute("CHECKCODE_SERVER");
         session.removeAttribute("CHECKCODE_SERVER");
         if(!realcode.equals(vcode)) {
@@ -144,7 +131,9 @@ public class UserController {
             JsonUtil.writeResponse(r,out);
             return;
         }
-        String info = userService.addUser(new String[]{username,pswd,trueName,gender,phone},role);
+        String info = userService.addUser(new String[]{
+                user.getUsername(),user.getPassword(),user.getTruename(),user.getGender(),user.getPhone()
+        },user.getRole());
         JsonUtil.writeResponse(new Response("/user/add.do","POST",info),out);
     }
 
@@ -153,7 +142,7 @@ public class UserController {
     public void addUsers(HttpServletRequest req, HttpSession session, HttpServletResponse resp) throws IOException{
         User logged = (User) session.getAttribute("user");
         if(logged == null||logged.getRole() != 0) {
-            resp.sendError(403,"校验失败");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
         if (!ServletFileUpload.isMultipartContent(req)){
@@ -176,7 +165,7 @@ public class UserController {
     public void removeUser(@RequestParam Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         if(u == null||u.getRole() != 0) {
-            resp.sendError(403,"校验失败");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
         String info = userService.removeUser(uid);
@@ -187,7 +176,7 @@ public class UserController {
     public void modifyPswd(@RequestParam Map<String,String> params,HttpServletResponse resp,HttpSession session) throws IOException {
         User now = (User) session.getAttribute("user");
         if(now == null) {
-            resp.sendError(403,"校验失败！");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
         String old = params.get("old"),newPswd=params.get("new"),uid_=params.get("uid"),vcode=params.get("vcode");
@@ -218,27 +207,22 @@ public class UserController {
     }
     @RequestMapping(value = "/update.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void updateUser(@RequestParam Map<String,String> params, HttpServletResponse resp, HttpSession session) throws IOException {
+    public void updateUser(User new_, HttpServletResponse resp, HttpSession session) throws IOException {
         User now = (User) session.getAttribute("user");
         if(now == null||now.getRole() != 0) {
-            resp.sendError(403,"校验失败！");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
-        String uid = params.get("uid"),uname = params.get("uname"),trueName = params.get("truename"),phone = params.get("phone");
-        try{
-            int uid_ = Integer.parseInt(uid);
-            User u = userService.getUserById(uid_); //不能直接new不然密码不正确
-            String info = userService.updateUser(u.getUid(),new String[]{
-                    uname,
-                    u.getPassword(),
-                    trueName,
-                    u.getGender(),
-                    EncryptUtil.base64Decode(phone)
-            },u.getRole(),u.getSalt(),false);
-            JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
-        } catch (RuntimeException e) {
-            resp.sendError(400,"参数错误！");
-        }
+        int uid_ = new_.getUid();
+        User old = userService.getUserById(uid_); //不能直接new不然密码不正确
+        String info = userService.updateUser(uid_,new String[]{
+                new_.getUsername(),
+                old.getPassword(),
+                new_.getTruename(),
+                old.getGender(),
+                EncryptUtil.base64Decode(new_.getPhone())
+        },old.getRole(),old.getSalt(),false);
+        JsonUtil.writeResponse(new Response("/user/update.do","POST",info),resp.getOutputStream());
     }
 
     @RequestMapping(value = "/exit.do",method = {RequestMethod.GET})
@@ -255,7 +239,7 @@ public class UserController {
                           HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         if(u == null||u.getRole() == 2) {
-            resp.sendError(403,"校验失败！");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
         List<User> users = (role == null) ? userService.getUsers(pageno) : userService.getUsersByRole(pageno,role);
@@ -269,10 +253,51 @@ public class UserController {
     public void getUserById(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
         User u = (User) session.getAttribute("user");
         if (u == null) {
-            resp.sendError(403,"校验失败");
+            resp.sendError(403,"校验失败，请尝试重新登录！");
             return;
         }
         User result = userService.getUserById(uid);
         JsonUtil.writePojo(base64Phone(result,true),resp.getOutputStream()); //可能来自缓存，必须为true
+    }
+    @RequestMapping(value = "/getimagebyid.do",method = {RequestMethod.POST,RequestMethod.GET})
+    @ResponseBody
+    public void getUserImage(Integer uid, HttpServletResponse resp, HttpSession session) throws IOException {
+        User u = (User) session.getAttribute("user");
+        if (u == null) {
+            resp.sendError(403,"校验失败，请尝试重新登录！");
+            return;
+        }
+        resp.setContentType("image/jpeg");
+        resp.setHeader("Cache-control","no-cache"); //TODO:加上max-age
+        if (u.getUid() == uid||u.getRole() != 2) {
+            resp.getOutputStream().write(userService.getUserImage(uid));
+            return;
+        }
+        resp.sendError(403,"校验失败，请尝试重新登录！");
+    }
+
+    @RequestMapping(value = "/updateimage.do",method = {RequestMethod.POST})
+    @ResponseBody
+    public void updateImage(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws Exception{
+        User logged = (User) session.getAttribute("user");
+        if (!ServletFileUpload.isMultipartContent(req)){
+            resp.sendError(400,"参数错误：文件不合法");
+            return;
+        }
+        if (fileItemFactory.getRepository() == null)
+            fileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+        try {
+            List<FileItem> fileItems = fileUpload.parseRequest(req);
+            int uid = Integer.parseInt(new String(fileItems.get(0).get(), StandardCharsets.UTF_8));
+            if (logged == null||(uid != logged.getUid()&&logged.getRole() != 0)){
+                resp.sendError(403,"校验失败，请尝试重新登录！");
+                return;
+            }
+            String info = userService.updateImage(uid, fileItems.get(1));
+            JsonUtil.writeResponse(new Response("/user/updateimage.do","POST",info),resp.getOutputStream());
+        } catch (FileUploadException e) {
+            JsonUtil.writeResponse(new Response("/user/updateimage.do","POST","文件过大或出现异常，请重新选择文件！"),
+                    resp.getOutputStream());
+        }
     }
 }

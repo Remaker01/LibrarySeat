@@ -13,7 +13,7 @@
         $(document).ready(function (){
             $("body").addClass("ready");
             checkLogin(function (data){
-                user=data.info;
+                user=data.data;
                 if(user == null){
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {

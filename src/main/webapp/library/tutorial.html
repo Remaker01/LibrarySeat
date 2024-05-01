@@ -10,8 +10,8 @@
     <script>
         $(document).ready(function () {
             $("body").addClass("ready");
-            checkLogin(function (data) {
-                var user=data.info;
+            checkLogin(function (d) {
+                var user=d.data;
                 if (user==null)
                     $("body")[0].innerHTML = "<p>您尚未登录！</p><a href='" + _ROOT_ + "'>点击返回主页</a>";
             });
@@ -20,12 +20,11 @@
 </head>
 <body>
 <h4>如何预定座位和签到</h4>
-<p>1.登录后，首先点击“座位预定→当前预定”<br>
-<img src="../img/tutorial/how-to-reserve-1.jpg" alt="预定1"/>
-</p>
-<p>2.在弹出的界面中点击一个阅览室，查看该阅览室的座位，选择一个状态为“空闲”的座位，点击“预定”<br>
-<img src="../img/tutorial/how-to-reserve-2.jpg" alt="预定2"/>&nbsp;&nbsp;<img src="../img/tutorial/how-to-reserve-3.jpg" alt="预定3"/>
-</p>
+<p>1.登录后，首先点击“座位预定→当前预定”</p>
+<p><img src="../img/tutorial/how-to-reserve-1.jpg" alt="预定1"/></p>
+<p>2.在弹出的界面中点击一个阅览室，查看该阅览室的座位，选择一个状态为“空闲”的座位，点击“预定”</p>
+<div style="display: flex;flex-direction: row"><img src="../img/tutorial/how-to-reserve-2.jpg" alt="预定2"/>
+    <img src="../img/tutorial/how-to-reserve-3.jpg" alt="预定3"/></div>
 <p>3.返回“当前预定”界面，到达图书馆后点击右侧“签到”按钮，完成签到</p>
 <p>也可点击“放弃座位”，放弃已经预定的座位</p>
 <h4>如何签退</h4>

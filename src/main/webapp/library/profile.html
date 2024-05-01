@@ -6,20 +6,21 @@
     <meta name="viewport" content="width=device-width"/>
     <meta http-equiv="Cache-Control" content="no-cache">
     <title>个人信息管理</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
-    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
-    <script src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js" defer></script>
+    <script defer src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
+    <script defer src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
     <script src="../static/commons.js" defer></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../static/iframes.css">
     <script>
         var user;
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
-                user=d.info;
+                user=d.data;
                 if(user==null) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
@@ -27,24 +28,25 @@
                     $("#uname").text(user.username);
                     $("#name").text(user.truename);
                     $("#phone").text(window.atob(user.phone));
+                    $("#user-img").attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%d",user.uid));
                     var $role=$("#role");
                     switch (user.role) {
                         case 0:
                             $role.text("超级管理员");
                             break;
-                        case 1:$role.text("图书室管理员");break;
+                        case 1:$role.text("阅览室管理员");break;
                         case 2:$role.text("学生");break;
                     }
                 }
             });
             $("#modipass").on("click",function () {
                 $("#old-input,#new-input,#repeat-input,#vcode-input").val("");
-                $("p.status").text("");
+                $("#modipass p.status").text("");
                 $("#modify-pswd").modal("show");
             });
         });
-        function submit_() {
-            var status=$("p.status");
+        function submit_modipass() {
+            var status=$("#modipass p.status");
             var old=$("#old-input").val(),newPswd=$("#new-input").val();
             if(newPswd!==$("#repeat-input").val()) {
                 status.text("两次密码不一致！");
@@ -67,15 +69,40 @@
             // $("#modify").modal("hide");
             return FALSE;
         }
+        function submit_updimage(obj) {
+            var status = $(".container p.status");
+            status.text("正在上传，请稍后……");
+            var formData = new FormData();
+            formData.append("uid",user.uid.toString());
+            formData.append("image",obj.files[0]);
+            $.ajax({
+                url: _ROOT_+"user/updateimage.do", type: "post", data: formData, processData:false, contentType:false
+            }).done(function (d) {
+                status.text(d.msg);
+                if (d.msg.indexOf("成功")>0) {
+                    $("#user-img").attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%d&_=%.4f",user.uid,Math.random()));
+                }
+            }).fail(function (xhr) {
+                status.text("出错了，请稍后重试。错误码："+xhr.status);
+            });
+        }
     </script>
 </head>
 <body>
-<div style="padding: 1em 0 0 1em;">
-    <p><strong>学号/工号：</strong><span id="id"></span></p>
-    <p><strong>用户名：</strong><span id="uname"></span></p>
-    <p><strong>密码：</strong><input type="button" class="btn" id="modipass" value="点击修改"></p>
-    <p><strong>姓名：</strong><span id="name"></span></p>
-    <p><strong>手机号：</strong><span id="phone"></span></p>
+<div class="container">
+    <div style="text-align: center">
+        <input type="file" name="image-input" accept="image/jpeg, image/png, image/bmp, image/gif" style="display: none"
+            onchange="submit_updimage(this)"/>
+        <img src="" id="user-img" style="width: 48px;height: 48px" title="点击更换头像" onclick="$(this).siblings().eq(0).trigger('click')">
+        <p style="font-size: small;color: gray">温馨提示：最大2MB，不支持动图。</p>
+        <p class="status"></p>
+    </div>
+    <p><strong>以下为您的个人信息，如有错误请联系管理员修改！</strong></p>
+    <p><strong>账号：</strong><span id="id"></span></p><hr>
+    <p><strong>用户名：</strong><span id="uname"></span></p><hr>
+    <p><strong>密码：</strong><input type="button" class="btn" id="modipass" value="点击修改"></p><hr>
+    <p><strong>姓名：</strong><span id="name"></span></p><hr>
+    <p><strong>手机号：</strong><span id="phone"></span></p><hr>
     <p><strong>身份：</strong><span id="role"></span></p>
 </div>
 <div class="modal fade" id="modify-pswd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -85,14 +112,14 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                 <h4 class="modal-title" id="myModalLabel">修改密码</h4>
             </div>
-            <form class="modal-body" onsubmit="return submit_()">
+            <form class="modal-body" onsubmit="return submit_modipass()">
                 <p><label>原密码：<input type="password" id="old-input" class="form-control" required/></label></p>
                 <p><label>新密码：<input type="password" id="new-input" class="form-control" maxlength="20"
                                      required/></label></p>
                 <p><label>重复密码：<input type="password" id="repeat-input" class="form-control" max="20" required/></label>
                 </p>
                 <p><label>验证码：<input type="text" id="vcode-input" class="form-control" autocomplete="off" required/></label></p>
-                    <img class="vcode-img" src="../checkcode" alt="验证码" onclick="this.src='../checkcode?'+Math.random()"/>
+                    <img class="vcode-img" src="../checkcode" alt="验证码" onclick="this.src='../checkcode?_='+Math.random()"/>
                 <p class="status"></p>
                 <p class="modal-footer">
                     <input type="button" class="btn exit" data-dismiss="modal" value="关闭">

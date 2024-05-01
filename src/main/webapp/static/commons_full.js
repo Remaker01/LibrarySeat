@@ -44,7 +44,7 @@ function getRoomById(id){
     $.ajax({
         url:_ROOT_+"room/getbyid.do", type:"post", data:{"roomid":id}, async:false
     }).done(function (d){
-        x=d.info;
+        x=d.data;
     }).fail(function (){
         x=null;
     });

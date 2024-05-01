@@ -20,7 +20,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
-                user=d.info;
+                user=d.data;
                 pageno=getCurrentParam("pageno");
                 if(user==null||user.role===2){
                     $("body")[0].innerHTML=sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
@@ -40,8 +40,7 @@
             });
             //页数
             $("#page-input").on("keyup paste blur",function (){
-                var val=this.value;
-                this.value=(val.replace(REGEXP_NOT_NUM,''));
+                this.value=(this.value.replace(REGEXP_NOT_NUM,''));
             });
             //上一页
             if (pageno === '1')
@@ -79,8 +78,8 @@
                         var tds=$(this.parentNode).siblings();
                         $("#modify-user span.uid-text").text(tds[0].innerText);
                         $("#uname-input").val(tds[1].innerText);
-                        $("#name-input").val(tds[2].innerText);
-                        $("#phone-input").val(tds[4].innerText);
+                        $("#name-input").val(tds[3].innerText);
+                        $("#phone-input").val(tds[5].innerText);
                         $("#modify-user p.status").text("");
                         if(tds[0].innerText===user.uid.toString()) {
                             $("#myModalLabel").text("修改个人信息");
@@ -129,8 +128,8 @@
                     var tds=trs.eq(i).children();
                     if (tds[0].innerText===uid.toString()){
                         tds[1].innerText=uname;
-                        tds[2].innerText=name;
-                        tds[4].innerText=phone;
+                        tds[3].innerText=name;
+                        tds[5].innerText=phone;
                         break;
                     }
                 }
@@ -147,7 +146,7 @@
                 return FALSE;
             }
             $.ajax({
-                url:_ROOT_+"user/update.do", type:"post", data:{"uid":uid,"uname":uname,"truename":name,"phone":phone.encodeb()}
+                url:_ROOT_+"user/update.do", type:"post", data:{"uid":uid,"username":uname,"truename":name,"phone":phone.encodeb()}
             }).done(function (d) {
                 status.text(d.msg);
                 if (d.msg.indexOf("成功")>0)
@@ -177,6 +176,25 @@
             });
             return FALSE;
         }
+        function submit_modify_image(obj) {
+            var uid = $(obj.parentNode).siblings()[0].innerText;
+            var status = $("body>p.status");
+            status.text("正在上传，请稍后……");
+            var formData = new FormData();
+            formData.append("uid",uid);
+            formData.append("image",obj.files[0]);
+            $.ajax({
+                url:_ROOT_+"user/updateimage.do", type:"post", data: formData, processData:false, contentType:false
+            }).done(function (d) {
+                status.text(d.msg);
+                if (d.msg.indexOf("成功") > 0){
+                    $(obj).next().attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%s&_=%.4f",uid,Math.random()));
+                }
+            }).fail(function (xhr) {
+                status.text("出错了，请稍后重试。错误码："+xhr.status);
+            })
+            return FALSE;
+        }
     </script>
 </head>
 <body>
@@ -187,12 +205,14 @@
     <option value="2">学生</option>
 </select>
 </label>
-<span style="font-size: small;color: #505050" id="current-page-text"></span>
+<p style="font-size: small;color: #505050" id="current-page-text"></p>
+<p class="status"></p>
 <table class="table table-striped" id="table-data-area">
     <script type="x-dot-template" id="table-">
     <thead><tr>
-        <th onclick="sortTable($table,'uid')">学号/工号<img src="" data-title="uid"></th>
+        <th onclick="sortTable($table,'uid')">账号<img src="" data-title="uid"></th>
         <th onclick="sortTable($table,'username')">用户名<img src="" data-title="username"></th>
+        <th>头像</th>
         <th onclick="sortTable($table,'truename')">姓名<img src="" data-title="truename"></th>
         <th>性别</th>
         <th>手机号</th>
@@ -206,6 +226,9 @@
     <tr>
         <td data-title="uid">{{!value.uid}}</td>
         <td data-title="username">{{!value.username}}</td>
+        <td><input type="file" name="image" onchange="submit_modify_image(this)" style="display: none" accept="image/jpeg, image/png, image/bmp, image/gif">
+            <img src="{{=sprintf('../user/getimagebyid.do?uid=%d',value.uid)}}" alt="用户头像"
+                 style="width: 32px;height: 32px;border-radius: 20%;cursor:pointer;" onclick="$(this).siblings().eq(0).trigger('click')"></td>
         <td data-title="truename">{{!value.truename}}</td>
         <td>{{!value.gender}}</td>
         <td>{{!window.atob(value.phone)}}</td>
@@ -223,7 +246,6 @@
     </tbody>
     </script>
 </table>
-<p class="status"></p>
 
 <div class="modal fade" id="modify-user" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">

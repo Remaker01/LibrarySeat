@@ -17,7 +17,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
-                user=d.info;
+                user=d.data;
                 if(user==null||user.role!==1) {
                     $("body")[0].innerHTML=sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
                 } else{
@@ -42,8 +42,8 @@
                 for(var i=0; i<d.length; i++) {
                     var elem=d[i];
                     var tr=document.createElement("tr");
-                    tr.innerHTML+="<td data-title='roomid' title='点击排序'>"+elem.roomid+"</td>";
-                    tr.innerHTML+=("<td data-title='roomname' title='点击排序'>"+elem.roomname+"</td>");
+                    tr.innerHTML+="<td data-title='roomid'>"+elem.roomid+"<img src='' data-title=\"roomid\"></td>";
+                    tr.innerHTML+=("<td data-title='roomname'>"+elem.roomname+"<img src=\"\" data-title=\"roomname\"></td>");
                     tr.innerHTML+=sprintf("<td>%s</td>", elem.valid ? "启用" : "已停用");
                     if (my!=='1')
                         tr.innerHTML+=(sprintf("<td><a href='#' onclick='showAdmin(this)' data-admin='%s'>点击查看</a></td>",elem.admin));
@@ -62,7 +62,7 @@
             $.ajax({
                 url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":$obj.attr("data-admin")}
             }).done(function (d){
-                var u=d.info;
+                var u=d.data;
                 if (u!=null) {
                     // console.log(u);
                     $("#admin-id").text(u.uid);

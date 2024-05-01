@@ -10,18 +10,19 @@
     <script>
         $(document).ready(function () {
             checkLogin(function (d) {
-                if(d.info!=null)    document.location.href=_ROOT_+"welcome.html";
+                if(d.data!=null)    document.location.href=_ROOT_+"welcome.html";
             });
             $("input[name='vcode']").on("keyup paste blur",function (){
                 $(this).val($(this).val().replace(REGEXP_NOT_NUM,''));
             });
             $("#vcode-phone-btn").on("click",function (){
                 var phone=$("input[name='phone']").val();
-                if (phone==null||phone===""){
-                    $("p#status").text("请输入手机号！");
+                if (!checkPhone(phone)){
+                    $("p#status").text("手机号格式有误！");
                     return;
                 }
-                phone_code=randInt(1e5,1e6);
+                phone_code=randInt(1e5,1e6).toString();
+                $("#status").text("");
                 $("#vcode-phone-text").attr("placeholder","测试功能，请输入"+phone_code).val("");
             });//onclick
         });//ready
@@ -37,7 +38,7 @@
                 vcode:vcode,
                 token:Math.round(new Date().getTime()/1000)
             };
-            if($("#vcode-phone-text").val()!=phone_code) { //不用!==
+            if($("#vcode-phone-text").val()!==phone_code) { //不用!==
                 $("#status").text("手机验证码错误！");
                 return FALSE;
             }
@@ -70,14 +71,16 @@
         <div class="login-field">
             <input type="text" name="vcode" required autocomplete="off"/>
             <label>图形验证码</label><br>
-            <img src="checkcode" alt="验证码" id="vcode-img" onclick="this.src=_ROOT_+'checkcode?'+Math.random();"/>
+            <img src="checkcode" alt="验证码" id="vcode-img" onclick="this.src=_ROOT_+'checkcode?_='+Math.random();"/>
         </div>
         <div class="login-field">
             <span style="color: #00ffff;font-size: small;">短信验证码：</span>
             <input type="text" name="vcode" id="vcode-phone-text" required autocomplete="off" maxlength="6"/>
         </div>
-        <input type="button" id="vcode-phone-btn" value="获取验证码" style="display: inline" required/>&emsp;
-        <input type="submit" id="submit" value="登录"/>
+        <div style="display: flex;justify-content: space-around;">
+            <input type="button" id="vcode-phone-btn" value="获取验证码" required/>
+            <input type="submit" id="submit" value="登录"/>
+        </div>
     </form>
     <span style="text-align: left"><a href="./">使用用户名登录</a></span>
     <p id="status"></p>

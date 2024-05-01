@@ -15,7 +15,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
-                var user=d.info;
+                var user=d.data;
                 room=getRoomById(getCurrentParam("roomid"));
                 page=getCurrentParam("page");
                 if (user == null||user.role!==2) {
@@ -97,7 +97,7 @@
     </script>
 </head>
 <body>
-<p class="loading"></p><span style="font-size: small;color: #505050" id="current-page-text"></span>
+<p class="loading"></p><span style="font-size: small;color: #505050" id="current-page-text"></span><p class="status"></p>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -109,7 +109,6 @@
     <tbody>
     </tbody>
 </table>
-<p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">

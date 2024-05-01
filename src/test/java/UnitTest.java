@@ -1,5 +1,6 @@
 import com.libraryseat.pojo.*;
 import com.libraryseat.utils.ExcelUtil;
+import com.libraryseat.utils.ImageBase64Util;
 import com.libraryseat.utils.JsonUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,6 +52,18 @@ public class UnitTest {
             });
         } catch (IOException e) {
             throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void testBase64(){
+        try(InputStream is = UnitTest.class.getResourceAsStream("/img.jpg")) {
+            String base64 = ImageBase64Util.encodeToBase64(is,32,32);
+            byte[] data = ImageBase64Util.base64ToImageData(base64);
+            System.out.println(base64);
+            System.out.println(data.length);
+        } catch (IOException|IllegalArgumentException e) {
+            throw new AssertionError();
         }
     }
 }

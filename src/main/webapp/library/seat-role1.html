@@ -15,10 +15,10 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d) {
-                u=d.info;
+                u=d.data;
                 room=getRoomById(getCurrentParam("roomid"));
                 page=getCurrentParam("page");
-                var user=d.info;
+                var user=d.data;
                 if (user == null||user.role!==1) {
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
@@ -104,7 +104,7 @@
     </script>
 </head>
 <body>
-<p class="loading"></p><span style="font-size: small;color: #505050" id="current-page-text"></span>
+<p class="loading"></p><span style="font-size: small;color: #505050" id="current-page-text"></span><p class="status"></p>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -116,7 +116,6 @@
     <tbody>
     </tbody>
 </table>
-<p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">

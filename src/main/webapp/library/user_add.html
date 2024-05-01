@@ -17,7 +17,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d){
-                var user=d.info;
+                var user=d.data;
                 if(user==null||user.role!==0){
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
@@ -40,7 +40,7 @@
                 status.text("手机号格式错误！");
                 return FALSE;
             }
-            if (!REGEXP_PASS.test(param.pswd)){
+            if (!REGEXP_PASS.test(param.password)){
                 status.text(PASS_REQUIREMENT);
                 return FALSE;
             }
@@ -48,7 +48,7 @@
                 status.text(USERNAME_REQUIREMENT);
                 return FALSE;
             }
-            param.pswd=hashPassword(param.pswd);
+            param.password=hashPassword(param.password);
             param.phone=param.phone.encodeb();
             param.token=Math.round(new Date().getTime()/1000); //时间戳
             $.ajax({
@@ -85,7 +85,7 @@
 <div id="myTabContent" class="tab-content">
     <form id="info-form" class="tab-pane fade in active" onsubmit="return submit_single()">
         <p><label>用户名：<input type="text" name="username" class="form-control" maxlength="20" autocomplete="off" required/></label></p>
-        <p><label>密码：&nbsp;&nbsp;&nbsp;<input type="password" name="pswd" class="form-control" maxlength="20" autocomplete="off" required/></label>
+        <p><label>密码：&nbsp;&nbsp;&nbsp;<input type="password" name="password" class="form-control" maxlength="20" autocomplete="off" required/></label>
         </p>
         <p><label>姓名：&nbsp;&nbsp;&nbsp;<input type="text" name="truename" class="form-control" maxlength="20" required></label></p>
         <p><label>性别：&nbsp;&nbsp;&nbsp;<select name="gender" class="form-control" required>

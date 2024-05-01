@@ -17,7 +17,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (data) {
-                if (data.info==null){
+                if (data.data==null){
                     $("body")[0].innerHTML="<p>您尚未登录！</p><a href='"+_ROOT_+"'>点击返回主页</a>";
                 } else {
                     var uid=getCurrentParam("uid"),time=getCurrentParam("time");
@@ -29,13 +29,13 @@
             $.ajax({
                 url:_ROOT_+"message/get.do", type:"post", data:{uid:uid_, time:time_}
             }).done(function (data) {
-                if (data.info!=null) {
-                    $("div.message-title>h3").text(data.info.title);
-                    $("div.message-content>p").text(data.info.content);
+                if (data.data!=null) {
+                    $("div.message-title>h3").text(data.data.title);
+                    $("div.message-content>p").text(data.data.content);
                     $.ajax({
-                        url: _ROOT_+"user/getbyid.do", type: "post", data: {uid: data.info.uid}
+                        url: _ROOT_+"user/getbyid.do", type: "post", data: {uid: data.data.uid}
                     }).done(function (data2){
-                        $("p.sender").text("发布时间:"+data.info.time+"   发布者:"+data2.info.truename);
+                        $("p.sender").text("发布时间:"+data.data.time+"   发布者:"+data2.data.truename);
                     });
                 }
             }).fail(function (xhr) {

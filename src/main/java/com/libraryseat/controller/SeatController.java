@@ -20,7 +20,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/seat")
@@ -131,7 +130,7 @@ public class SeatController {
         }
         totalCount = seatService.getTotalSeatCountInRoom(roomid);
         extra.put("totalCount",totalCount);
-        response.setExtra(extra);
+        response.setData(extra);
         JsonUtil.writeResponse(response,resp.getOutputStream());
     }
 }

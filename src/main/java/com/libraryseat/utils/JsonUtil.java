@@ -31,9 +31,8 @@ public class JsonUtil {
             writeMetadata((LibraryMetadata) obj,stream);
             return;
         }
-        Map<String,Object> map = new HashMap<>(1);
-        map.put("info",obj);
-        MAPPER.writeValue(stream,map);
+        Response r = new Response(obj == null ? "响应数据为空！" : "请求成功！",obj);
+        MAPPER.writeValue(stream,r);
     }
 
     public static void writeCollection(Collection<?> collection, OutputStream stream) throws IOException {
@@ -48,10 +47,12 @@ public class JsonUtil {
         JsonGenerator generator = FACTORY.createGenerator(stream);
         generator.writeStartObject();
         if (metadata == null){
-            generator.writeNullField("info");
+            generator.writeStringField("msg","响应数据为空！");
+            generator.writeNullField("data");
         } else {
+            generator.writeStringField("msg","请求成功！");
             Calendar open = metadata.getOpenTime(),close=metadata.getCloseTime(),latest=metadata.getLatestReservationTime();
-            generator.writeObjectFieldStart("info");
+            generator.writeObjectFieldStart("data");
             generator.writeStringField("open",formatCalendar(open));
             generator.writeStringField("close",formatCalendar(close));
             generator.writeStringField("latest",formatCalendar(latest));

@@ -22,7 +22,7 @@
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d){
-                var user=d.info;
+                var user=d.data;
                 if (user == null||user.role!==0) {
                     $("body")[0].innerHTML=sprintf("<p>您尚未登录！</p><a href='%s'>点击返回主页</a>",_ROOT_);
                 } else {
@@ -94,19 +94,19 @@
         function getAdmin(uid){
             var x;
             $.ajax({
-                url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":uid}, async:false
+                url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":uid}, async:false, cache:true
             }).done(function(d) {
-                if(d.info!=null&&d.info.role!==1)//非管理员
-                    d.info=null;
-                if (d.info!=null)
-                    d.info.phone = window.atob(d.info.phone);
+                if(d.data!=null&&d.data.role!==1)//非管理员
+                    d.data=null;
+                if (d.data!=null)
+                    d.data.phone = window.atob(d.data.phone);
                 x=d;
             }).fail(function (){x=null;});
             return x;
         }
         function showAdmin(obj){
             var $obj=$(obj);
-            var u=getAdmin($obj.attr("value")).info;
+            var u=getAdmin($obj.attr("value")).data;
             if (u!=null) {
                 // console.log(u);
                 $("#admin-id").text(u.uid);
@@ -129,10 +129,10 @@
                     var d=getAdmin(this.value);
                     if (d==null)
                         $("#show-admin-text").text("出错了！请尝试刷新页面");
-                    else if(d.info==null)
+                    else if(d.data==null)
                         $("#show-admin-text").text("用户不存在,或不是管理员！");
                     else
-                        $("#show-admin-text").text(sprintf("用户名：%s 姓名：%s",d.info.username,d.info.truename));
+                        $("#show-admin-text").text(sprintf("用户名：%s 姓名：%s",d.data.username,d.data.truename));
                 }
             });
             return FALSE;
@@ -167,7 +167,7 @@
     </script>
 </head>
 
-<body>
+<body><p class="status"></p>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -197,7 +197,6 @@
         </tbody>
     </script>
 </table>
-<p class="status"></p>
 <div class="modal fade" id="admin-info" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -226,7 +225,7 @@
                 <p>阅览室编号：<span id="room-id-text"></span> </p>
                 <span id="old-roomname-text" style="display: none"></span>
                 <p><label>名称：<input id="name-input" class="form-control" type="text" maxlength="20" required autocomplete="off"/></label></p>
-                <p><label>管理员工号：<input id="admin-input" class="form-control" type="text" required autocomplete="off"/></label></p>
+                <p><label>管理员账号：<input id="admin-input" class="form-control" type="text" required autocomplete="off"/></label></p>
                 <p id="show-admin-text" style="font-size: small"></p>
                 <p class="status"></p>
                 <p class="modal-footer">
