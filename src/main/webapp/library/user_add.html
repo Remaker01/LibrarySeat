@@ -5,12 +5,13 @@
     <meta http-equiv = "X-UA-Compatible" content = "IE=edge"/>
     <meta name="viewport" content="width=device-width"/>
     <title>用户添加</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
-    <script src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js" defer></script>
-    <script src="../static/commons.js" defer></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script defer src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js"></script>
+    <script defer src="../static/commons.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
@@ -31,7 +32,7 @@
         });
         function submit_single() {
             var values=$("#info-form input[type='text'],#info-form input[type='password'],#info-form select");
-            var param={},status=$("p.status");
+            var param={},status=$("body p.status");
             for(var i=0; i<values.length; i++){
                 // console.log(values[i].name,values[i].value);
                 param[values[i].name]=values[i].value;
@@ -54,24 +55,24 @@
             $.ajax({
                 url:_ROOT_+"user/add.do", type:"post", data:param
             }).done(function (d){
-                $("#info-form p.status").text(d.msg);
+                alertex("提示",d.msg,d.msg.indexOf("成功")>0 ? "success" : "warning",status);
             }).fail(function (xhr) {
-                $("#info-form p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                alertex("出错了！","请稍后重试。错误码："+xhr.status,"error",status);
             }).always(function (){$("#vcode-img").trigger("click");});
             return FALSE;
         }
         function submit_file(){
             var file=$("#file-form input[name='file']")[0];
-            var formData=new FormData();
+            var formData=new FormData(), status = $("#file-form p.status");
             formData.append("document",file.files[0]);
             // console.log(formData);
-            $("#file-form p.status").text("正在上传，请稍后……");
+            status.text("正在上传，请稍后……");
             $.ajax({
                 url: _ROOT_+"user/add_users.do",type: "post", data: formData, contentType:false, processData:false
             }).done(function (d){
-                $("#file-form p.status").text(d.msg);
+                alertex("提示",d.msg,d.msg.indexOf("成功")>0 ? "success" : "warning",status);
             }).fail(function (xhr) {
-                $("#file-form p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                alertex("出错了！","请稍后重试。错误码："+xhr.status,"error",status);
             })
             return FALSE;
         }
@@ -100,7 +101,7 @@
         </select>
         </label></p>
         <p><label>验证码：<input type="text" name="vcode" class="form-control number" maxlength="5" autocomplete="off" required/></label></p>
-        <img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?'+Math.random()" alt="验证码"/><br>
+        <img src="../checkcode" id="vcode-img" onclick="this.src='../checkcode?_='+Math.random()" alt="验证码"/><br>
         <input type="submit" class="btn btn-primary" value="提交">
         <p class="status"></p>
     </form>

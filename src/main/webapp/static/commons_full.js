@@ -72,12 +72,13 @@ function timeDiff(before,after){
 function sortTable(table,columnName) {
     ///获取比较函数。
     function getCmp() {
-        var lastOrderd = $(table).attr("data-ordered-col")
-        ,sortOrder = $(table).attr("data-order-"+columnName)||''; //获取现在的顺序标记。在th上打标记会比较困难，就直接在table上
+        var $table = $(table);
+        var lastOrderd = $table.attr("data-ordered-col")
+        ,sortOrder = $table.attr("data-order-"+columnName)||''; //获取现在的顺序标记。在th上打标记会比较困难，就直接在table上
         if (sortOrder === '' || sortOrder === 'd' || lastOrderd !== columnName) { //这一列还没排过序，或已降序排序，或上次不是按这一列排序
-            $(table).attr("data-order-" + columnName, 'a').attr("data-ordered-col", columnName) //记录上一次
+            $table.attr("data-order-" + columnName, 'a').attr("data-ordered-col", columnName) //记录上一次
                 .find("th img").attr("src",""); //1.将当前列标记为升序，2.设置排序标签，3.清空所有表头的图像
-            $(table).find("th img[data-title='"+columnName+"']")[0].src=_ROOT_+"img/caret-up.png"; //4.设置图像
+            $table.find("th img[data-title='"+columnName+"']")[0].src=_ROOT_+"img/caret-up.png"; //4.设置图像
             return function (a, b) {
                 var c = $(a).find("td[data-title='" + columnName + "']").text(),
                     d = $(b).find("td[data-title='" + columnName + "']").text();
@@ -86,9 +87,9 @@ function sortTable(table,columnName) {
             }
         }
         if (sortOrder === 'a') { //已经升序排序
-            $(table).attr("data-order-" + columnName, 'd').attr("data-ordered-col", columnName)
+            $table.attr("data-order-" + columnName, 'd').attr("data-ordered-col", columnName)
                 .find("th img").attr("src",""); //1.将当前列标记为升序，2.设置排序标签，3.清空所有表头的图像
-            $(table).find("th img[data-title='"+columnName+"']")[0].src=_ROOT_+"img/caret-down.png"; //4.设置图像
+            $table.find("th img[data-title='"+columnName+"']")[0].src=_ROOT_+"img/caret-down.png"; //4.设置图像
             return function (a, b) {
                 var c = $(a).find("td[data-title='" + columnName + "']").text(),
                     d = $(b).find("td[data-title='" + columnName + "']").text();
@@ -102,4 +103,11 @@ function sortTable(table,columnName) {
     $trs.sort(getCmp());
     console.log($trs);
     $tbody.html('').append($trs);
+}
+function alertex(title, msg, type, toBeCleared) {
+    swal({
+        title:title, text:msg, icon:type, buttons:false
+    });
+    setTimeout(swal.close,2024);
+    $(toBeCleared).text('');
 }

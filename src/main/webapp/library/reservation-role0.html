@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="../static/commons.js"></script>
     <script src="https://cdn.staticfile.net/dot/1.1.3/doT.min.js"></script>
@@ -95,18 +96,19 @@
                     "uid":td[0].innerText,
                     "seatid":td[3].innerText,
                     "roomid":$(td[2]).attr("data-roomid"),
-                    "resTime":new Date(td[4].innerText).getTime()
+                    "time":new Date(td[4].innerText).getTime()
                 }
                 $.ajax({
                     url:_ROOT_+"/reservation/delete.do", type: "post", data:param
                 }).done(function (d){
                     d.msg=d.msg||"";
-                    $("p.status").text(d.msg);
                     if(d.msg.indexOf("成功")>0){
+                        alertex("提示",d.msg,"success");
                         td.parent().remove();
-                    }
+                    } else
+                        alertex("提示",d.msg,"warning");
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了！请稍后重试，错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试，错误码："+xhr.status,"error");
                 });
             }
         }
@@ -114,6 +116,7 @@
 </head>
 <body>
 <p id="loading"></p><span style="font-size: small;color: #505050" id="current-page-text"></span>
+<p class="status"></p>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -146,7 +149,6 @@
         </tbody>
     </script>
 </table>
-<p class="status"></p>
 <div class="to-page">
     <input type="button" class="btn" id="prev-btn" value="上一页"/>
     <form onsubmit="return toPage()">

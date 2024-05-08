@@ -79,5 +79,7 @@
     <orderEntry type="library" name="Maven: com.github.virtuald:curvesapi:1.06" level="project" />
     <orderEntry type="library" name="doT" level="application" />
     <orderEntry type="library" name="sprintf" level="application" />
+    <orderEntry type="library" name="sweetalert" level="application" />
+    <orderEntry type="library" name="markdown" level="application" />
   </component>
 </module>

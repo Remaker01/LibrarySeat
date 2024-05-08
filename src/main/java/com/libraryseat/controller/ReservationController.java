@@ -96,7 +96,7 @@ public class ReservationController {
     }
     @RequestMapping(value = "/delete.do",method = {RequestMethod.POST})
     @ResponseBody
-    public void removeReservation(@RequestParam Map<String,String> params,HttpServletResponse resp, HttpSession session)
+    public void removeReservation(Reservation reservation,Long time,HttpServletResponse resp, HttpSession session)
         throws IOException{
         User u = (User)session.getAttribute("user");
         if (u == null||u.getRole() != 0){
@@ -104,11 +104,8 @@ public class ReservationController {
             return;
         }
         try{
-            int uid = Integer.parseInt(params.get("uid")),
-                    seatid=Integer.parseInt(params.get("seatid")),
-                    roomid=Integer.parseInt(params.get("roomid"));
-            long timestamp=Long.parseLong(params.get("resTime"));
-            String info=reservationService.removeReservation(seatid,roomid,uid,new Date(timestamp));
+            String info=reservationService.removeReservation(reservation.getSeatid(),reservation.getRoomid(),
+                    reservation.getUid(),new Date(time));
             JsonUtil.writeResponse(new Response("/reservation/delete.do","POST",info),resp.getOutputStream());
         } catch (RuntimeException e){
             resp.sendError(400,"参数错误");

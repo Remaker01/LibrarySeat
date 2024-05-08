@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/markdown.js/0.5.0/markdown.min.js"></script>
     <script src="../static/commons.js"></script>
     <style>
         div.message p{
@@ -31,7 +32,7 @@
             }).done(function (data) {
                 if (data.data!=null) {
                     $("div.message-title>h3").text(data.data.title);
-                    $("div.message-content>p").text(data.data.content);
+                    $("div.message-content>div")[0].innerHTML = markdown.toHTML(data.data.content);
                     $.ajax({
                         url: _ROOT_+"user/getbyid.do", type: "post", data: {uid: data.data.uid}
                     }).done(function (data2){
@@ -53,7 +54,7 @@
     </div>
     <hr>
     <div class="message-content">
-        <p></p>
+        <div></div>
     </div><br>
     <a href="#" onclick="window.history.go(-1)">返回上一页</a>
 </div>

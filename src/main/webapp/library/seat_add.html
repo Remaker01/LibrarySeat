@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width"/>
     <title>座位添加</title>
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
@@ -46,12 +47,13 @@
             $.ajax({
                 url:_ROOT_+"seat/add.do", type: "post", data: {"seatid":seatid_input.value,"roomid":rooms_select.value}
             }).done(function (d) {
-                $("p.status").text(d.msg);
                 if (d.msg.indexOf("成功")>0){
+                    alertex("提示",d.msg,"success");
                     sendMessage("座位添加通知","管理员在阅览室"+getRoomById(rooms_select.value).roomname+"添加了"+seatid_input.value+"号座位");
-                }
+                } else
+                    alertex("提示",d.msg,"warning");
             }).fail(function (xhr) {
-                $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                alertex("出错了！","请稍后重试。错误码："+xhr.status,"error");
             });
             return FALSE;
         }

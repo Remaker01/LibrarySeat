@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
     <script src="../static/commons.js"></script>
@@ -18,7 +19,7 @@
         input.btn{padding-left: 9px;padding-right: 9px;}
     </style>
     <script>
-        var $table;
+        var $table,admins=[];
         $(document).ready(function () {
             $("body").addClass("ready");
             checkLogin(function (d){
@@ -60,13 +61,14 @@
                 $.ajax({
                     url: _ROOT_ + "room/updatestate.do", type: "post", data: {id:id, state:newState}
                 }).done(function (d) {
-                    $("p.status").text(d.msg);
                     if (d.msg.indexOf("成功")>0) {
+                        alertex("提示",d.msg,"success");
                         if (newState)
                             obj.prev().attr("data-state", "true").text("启用");
                         else
                             obj.prev().attr("data-state", "false").text("已停用");
-                    }
+                    } else
+                        alertex("提示",d.msg,"warning");
                 }).fail(function (xhr) {
                     $("p.status").text("出错了！请稍后重试。错误码：" + xhr.status);
                 })
@@ -81,25 +83,33 @@
                     url:_ROOT_+"/room/delete.do", type: "post", data: {"id":id}
                 }).done(function (d){
                     d.msg=d.msg||"";
-                    $("p.status").text(d.msg);
+                    // $("p.status").text(d.msg);
                     if(d.msg.indexOf("成功")>0){
+                        alertex("提示",d.msg,"success");
                         td.parent().remove();
                         sendMessage("阅览室删除通知","管理员删除了阅览室 "+td[1].innerText);
-                    }
+                    } else
+                        alertex("提示",d.msg,"warning");
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试。错误码："+xhr.status,"error");
                 });
             }
         }
         function getAdmin(uid){
+            for(var i=0; i<admins.length; i++) { //缓存
+                if (admins[i].uid===uid)
+                    return admins[i];
+            }
             var x;
             $.ajax({
                 url:_ROOT_+"/user/getbyid.do", type:"post", data:{"uid":uid}, async:false, cache:true
             }).done(function(d) {
                 if(d.data!=null&&d.data.role!==1)//非管理员
                     d.data=null;
-                if (d.data!=null)
+                if (d.data!=null) {
                     d.data.phone = window.atob(d.data.phone);
+                    admins.push(d.data);
+                }
                 x=d;
             }).fail(function (){x=null;});
             return x;
@@ -115,7 +125,7 @@
                 $("#admin-phone").text(u.phone);
                 $("#admin-info").modal("show");
             } else {
-                alert("发生异常，请稍后尝试！");
+                alertex("出错了！","发生异常，请稍后尝试！","error");
             }
         }
         function showSeat(obj){

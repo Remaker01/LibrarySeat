@@ -9,12 +9,13 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.staticfile.org/crypto-js/3.3.0/core.min.js"></script>
     <script defer src="https://cdn.staticfile.org/crypto-js/3.3.0/enc-hex.min.js"></script>
     <script defer src="https://cdn.staticfile.org/crypto-js/3.3.0/md5.min.js"></script>
     <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
-    <script src="../static/commons.js" defer></script>
+    <script defer src="../static/commons.js"></script>
     <script>
         var user;
         $(document).ready(function () {
@@ -31,9 +32,7 @@
                     $("#user-img").attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%d",user.uid));
                     var $role=$("#role");
                     switch (user.role) {
-                        case 0:
-                            $role.text("超级管理员");
-                            break;
+                        case 0:$role.text("超级管理员");break;
                         case 1:$role.text("阅览室管理员");break;
                         case 2:$role.text("学生");break;
                     }
@@ -70,21 +69,24 @@
             return FALSE;
         }
         function submit_updimage(obj) {
-            var status = $(".container p.status");
-            status.text("正在上传，请稍后……");
+            if (!obj.files||obj.files.length === 0)
+                return FALSE;
+            var status = $(".container p.status").text("正在上传，请稍后……");
             var formData = new FormData();
             formData.append("uid",user.uid.toString());
             formData.append("image",obj.files[0]);
             $.ajax({
                 url: _ROOT_+"user/updateimage.do", type: "post", data: formData, processData:false, contentType:false
             }).done(function (d) {
-                status.text(d.msg);
                 if (d.msg.indexOf("成功")>0) {
+                    alertex("提示",d.msg,"success",status);
                     $("#user-img").attr("src",_ROOT_+sprintf("user/getimagebyid.do?uid=%d&_=%.4f",user.uid,Math.random()));
-                }
+                } else
+                    alertex("提示",d.msg,"warning",status);
             }).fail(function (xhr) {
-                status.text("出错了，请稍后重试。错误码："+xhr.status);
+                alertex("出错了!","请稍后重试。错误码："+xhr.status,"error",status);
             });
+            return FALSE;
         }
     </script>
 </head>

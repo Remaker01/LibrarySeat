@@ -18,6 +18,7 @@
         }
     </style>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="../static/commons.js"></script>
     <script>
         $(document).ready(function (){
@@ -36,11 +37,12 @@
         function submit_() {
             if (confirm("确认发布这条消息吗？发布后内容不能修改！")) {
                 $.ajax({
-                    url: _ROOT_ + "message/send.do", type: "post", data: {title: $("#title").val(), content: $("textarea[name='content']").val()}
+                    url: _ROOT_ + "message/send.do", type: "post",
+                    data: {title: $("#title").val(),content: $("textarea[name='content']").val().replace(/\n/g,"\n\n")}
                 }).done(function (data) {
-                    $("p.status").text(data.msg);
+                    alertex("提示",data.msg,data.msg.indexOf("成功")>0 ? "success" : "warning");
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了，请稍后重试。错误码"+xhr.status);
+                    alertex("出错了！","请稍后重试。错误码"+xhr.status,"error");
                 });
             }
             return FALSE;
@@ -53,11 +55,12 @@
     <p><label>通知标题（最多50个字）：<input type="text" maxlength="50" autocomplete="off" class="form-control" id="title"></label>
     </p>
     <p><label>通知内容（最多1000个字）：<br>
-        <textarea name="" id="content" cols="30" rows="10" class="form-control" required></textarea></label></p>
+        <textarea name="content" id="content" cols="30" rows="10" class="form-control" required></textarea></label></p>
     <input type="submit" value="发布" class="btn btn-primary">&emsp;
     <input type="reset" value="重置" class="btn">&emsp;
     <input type="button" value="返回" class="btn" onclick="window.history.go(-1)">
 </form>
+<p style="font-size: small;color: gray">支持markdown语法。</p>
 <p class="status"></p>
 </body>
 </html>

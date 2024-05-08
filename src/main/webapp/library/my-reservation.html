@@ -5,6 +5,7 @@
     <title>预定管理</title>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script defer src="https://cdn.staticfile.net/sprintf/1.1.0/sprintf.min.js"></script>
@@ -67,13 +68,13 @@
                 $.ajax({
                     url: _ROOT_+"reservation/signin.do", type: "post", data: param
                 }).done(function (d2) {
-                    $("p.status").text(d2.msg);
+                    alertex("提示",d2.msg,d2.msg.indexOf("成功")>0 ? "success" : "warning");
                     setTimeout(function (){document.location.reload();},1800);
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试。错误码："+xhr.status,"error");
                 });
             }).fail(function (xhr) {
-                $("p.status").text("当前无法验证您的位置，请确保网络正常！错误码"+xhr.status);
+                alertex("出错了！","当前无法验证您的位置，请确保网络正常！错误码"+xhr.status,"error");
             });
             return FALSE;
         }
@@ -89,10 +90,11 @@
                 $.ajax({
                     url: _ROOT_+"reservation/signout.do", type: "post", data: param
                 }).done(function (d) {
-                    $("p.status").text(d.msg);
+                    var type_ = d.msg.indexOf("成功")>0 ? "success" : "warning";
+                    alertex("提示",d.msg,type_);
                     setTimeout(function (){document.location.reload();},1800);
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了！请稍后重试。错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试。错误码："+xhr.status,"error");
                 })
             }
             return FALSE;

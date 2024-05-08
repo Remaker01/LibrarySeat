@@ -10,6 +10,7 @@ import com.libraryseat.utils.ImageBase64Util;
 import com.libraryseat.utils.VerifyUtil;
 import com.libraryseat.utils.cache.*;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +106,9 @@ public class UserService {
     public String addUsersInFileItem(FileItem fileItem) {
         if (!fileItem.isFormField()){
             String format = ExcelUtil.detectFormatViaMIME(fileItem.getContentType());
+            if (format.isEmpty()){ //尝试通过后缀名获取类型
+                format = FilenameUtils.getExtension(fileItem.getName());
+            }
             try(InputStream stream = fileItem.getInputStream()){
                 List<User> parseResult = ExcelUtil.getUsersInWorkbook(stream,format);
                 if (parseResult.isEmpty())

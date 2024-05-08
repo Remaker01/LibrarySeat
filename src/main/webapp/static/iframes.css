@@ -14,3 +14,26 @@ div.to-page{
 }
 div.to-page input[type='text']{width: 50px;}
 div.to-page *{display: inline;}
+div.swal-modal .swal-title{
+    margin-top: 0;
+    margin-bottom: 1px;
+    padding-top: 0;
+}
+/*兼容IE10  https://github.com/t4t5/sweetalert/commit/336d79661f31322d356517df4aba500798d31cb6*/
+/*@media screen\0 {
+    .swal-overlay {
+        visibility: hidden;
+    }
+    .swal-overlay--show-modal {
+        visibility: visible;
+    }
+    .swal-button__loader {
+        visibility: hidden;
+    }
+    .swal-overlay--show-modal .swal-modal {
+        visibility: visible;
+    }
+    .swal-modal {
+        visibility: hidden;
+    }
+}*/

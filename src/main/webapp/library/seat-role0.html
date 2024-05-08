@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width"/>
     <title>座位信息 - 管理员页</title>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
@@ -80,13 +81,14 @@
                 $.ajax({
                     url:_ROOT_+"/seat/delete.do", type: "post", data: {"seatid":seat_id,"roomid":room.roomid}
                 }).done(function (d){
-                    $("p.status").text(d.msg);
                     if(d.msg.indexOf("成功")>0){
+                        alertex("提示",d.msg,"success");
                         td.parent().remove();
                         sendMessage("座位删除通知",room.roomname+"的"+seat_id+"号座位已被删除");
-                    }
+                    } else
+                        alertex("提示",d.msg,"warning");
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了，请稍后重试，错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试，错误码："+xhr.status,"error");
                 });
             }
         }

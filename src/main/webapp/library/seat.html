@@ -38,26 +38,19 @@
                     elem.innerText=(sprintf("可用座位 %d/%d",d2.data.count,d2.data.totalCount));
                 });
             }
-            var container=$("div.container")[0];
-            $(container).find("h4").text("加载中……");
+            var container=$("div.container");
+            container.find("h4").text("加载中……");
             $.ajax({
                 url:_ROOT_+"room/listrooms.do", type:"post"
             }).done(function (d) {
-                // var select=$("#rooms-select")[0];
-                // for(var i=0; i<d.length; i++){
-                //     var elem=d[i], option=document.createElement("option");
-                //     option.value=elem.roomid;
-                //     option.innerText=elem.roomname;
-                //     select.appendChild(option);
-                // }
                 // for (var i = 0; i < d.length; i++) {
                 //     initCard(d[i],container); //异步请求，不能直接把initcard复制到里面。另一种思路是const elem=d[i]
                 // }
-                $("div.container")[0].innerHTML += doT.template($("#data-").html())(d);
+                container[0].innerHTML += doT.template($("#data-").html())(d);
                 $("p.content").each(function (i,obj) {
                     initCount(obj,$(obj).attr("data-roomid")); //全部加载后再初始化count
                 });
-                $(container).find("h4").text("请选择要查看座位的阅览室");
+                container.find("h4").text("请选择要查看座位的阅览室");
             });
             return FALSE;
         }

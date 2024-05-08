@@ -7,7 +7,8 @@
     <title>用户信息管理</title>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
-    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
     <script src="https://cdn.staticfile.net/crypto-js/3.3.0/core.min.js"></script>
     <script defer src="https://cdn.staticfile.net/crypto-js/3.3.0/enc-hex.min.js"></script>
     <script defer src="https://cdn.staticfile.net/crypto-js/3.3.0/md5.min.js"></script>
@@ -108,16 +109,17 @@
         }
         function doRemove(obj) {
             var td=$(obj.parentNode).siblings()[0];
-            if (confirm("确认删除此用户吗？此操作不可逆！！")){
-                // console.log(td.innerText);
+            if (confirm("确认删除此用户吗？此操作不可逆！！")){ // console.log(td.innerText);
                 $.ajax({
                     url: _ROOT_+"user/delete.do", type: "post", data: {"uid":td.innerText}
                 }).done(function (d) {
-                    $("p.status").text(d.msg);
-                    if (d.msg.indexOf("成功")>0)
+                    if (d.msg.indexOf("成功")>0) {
+                        alertex("信息",d.msg,"success");
                         $(td.parentNode).remove();
+                    } else
+                        alertex("信息",d.msg,"warning");
                 }).fail(function (xhr) {
-                    $("p.status").text("出错了，请稍后重试。错误码："+xhr.status);
+                    alertex("出错了！","请稍后重试。错误码："+xhr.status,"error");
                 });
             }
         }
@@ -177,8 +179,7 @@
             return FALSE;
         }
         function submit_modify_image(obj) {
-            var uid = $(obj.parentNode).siblings()[0].innerText;
-            var status = $("body>p.status");
+            var uid = $(obj.parentNode).siblings()[0].innerText, status = $("body>p.status");
             status.text("正在上传，请稍后……");
             var formData = new FormData();
             formData.append("uid",uid);
@@ -226,7 +227,9 @@
     <tr>
         <td data-title="uid">{{!value.uid}}</td>
         <td data-title="username">{{!value.username}}</td>
-        <td><input type="file" name="image" onchange="submit_modify_image(this)" style="display: none" accept="image/jpeg, image/png, image/bmp, image/gif">
+        <td>{{?user.role===0}}
+            <input type="file" name="image" onchange="submit_modify_image(this)" style="display: none" accept="image/jpeg, image/png, image/bmp, image/gif">
+            {{?}}
             <img src="{{=sprintf('../user/getimagebyid.do?uid=%d',value.uid)}}" alt="用户头像"
                  style="width: 32px;height: 32px;border-radius: 20%;cursor:pointer;" onclick="$(this).siblings().eq(0).trigger('click')"></td>
         <td data-title="truename">{{!value.truename}}</td>

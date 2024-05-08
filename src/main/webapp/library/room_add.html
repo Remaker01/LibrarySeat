@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width"/>
     <title>添加图书室</title>
     <script src="https://cdn.staticfile.net/jquery/1.12.4/jquery.min.js"></script>
-    <script src="../static/commons.js" defer></script>
+    <script defer src="https://cdn.staticfile.net/sweetalert/2.0.8/sweetalert.min.js"></script>
+    <script src="../static/commons.js"></script>
     <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/iframes.css">
     <script>
@@ -49,9 +50,13 @@
             $.ajax({
                 url: _ROOT_+"room/add.do", type: "post", data: param
             }).done(function (d) {
-                $("p.status").text(d.msg);
-                if (d.msg.indexOf("成功")>0)
-                    sendMessage("新阅览室已上线！","管理员新增的阅览室 "+param.name+" 现已可用！");
+                if (d.msg.indexOf("成功")>0) {
+                    alertex("提示",d.msg,"success");
+                    sendMessage("新阅览室已上线！", "管理员新增的阅览室 " + param.name + " 现已可用！");
+                } else
+                    alertex("提示",d.msg,"warning");
+            }).fail(function (xhr) {
+                alertex("出错了！","请稍后重试，错误码"+xhr.status);
             });
             return FALSE;
         }
